@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>THH Merchandising Report</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -29,15 +29,14 @@
         <input type="text" name="model" placeholder="Model" class="p-3 border rounded-lg" required>
         <select name="year" class="p-3 border rounded-lg" required>
           <option value="">Year</option>
-          <script>const select = document.currentScript.parentElement; for (let y = new Date().getFullYear(); y >= 1990; y--) { select.innerHTML += `<option value="${y}">${y}</option>`; }</script>
+          <script>const ysel = document.currentScript.parentElement; for (let y = new Date().getFullYear(); y >= 1990; y--) ysel.innerHTML += `<option value=\"${y}\">${y}</option>`;</script>
         </select>
         <input type="date" name="date" class="p-3 border rounded-lg" required>
         <textarea name="comment" placeholder="Comment" class="p-3 border rounded-lg col-span-1 sm:col-span-2 lg:col-span-3"></textarea>
         <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg col-span-full">Add to Pending List</button>
       </form>
     </section>
-
-    <section class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+        <section class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
       <h2 class="text-2xl font-semibold mb-6">📋 Submitted Entries</h2>
       <input id="searchInput" type="text" placeholder="Search..." class="mb-4 w-full p-3 border rounded-lg">
       <div class="overflow-x-auto">
@@ -58,128 +57,168 @@
         </table>
       </div>
     </section>
+
+    <section class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+      <h2 class="text-2xl font-semibold mb-6">✅ Completed Entries</h2>
+      <input id="searchCompleted" type="text" placeholder="Search..." class="mb-4 w-full p-3 border rounded-lg">
+      <div class="overflow-x-auto">
+        <table class="w-full table-auto border text-sm">
+          <thead class="bg-gray-100 text-xs uppercase text-gray-600">
+            <tr>
+              <th class="border px-4 py-2">VIN</th>
+              <th class="border px-4 py-2">Stock #</th>
+              <th class="border px-4 py-2">Make</th>
+              <th class="border px-4 py-2">Model</th>
+              <th class="border px-4 py-2">Year</th>
+              <th class="border px-4 py-2">Date</th>
+              <th class="border px-4 py-2">Comment</th>
+            </tr>
+          </thead>
+          <tbody id="completedTable" class="text-center"></tbody>
+        </table>
+      </div>
+    </section>
   </main>
-
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyC-hy3eteka35c3ZkLl7exTQ0nnFz9xhFU",
-      authDomain: "thh-merch-report.firebaseapp.com",
-      projectId: "thh-merch-report",
-      storageBucket: "thh-merch-report.firebasestorage.app",
-      messagingSenderId: "214148544505",
-      appId: "1:214148544505:web:ef4889d43b8189f5146f28"
-    };
+  // Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyC-hy3eteka35c3ZkLl7exTQ0nnFz9xhFU",
+    authDomain: "thh-merch-report.firebaseapp.com",
+    projectId: "thh-merch-report",
+    storageBucket: "thh-merch-report.appspot.com",
+    messagingSenderId: "214148544505",
+    appId: "1:214148544505:web:ef4889d43b8189f5146f28"
+  };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-    const toast = (msg, success = true) => {
-      const el = document.getElementById("toast");
-      el.innerText = msg;
-      el.className = `fixed top-4 right-4 px-4 py-2 rounded z-50 font-semibold text-white ${success ? 'bg-green-600' : 'bg-red-600'}`;
-      el.classList.remove("hidden");
-      setTimeout(() => el.classList.add("hidden"), 3000);
-    };
+  const form = document.getElementById('pendingForm');
+  const toast = document.getElementById('toast');
+  const spinner = document.getElementById('spinner');
+  const table = document.getElementById('entryTable');
+  const completedTable = document.getElementById('completedTable');
 
-    const spinner = {
-      show: () => document.getElementById("spinner").classList.remove("hidden"),
-      hide: () => document.getElementById("spinner").classList.add("hidden")
-    };
+  function showToast(message, type = 'success') {
+    toast.textContent = message;
+    toast.className = `fixed top-4 right-4 px-4 py-2 rounded font-semibold z-50 ${type === 'success' ? 'bg-green-600' : 'bg-red-600'} text-white`;
+    toast.style.display = 'block';
+    setTimeout(() => { toast.style.display = 'none'; }, 3000);
+  }
 
-    let allEntries = [];
+  function showSpinner(show = true) {
+    spinner.style.display = show ? 'flex' : 'none';
+  }
 
-    document.getElementById("pendingForm").addEventListener("submit", async function(e) {
-      e.preventDefault();
-      spinner.show();
-      const form = e.target;
-      const data = {
-        vin: form.vin.value.trim().toUpperCase(),
-        stock: form.stock.value.trim().toUpperCase(),
-        make: capitalize(form.make.value.trim()),
-        model: capitalize(form.model.value.trim()),
-        year: form.year.value,
-        date: form.date.value,
-        comment: capitalizeSentence(form.comment.value.trim())
-      };
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    showSpinner(true);
 
-      try {
-        await db.collection("pending_vehicles").add(data);
-        toast("Entry submitted successfully.");
-        form.reset();
-        form.date.value = new Date().toISOString().split('T')[0];
-        loadEntries();
-      } catch (err) {
-        toast("Error saving entry.", false);
-      } finally {
-        spinner.hide();
-      }
-    });
+    const data = Object.fromEntries(new FormData(form).entries());
+    data.vin = data.vin.toUpperCase();
+    data.stock = data.stock.toUpperCase();
+    data.make = data.make.charAt(0).toUpperCase() + data.make.slice(1).toLowerCase();
+    data.model = data.model.charAt(0).toUpperCase() + data.model.slice(1).toLowerCase();
+    data.comment = data.comment.charAt(0).toUpperCase() + data.comment.slice(1).toLowerCase();
 
-    async function markAsCompleted(id, data) {
-      try {
-        await db.collection("vehicles").add(data);
-        await db.collection("pending_vehicles").doc(id).delete();
-        toast("Marked as completed.");
-        loadEntries();
-      } catch (err) {
-        toast("Error moving entry.", false);
-      }
+    try {
+      await db.collection("pending_vehicles").add(data);
+      form.reset();
+      showToast("Added to pending list");
+    } catch (err) {
+      console.error(err);
+      showToast("Error saving entry", "error");
     }
 
-    async function deleteEntry(id) {
-      if (!confirm("Are you sure you want to delete this entry?")) return;
-      try {
-        await db.collection("pending_vehicles").doc(id).delete();
-        toast("Entry deleted.");
-        loadEntries();
-      } catch (err) {
-        toast("Error deleting entry.", false);
-      }
-    }
+    showSpinner(false);
+  });
 
-    const loadEntries = async () => {
-      const snapshot = await db.collection("pending_vehicles").orderBy("date", "desc").get();
-      allEntries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      renderEntries(allEntries);
-    };
-
-    const renderEntries = (entries) => {
-      const tbody = document.getElementById("entryTable");
-      tbody.innerHTML = "";
-      entries.forEach(entry => {
+  function renderTable() {
+    db.collection("pending_vehicles").onSnapshot(snapshot => {
+      table.innerHTML = "";
+      snapshot.forEach(doc => {
+        const data = doc.data();
         const row = document.createElement("tr");
         row.innerHTML = `
-          <td class="border px-4 py-2">${entry.vin}</td>
-          <td class="border px-4 py-2">${entry.stock}</td>
-          <td class="border px-4 py-2">${entry.make}</td>
-          <td class="border px-4 py-2">${entry.model}</td>
-          <td class="border px-4 py-2">${entry.year}</td>
-          <td class="border px-4 py-2">${entry.date}</td>
-          <td class="border px-4 py-2">${entry.comment}</td>
-          <td class="border px-4 py-2 space-x-2">
-            <button onclick='markAsCompleted("${entry.id}", ${JSON.stringify(entry)})' class="text-green-600 font-bold">✔️</button>
-            <button onclick='deleteEntry("${entry.id}")' class="text-red-600 font-bold">🗑️</button>
+          <td class="border px-2 py-1">${data.vin}</td>
+          <td class="border px-2 py-1">${data.stock}</td>
+          <td class="border px-2 py-1">${data.make}</td>
+          <td class="border px-2 py-1">${data.model}</td>
+          <td class="border px-2 py-1">${data.year}</td>
+          <td class="border px-2 py-1">${data.date}</td>
+          <td class="border px-2 py-1">${data.comment || ""}</td>
+          <td class="border px-2 py-1">
+            <button onclick="markCompleted('${doc.id}', ${JSON.stringify(data)})" class="text-green-600 font-bold">✔️</button>
+            <button onclick="deleteEntry('${doc.id}')" class="text-red-600 font-bold ml-2">🗑️</button>
           </td>
         `;
-        tbody.appendChild(row);
+        table.appendChild(row);
       });
-    };
-
-    const capitalize = text => text ? text.charAt(0).toUpperCase() + text.slice(1).toLowerCase() : "";
-    const capitalizeSentence = text => text ? text.split(" ").map(capitalize).join(" ") : "";
-
-    document.getElementById("searchInput").addEventListener("input", function(e) {
-      const q = e.target.value.toLowerCase();
-      const filtered = allEntries.filter(entry =>
-        Object.values(entry).some(val => String(val).toLowerCase().includes(q))
-      );
-      renderEntries(filtered);
     });
+  }
 
-    window.onload = () => {
-      document.querySelector("input[name='date']").value = new Date().toISOString().split('T')[0];
-      loadEntries();
-    };
-  </script>
+  async function markCompleted(id, data) {
+    try {
+      await db.collection("vehicles").add(data);
+      await db.collection("pending_vehicles").doc(id).delete();
+      showToast("Marked as completed");
+    } catch (err) {
+      console.error(err);
+      showToast("Error completing entry", "error");
+    }
+  }
+
+  async function deleteEntry(id) {
+    if (!confirm("Are you sure you want to delete this entry?")) return;
+    try {
+      await db.collection("pending_vehicles").doc(id).delete();
+      showToast("Deleted entry");
+    } catch (err) {
+      console.error(err);
+      showToast("Error deleting entry", "error");
+    }
+  }
+    function renderCompletedTable() {
+    db.collection("vehicles").onSnapshot(snapshot => {
+      completedTable.innerHTML = "";
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td class="border px-2 py-1">${data.vin}</td>
+          <td class="border px-2 py-1">${data.stock}</td>
+          <td class="border px-2 py-1">${data.make}</td>
+          <td class="border px-2 py-1">${data.model}</td>
+          <td class="border px-2 py-1">${data.year}</td>
+          <td class="border px-2 py-1">${data.date}</td>
+          <td class="border px-2 py-1">${data.comment || ""}</td>
+        `;
+        completedTable.appendChild(row);
+      });
+    });
+  }
+
+  // Live search
+  document.getElementById("searchInput").addEventListener("input", function () {
+    const filter = this.value.toLowerCase();
+    [...table.children].forEach(row => {
+      row.style.display = [...row.children].some(td =>
+        td.textContent.toLowerCase().includes(filter)
+      ) ? "" : "none";
+    });
+  });
+
+  document.getElementById("searchCompleted").addEventListener("input", function () {
+    const filter = this.value.toLowerCase();
+    [...completedTable.children].forEach(row => {
+      row.style.display = [...row.children].some(td =>
+        td.textContent.toLowerCase().includes(filter)
+      ) ? "" : "none";
+    });
+  });
+
+  renderTable();
+  renderCompletedTable();
+</script>
 </body>
 </html>
