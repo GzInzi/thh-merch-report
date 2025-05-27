@@ -1,54 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>THH Merchandising Report</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body class="bg-gray-100 text-gray-800">
-  <!-- Header -->
   <header class="bg-white shadow-md p-6 flex items-center justify-between">
-    <img src="logo.png" alt="THH Logo" class="h-12" />
+    <img src="logo.png" alt="THH Logo" class="h-12">
     <h1 class="text-3xl font-bold text-center flex-grow -ml-12">THH Merchandising Report</h1>
   </header>
 
   <main class="p-8 space-y-12 max-w-screen-xl mx-auto">
-    <!-- Toast Message -->
     <div id="toast" class="fixed top-4 right-4 hidden px-4 py-2 rounded text-white font-semibold z-50"></div>
-
-    <!-- Spinner -->
     <div id="spinner" class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-40 hidden">
       <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
     </div>
 
-    <!-- Data Entry Card -->
     <section class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
       <h2 class="text-2xl font-semibold mb-6">📝 Data Entry</h2>
       <form id="pendingForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <input type="text" name="vin" placeholder="VIN Number" class="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required />
-        <input type="text" name="stock" placeholder="Stock Number" class="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required />
-        <input type="text" name="make" placeholder="Make" class="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required />
-        <input type="text" name="model" placeholder="Model" class="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required />
-        <select name="year" class="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+        <input type="text" name="vin" placeholder="VIN Number" class="p-3 border rounded-lg" required>
+        <input type="text" name="stock" placeholder="Stock Number" class="p-3 border rounded-lg" required>
+        <input type="text" name="make" placeholder="Make" class="p-3 border rounded-lg" required>
+        <input type="text" name="model" placeholder="Model" class="p-3 border rounded-lg" required>
+        <select name="year" class="p-3 border rounded-lg" required>
           <option value="">Year</option>
-          <script>
-            const select = document.currentScript.parentElement;
-            for (let y = new Date().getFullYear(); y >= 1990; y--) {
-              select.innerHTML += `<option value="${y}">${y}</option>`;
-            }
-          </script>
+          <script>const select = document.currentScript.parentElement; for (let y = new Date().getFullYear(); y >= 1990; y--) { select.innerHTML += `<option value="${y}">${y}</option>`; }</script>
         </select>
-        <input type="date" name="date" class="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required value="" />
-        <textarea name="comment" placeholder="Comment" class="p-3 border rounded-lg col-span-1 sm:col-span-2 lg:col-span-3 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-        <button type="submit" class="bg-green-600 hover:bg-green-700 transition text-white font-bold py-3 px-6 rounded-lg col-span-full w-full">Add to Pending List</button>
+        <input type="date" name="date" class="p-3 border rounded-lg" required>
+        <textarea name="comment" placeholder="Comment" class="p-3 border rounded-lg col-span-1 sm:col-span-2 lg:col-span-3"></textarea>
+        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg col-span-full">Add to Pending List</button>
       </form>
     </section>
 
-    <!-- Submitted Entries Section -->
     <section class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
       <h2 class="text-2xl font-semibold mb-6">📋 Submitted Entries</h2>
-      <input id="searchInput" type="text" placeholder="Search VIN, Stock, Make, Model, Comment..." class="mb-4 w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      <input id="searchInput" type="text" placeholder="Search..." class="mb-4 w-full p-3 border rounded-lg">
       <div class="overflow-x-auto">
         <table class="w-full table-auto border text-sm">
           <thead class="bg-gray-100 text-xs uppercase text-gray-600">
@@ -62,17 +53,24 @@
               <th class="border px-4 py-2">Comment</th>
             </tr>
           </thead>
-          <tbody id="entryTable" class="text-center">
-            <!-- Loaded entries will appear here -->
-          </tbody>
+          <tbody id="entryTable" class="text-center"></tbody>
         </table>
       </div>
     </section>
   </main>
 
-  <!-- JavaScript -->
   <script>
-    const scriptUrl = "https://script.google.com/macros/s/AKfycbxhvJdoAy-TcLppmSvDSHiMOcrhXo3kCngvzzhGFXAeJaxeSAMiONyOWrkDStGTxc4W/exec";
+    const firebaseConfig = {
+      apiKey: "AIzaSyC-hy3eteka35c3ZkLl7exTQ0nnFz9xhFU",
+      authDomain: "thh-merch-report.firebaseapp.com",
+      projectId: "thh-merch-report",
+      storageBucket: "thh-merch-report.firebasestorage.app",
+      messagingSenderId: "214148544505",
+      appId: "1:214148544505:web:ef4889d43b8189f5146f28"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
     const toast = (msg, success = true) => {
       const el = document.getElementById("toast");
@@ -87,78 +85,66 @@
       hide: () => document.getElementById("spinner").classList.add("hidden")
     };
 
-    let fullEntryData = [];
+    let allEntries = [];
 
     document.getElementById("pendingForm").addEventListener("submit", async function(e) {
       e.preventDefault();
       spinner.show();
-
       const form = e.target;
       const data = {
-        vin: form.vin.value.trim(),
-        stock: form.stock.value.trim(),
-        make: form.make.value.trim(),
-        model: form.model.value.trim(),
+        vin: form.vin.value.trim().toUpperCase(),
+        stock: form.stock.value.trim().toUpperCase(),
+        make: capitalize(form.make.value.trim()),
+        model: capitalize(form.model.value.trim()),
         year: form.year.value,
         date: form.date.value,
-        comment: form.comment.value.trim()
+        comment: capitalizeSentence(form.comment.value.trim())
       };
 
       try {
-        const res = await fetch(scriptUrl, {
-          method: "POST",
-          body: JSON.stringify(data),
-          headers: { "Content-Type": "application/json" }
-        });
-
-        if (res.ok) {
-          toast("Entry submitted successfully.", true);
-          form.reset();
-          form.date.value = new Date().toISOString().split('T')[0];
-          loadEntries();
-        } else {
-          toast("Failed to submit entry.", false);
-        }
+        await db.collection("pending_vehicles").add(data);
+        toast("Entry submitted successfully.");
+        form.reset();
+        form.date.value = new Date().toISOString().split('T')[0];
+        loadEntries();
       } catch (err) {
-        toast("Network error.", false);
+        toast("Error saving entry.", false);
       } finally {
         spinner.hide();
       }
     });
 
-    async function loadEntries() {
-      try {
-        const res = await fetch(scriptUrl);
-        const data = await res.json();
-        fullEntryData = data.reverse();
-        renderEntries(fullEntryData);
-      } catch (err) {
-        toast("Error loading entries", false);
-      }
-    }
+    const loadEntries = async () => {
+      const snapshot = await db.collection("pending_vehicles").orderBy("date", "desc").get();
+      allEntries = snapshot.docs.map(doc => doc.data());
+      renderEntries(allEntries);
+    };
 
-    function renderEntries(data) {
-      const table = document.getElementById("entryTable");
-      table.innerHTML = "";
-      data.forEach(entry => {
+    const renderEntries = (entries) => {
+      const tbody = document.getElementById("entryTable");
+      tbody.innerHTML = "";
+      entries.forEach(entry => {
         const row = document.createElement("tr");
         row.innerHTML = `
-          <td class="border px-4 py-2">${entry.VIN || ""}</td>
-          <td class="border px-4 py-2">${entry["Stock Number"] || ""}</td>
-          <td class="border px-4 py-2">${entry.Make || ""}</td>
-          <td class="border px-4 py-2">${entry.Model || ""}</td>
-          <td class="border px-4 py-2">${entry.Year || ""}</td>
-          <td class="border px-4 py-2">${entry.Date || ""}</td>
-          <td class="border px-4 py-2">${entry.Comment || ""}</td>
+          <td class="border px-4 py-2">${entry.vin}</td>
+          <td class="border px-4 py-2">${entry.stock}</td>
+          <td class="border px-4 py-2">${entry.make}</td>
+          <td class="border px-4 py-2">${entry.model}</td>
+          <td class="border px-4 py-2">${entry.year}</td>
+          <td class="border px-4 py-2">${entry.date}</td>
+          <td class="border px-4 py-2">${entry.comment}</td>
         `;
-        table.appendChild(row);
+        tbody.appendChild(row);
       });
-    }
+    };
+
+    const capitalize = text => text ? text.charAt(0).toUpperCase() + text.slice(1).toLowerCase() : "";
+    const capitalizeSentence = text => text ? text.split(" ").map(capitalize).join(" ") : "";
 
     document.getElementById("searchInput").addEventListener("input", function(e) {
-      const value = e.target.value.toLowerCase();
-      const filtered = fullEntryData.filter(entry =>
-        Object.values(entry).some(val => String(val).toLowerCase().includes(value))
+      const q = e.target.value.toLowerCase();
+      const filtered = allEntries.filter(entry =>
+        Object.values(entry).some(val => String(val).toLowerCase().includes(q))
       );
       renderEntries(filtered);
     });
