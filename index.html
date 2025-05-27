@@ -14,6 +14,14 @@
   </header>
 
   <main class="p-8 space-y-12 max-w-screen-xl mx-auto">
+    <!-- Toast Message -->
+    <div id="toast" class="fixed top-4 right-4 hidden px-4 py-2 rounded text-white font-semibold z-50"></div>
+
+    <!-- Spinner -->
+    <div id="spinner" class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-40 hidden">
+      <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
+    </div>
+
     <!-- Data Entry Card -->
     <section class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
       <h2 class="text-2xl font-semibold mb-6">📝 Data Entry</h2>
@@ -37,10 +45,10 @@
       </form>
     </section>
 
-    <!-- Pending List Table -->
+    <!-- Submitted Entries Section -->
     <section class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-      <h2 class="text-2xl font-semibold mb-6">📋 Pending List</h2>
-      <input type="text" placeholder="Search by VIN, Stock #, Make..." class="mb-4 p-3 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      <h2 class="text-2xl font-semibold mb-6">📋 Submitted Entries</h2>
+      <input id="searchInput" type="text" placeholder="Search VIN, Stock, Make, Model, Comment..." class="mb-4 w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
       <div class="overflow-x-auto">
         <table class="w-full table-auto border text-sm">
           <thead class="bg-gray-100 text-xs uppercase text-gray-600">
@@ -52,48 +60,39 @@
               <th class="border px-4 py-2">Year</th>
               <th class="border px-4 py-2">Date</th>
               <th class="border px-4 py-2">Comment</th>
-              <th class="border px-4 py-2">Actions</th>
             </tr>
           </thead>
-          <tbody id="pendingTable" class="text-center">
-            <!-- Dynamic Content -->
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- Completed List Table -->
-    <section class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-      <h2 class="text-2xl font-semibold mb-6">✅ Completed List</h2>
-      <input type="text" placeholder="Search by VIN, Stock #, Make..." class="mb-4 p-3 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
-      <div class="overflow-x-auto">
-        <table class="w-full table-auto border text-sm">
-          <thead class="bg-gray-100 text-xs uppercase text-gray-600">
-            <tr>
-              <th class="border px-4 py-2">VIN</th>
-              <th class="border px-4 py-2">Stock #</th>
-              <th class="border px-4 py-2">Make</th>
-              <th class="border px-4 py-2">Model</th>
-              <th class="border px-4 py-2">Year</th>
-              <th class="border px-4 py-2">Detailed</th>
-              <th class="border px-4 py-2">Date</th>
-              <th class="border px-4 py-2">Comment</th>
-              <th class="border px-4 py-2">Actions</th>
-              <th class="border px-4 py-2">Sold</th>
-            </tr>
-          </thead>
-          <tbody id="completedTable" class="text-center">
-            <!-- Dynamic Content -->
+          <tbody id="entryTable" class="text-center">
+            <!-- Loaded entries will appear here -->
           </tbody>
         </table>
       </div>
     </section>
   </main>
 
-  <!-- JS to handle submission -->
+  <!-- JavaScript -->
   <script>
+    const scriptUrl = "https://script.google.com/macros/s/AKfycbxhvJdoAy-TcLppmSvDSHiMOcrhXo3kCngvzzhGFXAeJaxeSAMiONyOWrkDStGTxc4W/exec";
+
+    const toast = (msg, success = true) => {
+      const el = document.getElementById("toast");
+      el.innerText = msg;
+      el.className = `fixed top-4 right-4 px-4 py-2 rounded z-50 font-semibold text-white ${success ? 'bg-green-600' : 'bg-red-600'}`;
+      el.classList.remove("hidden");
+      setTimeout(() => el.classList.add("hidden"), 3000);
+    };
+
+    const spinner = {
+      show: () => document.getElementById("spinner").classList.remove("hidden"),
+      hide: () => document.getElementById("spinner").classList.add("hidden")
+    };
+
+    let fullEntryData = [];
+
     document.getElementById("pendingForm").addEventListener("submit", async function(e) {
       e.preventDefault();
+      spinner.show();
+
       const form = e.target;
       const data = {
         vin: form.vin.value.trim(),
@@ -105,22 +104,69 @@
         comment: form.comment.value.trim()
       };
 
-      const response = await fetch("https://script.google.com/macros/s/AKfycbxhvJdoAy-TcLppmSvDSHiMOcrhXo3kCngvzzhGFXAeJaxeSAMiONyOWrkDStGTxc4W/exec", {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: {
-          "Content-Type": "application/json"
-        }
-      });
+      try {
+        const res = await fetch(scriptUrl, {
+          method: "POST",
+          body: JSON.stringify(data),
+          headers: { "Content-Type": "application/json" }
+        });
 
-      if (response.ok) {
-        alert("Vehicle added successfully!");
-        form.reset();
-        form.date.value = new Date().toISOString().split('T')[0];
-      } else {
-        alert("Error saving entry. Please try again.");
+        if (res.ok) {
+          toast("Entry submitted successfully.", true);
+          form.reset();
+          form.date.value = new Date().toISOString().split('T')[0];
+          loadEntries();
+        } else {
+          toast("Failed to submit entry.", false);
+        }
+      } catch (err) {
+        toast("Network error.", false);
+      } finally {
+        spinner.hide();
       }
     });
+
+    async function loadEntries() {
+      try {
+        const res = await fetch(scriptUrl);
+        const data = await res.json();
+        fullEntryData = data.reverse();
+        renderEntries(fullEntryData);
+      } catch (err) {
+        toast("Error loading entries", false);
+      }
+    }
+
+    function renderEntries(data) {
+      const table = document.getElementById("entryTable");
+      table.innerHTML = "";
+      data.forEach(entry => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td class="border px-4 py-2">${entry.VIN || ""}</td>
+          <td class="border px-4 py-2">${entry["Stock Number"] || ""}</td>
+          <td class="border px-4 py-2">${entry.Make || ""}</td>
+          <td class="border px-4 py-2">${entry.Model || ""}</td>
+          <td class="border px-4 py-2">${entry.Year || ""}</td>
+          <td class="border px-4 py-2">${entry.Date || ""}</td>
+          <td class="border px-4 py-2">${entry.Comment || ""}</td>
+        `;
+        table.appendChild(row);
+      });
+    }
+
+    document.getElementById("searchInput").addEventListener("input", function(e) {
+      const value = e.target.value.toLowerCase();
+      const filtered = fullEntryData.filter(entry =>
+        Object.values(entry).some(val => String(val).toLowerCase().includes(value))
+      );
+      renderEntries(filtered);
+    });
+
+    window.onload = () => {
+      document.querySelector("input[name='date']").value = new Date().toISOString().split('T')[0];
+      loadEntries();
+    };
   </script>
 </body>
 </html>
