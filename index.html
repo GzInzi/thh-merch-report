@@ -51,6 +51,7 @@
               <th class="border px-4 py-2">Year</th>
               <th class="border px-4 py-2">Date</th>
               <th class="border px-4 py-2">Comment</th>
+              <th class="border px-4 py-2">Actions</th>
             </tr>
           </thead>
           <tbody id="entryTable" class="text-center"></tbody>
@@ -114,9 +115,31 @@
       }
     });
 
+    async function markAsCompleted(id, data) {
+      try {
+        await db.collection("vehicles").add(data);
+        await db.collection("pending_vehicles").doc(id).delete();
+        toast("Marked as completed.");
+        loadEntries();
+      } catch (err) {
+        toast("Error moving entry.", false);
+      }
+    }
+
+    async function deleteEntry(id) {
+      if (!confirm("Are you sure you want to delete this entry?")) return;
+      try {
+        await db.collection("pending_vehicles").doc(id).delete();
+        toast("Entry deleted.");
+        loadEntries();
+      } catch (err) {
+        toast("Error deleting entry.", false);
+      }
+    }
+
     const loadEntries = async () => {
       const snapshot = await db.collection("pending_vehicles").orderBy("date", "desc").get();
-      allEntries = snapshot.docs.map(doc => doc.data());
+      allEntries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       renderEntries(allEntries);
     };
 
@@ -133,6 +156,10 @@
           <td class="border px-4 py-2">${entry.year}</td>
           <td class="border px-4 py-2">${entry.date}</td>
           <td class="border px-4 py-2">${entry.comment}</td>
+          <td class="border px-4 py-2 space-x-2">
+            <button onclick='markAsCompleted("${entry.id}", ${JSON.stringify(entry)})' class="text-green-600 font-bold">✔️</button>
+            <button onclick='deleteEntry("${entry.id}")' class="text-red-600 font-bold">🗑️</button>
+          </td>
         `;
         tbody.appendChild(row);
       });
