@@ -8,84 +8,73 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
-<body class="bg-gray-100 text-gray-800">
-  <header class="bg-white shadow-md p-6 flex items-center justify-between">
-    <img src="logo.png" alt="THH Logo" class="h-12">
-    <h1 class="text-3xl font-bold text-center flex-grow -ml-12">THH Merchandising Report</h1>
+<body class="bg-gray-100 font-sans">
+  <header class="bg-white shadow p-6 flex items-center justify-between">
+    <img src="logo.png" alt="THH Logo" class="h-10">
+    <h1 class="text-2xl font-bold text-center w-full -ml-10">THH Merchandising Report</h1>
   </header>
 
-  <main class="p-8 space-y-12 max-w-screen-xl mx-auto">
-    <!-- STEP 1: Data Entry -->
-    <section class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-      <h2 class="text-2xl font-semibold mb-6">📝 Data Entry (Pending List Form)</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <input id="vin" type="text" placeholder="VIN Number" class="p-3 border rounded-lg">
-        <input id="stock" type="text" placeholder="Stock Number" class="p-3 border rounded-lg">
-        <input id="make" type="text" placeholder="Make" class="p-3 border rounded-lg">
-        <input id="model" type="text" placeholder="Model" class="p-3 border rounded-lg">
-        <select id="year" class="p-3 border rounded-lg"><option value="">Select Year</option></select>
-        <input id="comment" type="text" placeholder="Comment" class="p-3 border rounded-lg">
+  <main class="max-w-6xl mx-auto p-6 space-y-10">
+    <!-- Step 1: Data Entry -->
+    <section class="bg-white p-6 rounded-xl shadow">
+      <h2 class="text-xl font-semibold mb-4">📝 Data Entry</h2>
+      <div class="grid md:grid-cols-2 gap-4">
+        <input id="vin" class="p-3 border rounded" placeholder="VIN Number" />
+        <input id="stock" class="p-3 border rounded" placeholder="Stock Number" />
+        <input id="make" class="p-3 border rounded" placeholder="Make" />
+        <input id="model" class="p-3 border rounded" placeholder="Model" />
+        <select id="year" class="p-3 border rounded">
+          <option value="">Select Year</option>
+          <script>for(let y=1990;y<=new Date().getFullYear();y++)document.write(`<option value="${y}">${y}</option>`);</script>
+        </select>
+        <input id="comment" class="p-3 border rounded" placeholder="Comment" />
       </div>
-      <button onclick="addPending()" class="mt-4 bg-green-600 text-white font-bold py-2 px-6 rounded-lg">Add to Pending List</button>
+      <button onclick="addPending()" class="mt-4 bg-green-600 text-white font-bold py-2 px-6 rounded">Add to Pending List</button>
     </section>
 
-    <!-- STEP 2: Submitted Entries -->
-    <section class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-      <h2 class="text-2xl font-semibold mb-6">📋 Submitted Entries</h2>
-      <div class="overflow-x-auto">
-        <table class="w-full table-auto border text-sm">
-          <thead class="bg-gray-100 text-xs uppercase text-gray-600">
-            <tr>
-              <th class="border px-4 py-2">VIN</th>
-              <th class="border px-4 py-2">Stock #</th>
-              <th class="border px-4 py-2">Make</th>
-              <th class="border px-4 py-2">Model</th>
-              <th class="border px-4 py-2">Year</th>
-              <th class="border px-4 py-2">Date</th>
-              <th class="border px-4 py-2">Comment</th>
-              <th class="border px-4 py-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="pendingTable" class="text-center"></tbody>
-        </table>
-      </div>
+    <!-- Step 2: Pending List -->
+    <section class="bg-white p-6 rounded-xl shadow">
+      <h2 class="text-xl font-semibold mb-4">📋 Submitted Entries</h2>
+      <table class="w-full text-sm table-auto border">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="border px-2 py-1">VIN</th>
+            <th class="border px-2 py-1">Stock #</th>
+            <th class="border px-2 py-1">Make</th>
+            <th class="border px-2 py-1">Model</th>
+            <th class="border px-2 py-1">Year</th>
+            <th class="border px-2 py-1">Date</th>
+            <th class="border px-2 py-1">Comment</th>
+            <th class="border px-2 py-1">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="pendingTable"></tbody>
+      </table>
     </section>
 
-    <!-- STEP 3: Completed Entries -->
-    <section class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-      <h2 class="text-2xl font-semibold mb-6">✅ Completed Vehicles</h2>
-      <div class="flex gap-4 mb-4">
-        <select id="filterDetailed" class="p-3 border rounded-lg">
-          <option value="">Filter by Detailed</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-        <select id="filterPhotos" class="p-3 border rounded-lg">
-          <option value="">Filter by Photo Type</option>
-          <option value="Full Photos">Full Photos</option>
-          <option value="Half Photos">Half Photos</option>
-        </select>
-        <input id="searchCompleted" type="text" placeholder="Search..." class="p-3 border rounded-lg flex-grow">
+    <!-- Step 3: Completed List -->
+    <section class="bg-white p-6 rounded-xl shadow">
+      <h2 class="text-xl font-semibold mb-4">✅ Completed Vehicles</h2>
+      <div class="flex flex-col md:flex-row gap-4 mb-4">
+        <input id="searchCompleted" type="text" class="p-3 border rounded w-full md:w-1/3" placeholder="Search...">
       </div>
-      <div class="overflow-x-auto">
-        <table class="w-full table-auto border text-sm">
-          <thead class="bg-gray-100 text-xs uppercase text-gray-600">
-            <tr>
-              <th class="border px-4 py-2">VIN</th>
-              <th class="border px-4 py-2">Stock #</th>
-              <th class="border px-4 py-2">Make</th>
-              <th class="border px-4 py-2">Model</th>
-              <th class="border px-4 py-2">Year</th>
-              <th class="border px-4 py-2">Date</th>
-              <th class="border px-4 py-2">Detailed</th>
-              <th class="border px-4 py-2">Photos</th>
-              <th class="border px-4 py-2">Comment</th>
-              <th class="border px-4 py-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="completedTable" class="text-center"></tbody>
-        </table>
-      </div>
+      <table class="w-full text-sm table-auto border">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="border px-2 py-1">VIN</th>
+            <th class="border px-2 py-1">Stock #</th>
+            <th class="border px-2 py-1">Make</th>
+            <th class="border px-2 py-1">Model</th>
+            <th class="border px-2 py-1">Year</th>
+            <th class="border px-2 py-1">Date</th>
+            <th class="border px-2 py-1">Detailed</th>
+            <th class="border px-2 py-1">Photos</th>
+            <th class="border px-2 py-1">Comment</th>
+            <th class="border px-2 py-1">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="completedTable"></tbody>
+      </table>
     </section>
   </main>
 
@@ -100,44 +89,113 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-  <script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyC-hy3eteka35c3ZkLl7exTQ0nnFz9xhFU",
-    authDomain: "thh-merch-report.firebaseapp.com",
-    projectId: "thh-merch-report",
-    storageBucket: "thh-merch-report.appspot.com",
-    messagingSenderId: "214148544505",
-    appId: "1:214148544505:web:ef4889d43b8189f5146f28"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
 
-  // ADD THIS FUNCTION:
-  async function addPending() {
-    const vin = document.getElementById("vin").value.trim().toUpperCase();
-    const stock = document.getElementById("stock").value.trim().toUpperCase();
-    const make = document.getElementById("make").value.trim();
-    const model = document.getElementById("model").value.trim();
-    const year = document.getElementById("year").value;
-    const comment = document.getElementById("comment").value.trim();
-    const date = new Date().toISOString().split("T")[0];
-
-    if (!vin || !stock || !make || !model || !year) {
-      alert("Please fill all fields.");
-      return;
+    async function addPending() {
+      const vin = document.getElementById("vin").value.trim().toUpperCase();
+      const stock = document.getElementById("stock").value.trim().toUpperCase();
+      const make = document.getElementById("make").value.trim();
+      const model = document.getElementById("model").value.trim();
+      const year = document.getElementById("year").value;
+      const comment = document.getElementById("comment").value.trim();
+      const date = new Date().toISOString().split("T")[0];
+      if (!vin || !stock || !make || !model || !year) return alert("Fill all fields");
+      await db.collection("pending_vehicles").add({ vin, stock, make, model, year, comment, date });
+      document.getElementById("vin").value = "";
+      document.getElementById("stock").value = "";
+      document.getElementById("make").value = "";
+      document.getElementById("model").value = "";
+      document.getElementById("year").value = "";
+      document.getElementById("comment").value = "";
     }
 
-    await db.collection("pending_vehicles").add({
-      vin, stock, make, model, year, comment, date
+    function renderPending() {
+      db.collection("pending_vehicles").onSnapshot(snapshot => {
+        const tbody = document.getElementById("pendingTable");
+        tbody.innerHTML = "";
+        snapshot.forEach(doc => {
+          const d = doc.data();
+          const row = document.createElement("tr");
+          row.innerHTML = \`
+            <td class="border px-2 py-1">\${d.vin}</td>
+            <td class="border px-2 py-1">\${d.stock}</td>
+            <td class="border px-2 py-1">\${d.make}</td>
+            <td class="border px-2 py-1">\${d.model}</td>
+            <td class="border px-2 py-1">\${d.year}</td>
+            <td class="border px-2 py-1">\${d.date}</td>
+            <td class="border px-2 py-1">\${d.comment || ""}</td>
+            <td class="border px-2 py-1 text-green-600 font-bold cursor-pointer" onclick="markComplete('\${doc.id}', \${JSON.stringify(d)})">✔️</td>
+          \`;
+          tbody.appendChild(row);
+        });
+      });
+    }
+
+    async function markComplete(id, data) {
+      const detailed = confirm("Is the car detailed?") ? "Yes" : "No";
+      const photoType = confirm("Full photos taken?") ? "Full Photos" : "Half Photos";
+      await db.collection("vehicles").add({ ...data, detailed, photoType });
+      await db.collection("pending_vehicles").doc(id).delete();
+    }
+
+    function renderCompleted() {
+      db.collection("vehicles").onSnapshot(snapshot => {
+        const table = document.getElementById("completedTable");
+        table.innerHTML = "";
+        snapshot.forEach(doc => {
+          const d = doc.data();
+          const daysOld = Math.floor((new Date() - new Date(d.date)) / (1000 * 60 * 60 * 24));
+          let style = "";
+          if (d.photoType === "Half Photos") {
+            if (daysOld > 15) style = "bg-red-600 text-yellow-200";
+            else if (daysOld > 7) style = "bg-orange-400 text-black";
+          }
+          const row = document.createElement("tr");
+          row.innerHTML = \`
+            <td class="border px-2 py-1">\${d.vin}</td>
+            <td class="border px-2 py-1 font-bold \${style}">\${d.stock}</td>
+            <td class="border px-2 py-1">\${d.make}</td>
+            <td class="border px-2 py-1">\${d.model}</td>
+            <td class="border px-2 py-1">\${d.year}</td>
+            <td class="border px-2 py-1">\${d.date}</td>
+            <td class="border px-2 py-1">\${d.detailed}</td>
+            <td class="border px-2 py-1">\${d.photoType}</td>
+            <td class="border px-2 py-1">\${d.comment}</td>
+            <td class="border px-2 py-1 space-x-1">
+              <button class="text-blue-600" onclick="editComment('\${doc.id}', \${JSON.stringify(d)})">✏️</button>
+              <button class="text-red-600" onclick="deleteCompleted('\${doc.id}', \${JSON.stringify(d)})">🗑️</button>
+            </td>
+          \`;
+          table.appendChild(row);
+        });
+      });
+    }
+
+    function editComment(id, data) {
+      const newComment = prompt("Edit comment:", data.comment || "");
+      if (newComment !== null) {
+        db.collection("vehicles").doc(id).update({ comment: newComment });
+      }
+    }
+
+    let lastDeleted = null;
+    function deleteCompleted(id, data) {
+      if (confirm("Delete this entry?")) {
+        db.collection("vehicles").doc(id).delete();
+        lastDeleted = { id, data };
+        setTimeout(() => (lastDeleted = null), 5000);
+        alert("Deleted. You can undo for 5 seconds.");
+      }
+    }
+
+    document.getElementById("searchCompleted").addEventListener("input", function () {
+      const val = this.value.toLowerCase();
+      [...document.getElementById("completedTable").children].forEach(row => {
+        row.style.display = [...row.children].some(td => td.textContent.toLowerCase().includes(val)) ? "" : "none";
+      });
     });
 
-    document.getElementById("vin").value = "";
-    document.getElementById("stock").value = "";
-    document.getElementById("make").value = "";
-    document.getElementById("model").value = "";
-    document.getElementById("year").value = "";
-    document.getElementById("comment").value = "";
-  }
-</script>
+    renderPending();
+    renderCompleted();
+  </script>
 </body>
 </html>
