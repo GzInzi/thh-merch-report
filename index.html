@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>THH Merchandising Report</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -133,224 +133,49 @@
     function showToast(msg) { toast.textContent = msg; toast.style.display = 'block'; setTimeout(() => { toast.style.display = 'none'; }, 3000); }
 
     // Populate Year dropdowns
-    document.querySelectorAll('#year, #editYear').forEach(select => {
-      for (let y = 1990; y <= new Date().getFullYear(); y++) {
-        select.append(new Option(y, y));
-      }
-    });
+    document.querySelectorAll('#year, #editYear').forEach(select => { for (let y = 1990; y <= new Date().getFullYear(); y++) select.append(new Option(y, y)); });
 
-    // Data storage arrays
+    // Data arrays
     let pendingData = [], completedData = [];
 
-    // Add a pending vehicle
+    // Add Pending
     async function addPending() {
-      const vin = document.getElementById('vin').value.trim();
-      const stock = document.getElementById('stock').value.trim();
-      const make = document.getElementById('make').value.trim();
-      const model = document.getElementById('model').value.trim();
-      const year = document.getElementById('year').value;
-      const comment = document.getElementById('comment').value.trim();
-      const date = new Date().toISOString().split('T')[0];
-      if (!vin || !stock || !make || !model || !year) {
-        showToast('Please fill all required fields');
-        return;
-      }
-      showSpinner();
-      try {
-        await db.collection('pending_vehicles').add({ vin, stock, make, model, year, date, comment });
-        showToast('Vehicle added to pending list');
-        ['vin','stock','make','model','year','comment'].forEach(id => document.getElementById(id).value = '');
-      } catch (err) {
-        console.error(err);
-        showToast('Error adding vehicle');
-      } finally {
-        hideSpinner();
-      }
-    }
+      const vin=document.getElementById('vin').value.trim(),stock=document.getElementById('stock').value.trim(),make=document.getElementById('make').value.trim(),model=document.getElementById('model').value.trim(),year=document.getElementById('year').value,comment=document.getElementById('comment').value.trim(),date=new Date().toISOString().split('T')[0];
+      if(!vin||!stock||!make||!model||!year){showToast('Please fill all required fields');return;} showSpinner(); try{await db.collection('pending_vehicles').add({vin,stock,make,model,year,date,comment});showToast('Vehicle added to pending');['vin','stock','make','model','year','comment'].forEach(id=>document.getElementById(id).value='');}catch(err){console.error(err);showToast('Error adding vehicle');}finally{hideSpinner();}}
 
-    // Render pending table
-    function renderPending(data = pendingData) {
-      const tbody = document.getElementById('pendingTable'); tbody.innerHTML = '';
-      if (!data.length) {
-        tbody.innerHTML = '<tr><td colspan="8" class="p-4 text-center">No pending vehicles</td></tr>';
-        return;
-      }
-      data.forEach(doc => {
-        const d = doc.data;
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td class="p-2 border">${d.vin}</td>
-          <td class="p-2 border">${d.stock}</td>
-          <td class="p-2 border">${d.make}</td>
-          <td class="p-2 border">${d.model}</td>
-          <td class="p-2 border">${d.year}</td>
-          <td class="p-2 border">${d.date}</td>
-          <td class="p-2 border">${d.comment || '-'}</td>
-          <td class="p-2 border space-x-1">
-            <button onclick="markComplete('${doc.id}')}" class="bg-green-600 text-white px-2 py-1 rounded text-sm">Complete</button>
-            <button onclick="openEditModal('${doc.id}','pending_vehicles',pendingData.find(x => x.id === '${doc.id}').data)" class="bg-yellow-500 text-white px-2 py-1 rounded text-sm">Edit</button>
-            <button onclick="deleteEntry('${doc.id}','pending_vehicles')" class="bg-red-600 text-white px-2 py-1 rounded text-sm">Delete</button>
-          </td>
-        `;
-        tbody.appendChild(row);
-      });
-    }
+    // Render Pending
+    function renderPending(data=pendingData){const tbody=document.getElementById('pendingTable');tbody.innerHTML='';if(!data.length){tbody.innerHTML='<tr><td colspan="8" class="p-4 text-center">No pending vehicles</td></tr>';return;}data.forEach(doc=>{const d=doc.data;const row=document.createElement('tr');row.innerHTML=`<td class="p-2 border">${d.vin}</td><td class="p-2 border">${d.stock}</td><td class="p-2 border">${d.make}</td><td class="p-2 border">${d.model}</td><td class="p-2 border">${d.year}</td><td class="p-2 border">${d.date}</td><td class="p-2 border">${d.comment||'-'}</td><td class="p-2 border space-x-1"><button onclick="markComplete('${doc.id}')" class="bg-green-600 text-white px-2 py-1 rounded text-sm">Complete</button><button onclick="openEditModal('${doc.id}','pending_vehicles',pendingData.find(x=>x.id==='${doc.id}').data)" class="bg-yellow-500 text-white px-2 py-1 rounded text-sm">Edit</button><button onclick="deleteEntry('${doc.id}','pending_vehicles')" class="bg-red-600 text-white px-2 py-1 rounded text-sm">Delete</button></td>`;tbody.appendChild(row);});}
 
-    // Render completed table
-    function renderCompleted(data = completedData) {
-      const tbody = document.getElementById('completedTable'); tbody.innerHTML = '';
-      if (!data.length) {
-        tbody.innerHTML = '<tr><td colspan="10" class="p-4 text-center">No completed vehicles</td></tr>';
-        return;
-      }
-      data.forEach(doc => {
-        const d = doc.data;
-        const daysOld = Math.floor((new Date() - new Date(d.date)) / (1000 * 60 * 60 * 24));
-        let stockClass = '';
-        if (d.photoType === 'Half Photos') {
-          if (daysOld > 15) stockClass = 'bg-red-500 text-white';
-          else if (daysOld > 7) stockClass = 'bg-orange-300 text-orange-900';
-        }
-        const rowClass = d.isSold ? 'opacity-60 line-through' : '';
-        const row = document.createElement('tr');
-        row.className = rowClass;
-        row.innerHTML = `
-          <td class="p-2 border">${d.vin}</td>
-          <td class="p-2 border ${stockClass}">${d.stock}</td>
-          <td class="p-2 border">${d.make}</td>
-          <td class="p-2 border">${d.model}</td>
-          <td class="p-2 border">${d.year}</td>
-          <td class="p-2 border">${d.date}</td>
-          <td class="p-2 border">${d.detailed || '-'}</td>
-          <td class="p-2 border">${d.photoType || '-'}</td>
-          <td class="p-2 border">${d.comment || '-'}</td>
-          <td class="p-2 border space-x-1">
-            <button onclick="openEditModal('${doc.id}','vehicles',${JSON.stringify(doc.data)})" class="bg-yellow-500 text-white px-2 py-1 rounded text-sm">Edit</button>
-            <button onclick="deleteEntry('${doc.id}','vehicles')" class="bg-red-600 text-white px-2 py-1 rounded text-sm">Delete</button>
-            <button onclick="toggleSold('${doc.id}', ${d.isSold})" class="bg-purple-600 text-white px-2 py-1 rounded text-sm">${d.isSold ? 'Undo Sold' : 'Mark Sold'}</button>
-          </td>
-        `;
-        tbody.appendChild(row);
-      });
-    }
+    // Render Completed
+    function renderCompleted(data=completedData){const tbody=document.getElementById('completedTable');tbody.innerHTML='';if(!data.length){tbody.innerHTML='<tr><td colspan="10" class="p-4 text-center">No completed vehicles</td></tr>';return;}data.forEach(doc=>{const d=doc.data;const daysOld=Math.floor((new Date()-new Date(d.date))/(1000*60*60*24));let stockClass='';if(d.photoType==='Half Photos'){if(daysOld>15)stockClass='bg-red-500 text-white';else if(daysOld>7)stockClass='bg-orange-300 text-orange-900';}const rowClass=d.isSold?'opacity-60 line-through':'';const row=document.createElement('tr');row.className=rowClass;row.innerHTML=`<td class="p-2 border">${d.vin}</td><td class="p-2 border ${stockClass}">${d.stock}</td><td class="p-2 border">${d.make}</td><td class="p-2 border">${d.model}</td><td class="p-2 border">${d.year}</td><td class="p-2 border">${d.date}</td><td class="p-2 border">${d.detailed||'-'}</td><td class="p-2 border">${d.photoType||'-'}</td><td class="p-2 border">${d.comment||'-'}</td><td class="p-2 border space-x-1"><button onclick="openEditModal('${doc.id}','vehicles',completedData.find(x=>x.id==='${doc.id}').data)" class="bg-yellow-500 text-white px-2 py-1 rounded text-sm">Edit</button><button onclick="deleteEntry('${doc.id}','vehicles')" class="bg-red-600 text-white px-2 py-1 rounded text-sm">Delete</button><button onclick="toggleSold('${doc.id}',${d.isSold})" class="bg-purple-600 text-white px-2 py-1 rounded text-sm">${d.isSold?'Undo Sold':'Mark Sold'}</button></td>`;tbody.appendChild(row);});}
 
-    // Open edit modal
-    function openEditModal(id, collection, data) {
-      document.getElementById('editId').value = id;
-      document.getElementById('editCollection').value = collection;
-      document.getElementById('editVin').value = data.vin || '';
-      document.getElementById('editStock').value = data.stock || '';
-      document.getElementById('editMake').value = data.make || '';
-      document.getElementById('editModel').value = data.model || '';
-      document.getElementById('editYear').value = data.year || '';
-      document.getElementById('editDate').value = data.date || '';
-      document.getElementById('editDetailed').value = data.detailed || '';
-      document.getElementById('editPhotoType').value = data.photoType || '';
-      document.getElementById('editComment').value = data.comment || '';
-      document.getElementById('editModal').style.display = 'flex';
-    }
+    // Open Edit Modal
+    function openEditModal(id,collection,data){document.getElementById('editId').value=id;document.getElementById('editCollection').value=collection;document.getElementById('editVin').value=data.vin||'';document.getElementById('editStock').value=data.stock||'';document.getElementById('editMake').value=data.make||'';document.getElementById('editModel').value=data.model||'';document.getElementById('editYear').value=data.year||'';document.getElementById('editDate').value=data.date||'';document.getElementById('editDetailed').value=data.detailed||'';document.getElementById('editPhotoType').value=data.photoType||'';document.getElementById('editComment').value=data.comment||'';document.getElementById('editModal').style.display='flex';}
 
-    // Close edit modal
-    function closeModal() {
-      document.getElementById('editModal').style.display = 'none';
-    }
+    // Close Modal
+    function closeModal(){document.getElementById('editModal').style.display='none';}
 
-    // Save edits
-    async function saveEdit() {
-      const id = document.getElementById('editId').value;
-      const collection = document.getElementById('editCollection').value;
-      const updated = {
-        vin: document.getElementById('editVin').value.trim(),
-        stock: document.getElementById('editStock').value.trim(),
-        make: document.getElementById('editMake').value.trim(),
-        model: document.getElementById('editModel').value.trim(),
-        year: document.getElementById('editYear').value,
-        date: document.getElementById('editDate').value,
-        comment: document.getElementById('editComment').value.trim()
-      };
-      if (collection === 'vehicles') {
-        updated.detailed = document.getElementById('editDetailed').value;
-        updated.photoType = document.getElementById('editPhotoType').value;
-      }
-      try {
-        await db.collection(collection).doc(id).update(updated);
-        showToast('Entry updated');
-        closeModal();
-      } catch (err) {
-        console.error(err);
-        showToast('Error updating entry');
-      }
-    }
+    // Save Edit
+    async function saveEdit(){const id=document.getElementById('editId').value,collection=document.getElementById('editCollection').value,updated={vin:document.getElementById('editVin').value.trim(),stock:document.getElementById('editStock').value.trim(),make:document.getElementById('editMake').value.trim(),model:document.getElementById('editModel').value.trim(),year:document.getElementById('editYear').value,date:document.getElementById('editDate').value,comment:document.getElementById('editComment').value.trim()};if(collection==='vehicles'){updated.detailed=document.getElementById('editDetailed').value;updated.photoType=document.getElementById('editPhotoType').value;}try{await db.collection(collection).doc(id).update(updated);showToast('Entry updated');closeModal();}catch(err){console.error(err);showToast('Error updating entry');}}
 
-    // Mark complete from pending to vehicles
-    async function markComplete(id) {
-      const entry = pendingData.find(x => x.id === id).data;
-      const detailed = confirm('Is the car detailed?') ? 'Yes' : 'No';
-      const photoType = confirm('Full photos taken?') ? 'Full Photos' : 'Half Photos';
-      showSpinner();
-      try {
-        await db.collection('vehicles').add({ ...entry, detailed, photoType, isSold: false });
-        await db.collection('pending_vehicles').doc(id).delete();
-        showToast('Vehicle marked complete');
-      } catch (err) {
-        console.error(err);
-        showToast('Error marking complete');
-      } finally {
-        hideSpinner();
-      }
-    }
+    // Mark Complete
+    async function markComplete(id){const entry=pendingData.find(x=>x.id===id).data;const detailed=confirm('Is the car detailed?')?'Yes':'No';const photoType=confirm('Full photos taken?')?'Full Photos':'Half Photos';showSpinner();try{await db.collection('vehicles').add({...entry,detailed,photoType,isSold:false});await db.collection('pending_vehicles').doc(id).delete();showToast('Vehicle marked complete');}catch(err){console.error(err);showToast('Error marking complete');}finally{hideSpinner();}}
 
-    // Delete entry
-    async function deleteEntry(id, collection) {
-      if (!confirm('Are you sure?')) return;
-      showSpinner();
-      try {
-        await db.collection(collection).doc(id).delete();
-        showToast('Entry deleted');
-      } catch (err) {
-        console.error(err);
-        showToast('Error deleting entry');
-      } finally {
-        hideSpinner();
-      }
-    }
+    // Delete Entry
+    async function deleteEntry(id,collection){if(!confirm('Are you sure?'))return;showSpinner();try{await db.collection(collection).doc(id).delete();showToast('Entry deleted');}catch(err){console.error(err);showToast('Error deleting entry');}finally{hideSpinner();}}
 
-    // Toggle sold status
-    async function toggleSold(id, current) {
-      showSpinner();
-      try {
-        await db.collection('vehicles').doc(id).update({ isSold: !current });
-        showToast(current ? 'Sold undone' : 'Marked sold');
-      } catch (err) {
-        console.error(err);
-        showToast('Error updating sold');
-      } finally {
-        hideSpinner();
-      }
-    }
+    // Toggle Sold
+    async function toggleSold(id,current){showSpinner();try{await db.collection('vehicles').doc(id).update({isSold:!current});showToast(current?'Sold undone':'Marked sold');}catch(err){console.error(err);showToast('Error updating sold');}finally{hideSpinner();}}
 
-    // Filter completed list
-    document.getElementById('searchCompleted').addEventListener('input', e => {
-      const val = e.target.value.toLowerCase();
-      const filtered = completedData.filter(x => {
-        const d = x.data;
-        return [d.vin, d.stock, d.make, d.model].some(f => f.toLowerCase().includes(val));
-      });
-      renderCompleted(filtered);
-    });
+    // Search Completed
+    document.getElementById('searchCompleted').addEventListener('input',e=>{const val=e.target.value.toLowerCase();const filtered=completedData.filter(x=>{const d=x.data;return[d.vin,d.stock,d.make,d.model].some(f=>f.toLowerCase().includes(val));});renderCompleted(filtered);});
 
-    // Firestore listeners
-    db.collection('pending_vehicles').onSnapshot(snap => {
-      pendingData = snap.docs.map(d => ({ id: d.id, data: d.data() }));
-      renderPending();
-    });
-    db.collection('vehicles').onSnapshot(snap => {
-      completedData = snap.docs.map(d => ({ id: d.id, data: d.data() }));
-      renderCompleted();
-    });
+    // Firestore Listeners
+    db.collection('pending_vehicles').onSnapshot(snap=>{pendingData=snap.docs.map(d=>({id:d.id,data:d.data()}));renderPending();});
+    db.collection('vehicles').onSnapshot(snap=>{completedData=snap.docs.map(d=>({id:d.id,data:d.data()}));renderCompleted();});
 
-    // Hook saveEditBtn
-    document.getElementById('saveEditBtn').addEventListener('click', saveEdit);
+    // Hook Save Edit Button
+    document.getElementById('saveEditBtn').addEventListener('click',saveEdit);
   </script>
 </body>
 </html>
