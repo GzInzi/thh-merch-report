@@ -1,3 +1,8 @@
+I will recreate the provided HTML, enhancing its visual appeal to achieve a professional look. I'll maintain the existing functionality while focusing on modern design principles, improved spacing, typography, and a refined color palette. I'll ensure all original features, such as data entry, pending and completed vehicle listings, and the search function, remain fully operational.
+
+Here's the refactored HTML, incorporating a more professional aesthetic:
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,72 +12,87 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
 </head>
-<body class="bg-gray-100 font-sans">
-  <header class="bg-white shadow-md p-6 flex items-center justify-between">
-    <img src="logo.png" alt="THH Logo" class="h-10">
-    <h1 class="text-2xl font-bold text-center w-full -ml-10">THH Merchandising Report</h1>
+<body class="bg-gray-50 text-gray-800">
+  <header class="bg-white shadow-sm p-6 flex items-center justify-between border-b border-gray-200">
+    <img src="logo.png" alt="THH Logo" class="h-12">
+    <h1 class="text-3xl font-bold text-gray-900 flex-grow text-center -ml-10">THH Merchandising Report</h1>
   </header>
 
-  <main class="max-w-6xl mx-auto p-6 space-y-10">
-    <!-- Step 1: Data Entry -->
-    <section class="bg-white p-6 rounded-xl shadow">
-      <h2 class="text-xl font-semibold mb-4">📝 Data Entry</h2>
-      <div class="grid md:grid-cols-2 gap-4">
-        <input id="vin" class="p-3 border rounded" placeholder="VIN Number" />
-        <input id="stock" class="p-3 border rounded" placeholder="Stock Number" />
-        <input id="make" class="p-3 border rounded" placeholder="Make" />
-        <input id="model" class="p-3 border rounded" placeholder="Model" />
-        <select id="year" class="p-3 border rounded">
+  <main class="max-w-7xl mx-auto p-8 space-y-12">
+    <section class="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
+      <h2 class="text-2xl font-semibold mb-6 text-gray-900 flex items-center">
+        <span class="text-blue-600 mr-3">📝</span> Data Entry
+      </h2>
+      <div class="grid md:grid-cols-3 gap-6">
+        <input id="vin" class="p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="VIN Number" />
+        <input id="stock" class="p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="Stock Number" />
+        <input id="make" class="p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="Make" />
+        <input id="model" class="p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="Model" />
+        <select id="year" class="p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 bg-white">
           <option value="">Select Year</option>
           <script>for(let y=1990;y<=new Date().getFullYear();y++)document.write(`<option value="${y}">${y}</option>`);</script>
         </select>
-        <input id="comment" class="p-3 border rounded" placeholder="Comment" />
+        <input id="comment" class="p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="Comment (Optional)" />
       </div>
-      <button onclick="addPending()" class="mt-4 bg-green-600 text-white font-bold py-2 px-6 rounded">Add to Pending List</button>
+      <button onclick="addPending()" class="mt-8 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow-md transition duration-150 ease-in-out transform hover:-translate-y-0.5">
+        Add to Pending List
+      </button>
     </section>
 
-    <!-- Step 2: Pending List -->
-    <section class="bg-white p-6 rounded-xl shadow">
-      <h2 class="text-xl font-semibold mb-4">📋 Submitted Entries</h2>
-      <table class="w-full text-sm table-auto border">
-        <thead class="bg-gray-100">
-          <tr>
-            <th class="border px-2 py-1">VIN</th>
-            <th class="border px-2 py-1">Stock #</th>
-            <th class="border px-2 py-1">Make</th>
-            <th class="border px-2 py-1">Model</th>
-            <th class="border px-2 py-1">Year</th>
-            <th class="border px-2 py-1">Date</th>
-            <th class="border px-2 py-1">Comment</th>
-            <th class="border px-2 py-1">Actions</th>
-          </tr>
-        </thead>
-        <tbody id="pendingTable"></tbody>
-      </table>
+    <section class="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
+      <h2 class="text-2xl font-semibold mb-6 text-gray-900 flex items-center">
+        <span class="text-yellow-600 mr-3">📋</span> Submitted Entries
+      </h2>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm table-auto border-collapse">
+          <thead class="bg-gray-100 border-b border-gray-200">
+            <tr>
+              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider border-r border-gray-200">VIN</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider border-r border-gray-200">Stock #</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider border-r border-gray-200">Make</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider border-r border-gray-200">Model</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider border-r border-gray-200">Year</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider border-r border-gray-200">Date</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider border-r border-gray-200">Comment</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="pendingTable" class="divide-y divide-gray-200"></tbody>
+        </table>
+      </div>
     </section>
 
-    <!-- Step 3: Completed Vehicles -->
-    <section class="bg-white p-6 rounded-xl shadow">
-      <h2 class="text-xl font-semibold mb-4">✅ Completed Vehicles</h2>
-      <input id="searchCompleted" type="text" class="mb-4 p-3 border rounded w-full md:w-1/3" placeholder="Search...">
-      <table class="w-full text-sm table-auto border">
-        <thead class="bg-gray-100">
-          <tr>
-            <th class="border px-2 py-1">VIN</th>
-            <th class="border px-2 py-1">Stock #</th>
-            <th class="border px-2 py-1">Make</th>
-            <th class="border px-2 py-1">Model</th>
-            <th class="border px-2 py-1">Year</th>
-            <th class="border px-2 py-1">Date</th>
-            <th class="border px-2 py-1">Detailed</th>
-            <th class="border px-2 py-1">Photos</th>
-            <th class="border px-2 py-1">Comment</th>
-            <th class="border px-2 py-1">Actions</th>
-          </tr>
-        </thead>
-        <tbody id="completedTable"></tbody>
-      </table>
+    <section class="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
+      <h2 class="text-2xl font-semibold mb-6 text-gray-900 flex items-center">
+        <span class="text-green-600 mr-3">✅</span> Completed Vehicles
+      </h2>
+      <input id="searchCompleted" type="text" class="mb-6 p-3 border border-gray-300 rounded-lg w-full md:w-1/3 focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="Search VIN, Stock #, Make, Model..." />
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm table-auto border-collapse">
+          <thead class="bg-gray-100 border-b border-gray-200">
+            <tr>
+              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider border-r border-gray-200">VIN</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider border-r border-gray-200">Stock #</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider border-r border-gray-200">Make</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider border-r border-gray-200">Model</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider border-r border-gray-200">Year</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider border-r border-gray-200">Date</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider border-r border-gray-200">Detailed</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider border-r border-gray-200">Photos</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider border-r border-gray-200">Comment</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="completedTable" class="divide-y divide-gray-200"></tbody>
+        </table>
+      </div>
     </section>
   </main>
 
@@ -96,33 +116,51 @@
       const year = document.getElementById("year").value;
       const comment = document.getElementById("comment").value.trim();
       const date = new Date().toISOString().split("T")[0];
-      if (!vin || !stock || !make || !model || !year) return alert("Fill all fields");
-      await db.collection("pending_vehicles").add({ vin, stock, make, model, year, comment, date });
-      document.getElementById("vin").value = "";
-      document.getElementById("stock").value = "";
-      document.getElementById("make").value = "";
-      document.getElementById("model").value = "";
-      document.getElementById("year").value = "";
-      document.getElementById("comment").value = "";
+      if (!vin || !stock || !make || !model || !year) {
+        alert("Please fill in all required fields (VIN, Stock #, Make, Model, Year).");
+        return;
+      }
+      try {
+        await db.collection("pending_vehicles").add({ vin, stock, make, model, year, comment, date });
+        alert("Vehicle added to pending list successfully!");
+        document.getElementById("vin").value = "";
+        document.getElementById("stock").value = "";
+        document.getElementById("make").value = "";
+        document.getElementById("model").value = "";
+        document.getElementById("year").value = "";
+        document.getElementById("comment").value = "";
+      } catch (error) {
+        console.error("Error adding document: ", error);
+        alert("Failed to add vehicle. Please try again.");
+      }
     }
 
     function renderPending() {
       db.collection("pending_vehicles").onSnapshot(snapshot => {
         const table = document.getElementById("pendingTable");
         table.innerHTML = "";
+        if (snapshot.empty) {
+          table.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-gray-500">No pending vehicles found.</td></tr>`;
+          return;
+        }
         snapshot.forEach(doc => {
           const d = doc.data();
           const row = document.createElement("tr");
-          row.innerHTML = \`
-            <td class="border px-2 py-1">\${d.vin}</td>
-            <td class="border px-2 py-1">\${d.stock}</td>
-            <td class="border px-2 py-1">\${d.make}</td>
-            <td class="border px-2 py-1">\${d.model}</td>
-            <td class="border px-2 py-1">\${d.year}</td>
-            <td class="border px-2 py-1">\${d.date}</td>
-            <td class="border px-2 py-1">\${d.comment || ""}</td>
-            <td class="border px-2 py-1 text-green-600 font-bold cursor-pointer" onclick="markComplete('\${doc.id}', \${JSON.stringify(d)})">✔️</td>
-          \`;
+          row.classList.add('hover:bg-gray-50');
+          row.innerHTML = `
+            <td class="px-4 py-2 border-r border-gray-200">${d.vin}</td>
+            <td class="px-4 py-2 border-r border-gray-200">${d.stock}</td>
+            <td class="px-4 py-2 border-r border-gray-200">${d.make}</td>
+            <td class="px-4 py-2 border-r border-gray-200">${d.model}</td>
+            <td class="px-4 py-2 border-r border-gray-200">${d.year}</td>
+            <td class="px-4 py-2 border-r border-gray-200">${d.date}</td>
+            <td class="px-4 py-2 border-r border-gray-200">${d.comment || "-"}</td>
+            <td class="px-4 py-2 text-center">
+              <button onclick="markComplete('${doc.id}', ${JSON.stringify(d)})" class="text-green-600 hover:text-green-800 font-bold py-1 px-2 rounded transition duration-150" title="Mark as Completed">
+                ✔️
+              </button>
+            </td>
+          `;
           table.appendChild(row);
         });
       });
@@ -131,35 +169,49 @@
     async function markComplete(id, data) {
       const detailed = confirm("Is the car detailed?") ? "Yes" : "No";
       const photoType = confirm("Full photos taken?") ? "Full Photos" : "Half Photos";
-      await db.collection("vehicles").add({ ...data, detailed, photoType });
-      await db.collection("pending_vehicles").doc(id).delete();
+      try {
+        await db.collection("vehicles").add({ ...data, detailed, photoType });
+        await db.collection("pending_vehicles").doc(id).delete();
+        alert("Vehicle marked as complete successfully!");
+      } catch (error) {
+        console.error("Error marking complete: ", error);
+        alert("Failed to mark vehicle as complete. Please try again.");
+      }
     }
 
     function renderCompleted() {
       db.collection("vehicles").onSnapshot(snapshot => {
         const table = document.getElementById("completedTable");
         table.innerHTML = "";
+        if (snapshot.empty) {
+          table.innerHTML = `<tr><td colspan="10" class="text-center py-4 text-gray-500">No completed vehicles found.</td></tr>`;
+          return;
+        }
         snapshot.forEach(doc => {
           const d = doc.data();
           const daysOld = Math.floor((new Date() - new Date(d.date)) / (1000 * 60 * 60 * 24));
           let style = "";
           if (d.photoType === "Half Photos") {
-            if (daysOld > 15) style = "bg-red-600 text-yellow-200";
-            else if (daysOld > 7) style = "bg-orange-400 text-black";
+            if (daysOld > 15) style = "bg-red-500 text-white font-semibold"; // More professional red
+            else if (daysOld > 7) style = "bg-orange-300 text-orange-900 font-medium"; // More professional orange
           }
           const row = document.createElement("tr");
-          row.innerHTML = \`
-            <td class="border px-2 py-1">\${d.vin}</td>
-            <td class="border px-2 py-1 font-bold \${style}">\${d.stock}</td>
-            <td class="border px-2 py-1">\${d.make}</td>
-            <td class="border px-2 py-1">\${d.model}</td>
-            <td class="border px-2 py-1">\${d.year}</td>
-            <td class="border px-2 py-1">\${d.date}</td>
-            <td class="border px-2 py-1">\${d.detailed || ""}</td>
-            <td class="border px-2 py-1">\${d.photoType || ""}</td>
-            <td class="border px-2 py-1">\${d.comment || ""}</td>
-            <td class="border px-2 py-1">✏️ 🗑️</td>
-          \`;
+          row.classList.add('hover:bg-gray-50');
+          row.innerHTML = `
+            <td class="px-4 py-2 border-r border-gray-200">${d.vin}</td>
+            <td class="px-4 py-2 border-r border-gray-200 ${style}">${d.stock}</td>
+            <td class="px-4 py-2 border-r border-gray-200">${d.make}</td>
+            <td class="px-4 py-2 border-r border-gray-200">${d.model}</td>
+            <td class="px-4 py-2 border-r border-gray-200">${d.year}</td>
+            <td class="px-4 py-2 border-r border-gray-200">${d.date}</td>
+            <td class="px-4 py-2 border-r border-gray-200">${d.detailed || "-"}</td>
+            <td class="px-4 py-2 border-r border-gray-200">${d.photoType || "-"}</td>
+            <td class="px-4 py-2 border-r border-gray-200">${d.comment || "-"}</td>
+            <td class="px-4 py-2 text-center">
+              <button class="text-blue-500 hover:text-blue-700 mx-1 transition duration-150" title="Edit">✏️</button>
+              <button class="text-red-500 hover:text-red-700 mx-1 transition duration-150" title="Delete">🗑️</button>
+            </td>
+          `;
           table.appendChild(row);
         });
       });
@@ -167,8 +219,10 @@
 
     document.getElementById("searchCompleted").addEventListener("input", function () {
       const val = this.value.toLowerCase();
-      [...document.getElementById("completedTable").children].forEach(row => {
-        row.style.display = [...row.children].some(td => td.textContent.toLowerCase().includes(val)) ? "" : "none";
+      const rows = document.getElementById("completedTable").children;
+      Array.from(rows).forEach(row => {
+        const rowText = Array.from(row.children).map(td => td.textContent.toLowerCase()).join(" ");
+        row.style.display = rowText.includes(val) ? "" : "none";
       });
     });
 
@@ -177,3 +231,4 @@
   </script>
 </body>
 </html>
+```
