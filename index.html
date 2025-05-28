@@ -100,6 +100,44 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-  </script>
+  <script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyC-hy3eteka35c3ZkLl7exTQ0nnFz9xhFU",
+    authDomain: "thh-merch-report.firebaseapp.com",
+    projectId: "thh-merch-report",
+    storageBucket: "thh-merch-report.appspot.com",
+    messagingSenderId: "214148544505",
+    appId: "1:214148544505:web:ef4889d43b8189f5146f28"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  // ADD THIS FUNCTION:
+  async function addPending() {
+    const vin = document.getElementById("vin").value.trim().toUpperCase();
+    const stock = document.getElementById("stock").value.trim().toUpperCase();
+    const make = document.getElementById("make").value.trim();
+    const model = document.getElementById("model").value.trim();
+    const year = document.getElementById("year").value;
+    const comment = document.getElementById("comment").value.trim();
+    const date = new Date().toISOString().split("T")[0];
+
+    if (!vin || !stock || !make || !model || !year) {
+      alert("Please fill all fields.");
+      return;
+    }
+
+    await db.collection("pending_vehicles").add({
+      vin, stock, make, model, year, comment, date
+    });
+
+    document.getElementById("vin").value = "";
+    document.getElementById("stock").value = "";
+    document.getElementById("make").value = "";
+    document.getElementById("model").value = "";
+    document.getElementById("year").value = "";
+    document.getElementById("comment").value = "";
+  }
+</script>
 </body>
 </html>
