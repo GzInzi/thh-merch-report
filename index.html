@@ -15,9 +15,9 @@
   </header>
 
   <main class="p-8 space-y-12 max-w-screen-xl mx-auto">
-    <!-- Data Entry Section -->
+    <!-- STEP 1: Data Entry -->
     <section class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-      <h2 class="text-2xl font-semibold mb-6">📝 Data Entry</h2>
+      <h2 class="text-2xl font-semibold mb-6">📝 Data Entry (Pending List Form)</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <input id="vin" type="text" placeholder="VIN Number" class="p-3 border rounded-lg">
         <input id="stock" type="text" placeholder="Stock Number" class="p-3 border rounded-lg">
@@ -29,7 +29,7 @@
       <button onclick="addPending()" class="mt-4 bg-green-600 text-white font-bold py-2 px-6 rounded-lg">Add to Pending List</button>
     </section>
 
-    <!-- Pending List -->
+    <!-- STEP 2: Submitted Entries -->
     <section class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
       <h2 class="text-2xl font-semibold mb-6">📋 Submitted Entries</h2>
       <div class="overflow-x-auto">
@@ -51,10 +51,10 @@
       </div>
     </section>
 
-    <!-- Filters for Completed Vehicles -->
+    <!-- STEP 3: Completed Entries -->
     <section class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-      <h2 class="text-2xl font-semibold mb-6">🔍 Filter Completed Vehicles</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <h2 class="text-2xl font-semibold mb-6">✅ Completed Vehicles</h2>
+      <div class="flex gap-4 mb-4">
         <select id="filterDetailed" class="p-3 border rounded-lg">
           <option value="">Filter by Detailed</option>
           <option value="Yes">Yes</option>
@@ -65,12 +65,8 @@
           <option value="Full Photos">Full Photos</option>
           <option value="Half Photos">Half Photos</option>
         </select>
+        <input id="searchCompleted" type="text" placeholder="Search..." class="p-3 border rounded-lg flex-grow">
       </div>
-    </section>
-
-    <!-- Completed Vehicles -->
-    <section class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-      <h2 class="text-2xl font-semibold mb-6">✅ Completed Vehicles</h2>
       <div class="overflow-x-auto">
         <table class="w-full table-auto border text-sm">
           <thead class="bg-gray-100 text-xs uppercase text-gray-600">
