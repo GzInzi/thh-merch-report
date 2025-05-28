@@ -1,198 +1,356 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>THH Report</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>THH Merchandising Report</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <style>
-    #toast {
-      position: fixed;
-      bottom: 30px;
-      right: 30px;
-      background-color: #333;
-      color: #fff;
-      padding: 12px 24px;
-      border-radius: 8px;
-      display: none;
-      z-index: 9999;
-    }
-    #spinnerOverlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.3);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 9998;
-      display: none;
-    }
-    .spinner {
-      border: 8px solid #f3f3f3;
-      border-top: 8px solid #3498db;
-      border-radius: 50%;
-      width: 60px;
-      height: 60px;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
+    /* Spinner styles */
+    #spinnerOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); align-items: center; justify-content: center; z-index: 1000; }
+    .spinner { border: 8px solid #f3f3f3; border-top: 8px solid #3498db; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    /* Toast styles */
+    #toast { display: none; position: fixed; bottom: 20px; right: 20px; background: #333; color: #fff; padding: 12px 20px; border-radius: 8px; z-index:1001; }
+    /* Modal styles */
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); align-items: center; justify-content: center; z-index: 1002; }
+    .modal-content { background: #fff; padding: 20px; border-radius: 8px; width: 90%; max-width: 600px; }
+    .close-button { float: right; font-size: 24px; cursor: pointer; }
   </style>
 </head>
-<body class="bg-gray-100 text-gray-800">
+<body class="bg-gray-50 text-gray-800">
+  <!-- Toast Notification -->
   <div id="toast"></div>
-  <div id="spinnerOverlay">
-    <div class="spinner"></div>
-  </div>
+  <!-- Loading Spinner -->
+  <div id="spinnerOverlay" class="flex"><div class="spinner"></div></div>
 
-  <main class="max-w-5xl mx-auto p-6">
+  <header class="bg-white shadow p-4">
+    <h1 class="text-2xl font-bold">THH Merchandising Report</h1>
+  </header>
+
+  <main class="p-6 space-y-6 max-w-5xl mx-auto">
+    <!-- Data Entry -->
     <section class="bg-white p-6 rounded shadow">
-      <h2 class="text-xl font-semibold mb-4">Add Vehicle to Pending List</h2>
+      <h2 class="text-xl font-semibold mb-4">Data Entry</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <input id="vin" placeholder="VIN" class="border p-2 rounded">
-        <input id="stock" placeholder="Stock Number" class="border p-2 rounded">
-        <input id="make" placeholder="Make" class="border p-2 rounded">
-        <input id="model" placeholder="Model" class="border p-2 rounded">
-        <select id="year" class="border p-2 rounded">
-          <option value="">Year</option>
-          <script>for(let y=1990;y<=new Date().getFullYear();y++)document.write(`<option value="${y}">${y}</option>`);</script>
-        </select>
-        <input id="comment" placeholder="Comment" class="border p-2 rounded">
+        <input id="vin" placeholder="VIN Number" class="border p-2 rounded" />
+        <input id="stock" placeholder="Stock Number" class="border p-2 rounded" />
+        <input id="make" placeholder="Make" class="border p-2 rounded" />
+        <input id="model" placeholder="Model" class="border p-2 rounded" />
+        <select id="year" class="border p-2 rounded"><option value="">Year</option></select>
+        <input id="comment" placeholder="Comment (Optional)" class="border p-2 rounded" />
       </div>
-      <button onclick="addPending()" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded">Add</button>
+      <button onclick="addPending()" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded">Add to Pending</button>
     </section>
 
-    <section class="mt-10 bg-white p-6 rounded shadow">
+    <!-- Pending Vehicles -->
+    <section class="bg-white p-6 rounded shadow">
       <h2 class="text-xl font-semibold mb-4">Pending Vehicles</h2>
-      <table class="w-full table-auto border">
-        <thead>
-          <tr class="bg-gray-200">
-            <th class="p-2 border">VIN</th>
-            <th class="p-2 border">Stock</th>
-            <th class="p-2 border">Make</th>
-            <th class="p-2 border">Model</th>
-            <th class="p-2 border">Year</th>
-            <th class="p-2 border">Comment</th>
-            <th class="p-2 border">Actions</th>
-          </tr>
-        </thead>
-        <tbody id="pendingTable"></tbody>
-      </table>
+      <div class="overflow-x-auto">
+        <table class="min-w-full border-collapse">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="p-2 border">VIN</th>
+              <th class="p-2 border">Stock</th>
+              <th class="p-2 border">Make</th>
+              <th class="p-2 border">Model</th>
+              <th class="p-2 border">Year</th>
+              <th class="p-2 border">Date</th>
+              <th class="p-2 border">Comment</th>
+              <th class="p-2 border">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="pendingTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Completed Vehicles -->
+    <section class="bg-white p-6 rounded shadow">
+      <h2 class="text-xl font-semibold mb-4">Completed Vehicles</h2>
+      <input id="searchCompleted" type="text" placeholder="Search VIN, Stock, Make..." class="mb-4 border p-2 rounded w-full" />
+      <div class="overflow-x-auto">
+        <table class="min-w-full border-collapse">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="p-2 border">VIN</th>
+              <th class="p-2 border">Stock</th>
+              <th class="p-2 border">Make</th>
+              <th class="p-2 border">Model</th>
+              <th class="p-2 border">Year</th>
+              <th class="p-2 border">Date</th>
+              <th class="p-2 border">Detailed</th>
+              <th class="p-2 border">Photos</th>
+              <th class="p-2 border">Comment</th>
+              <th class="p-2 border">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="completedTable"></tbody>
+        </table>
+      </div>
     </section>
   </main>
 
+  <!-- Edit Modal -->
+  <div id="editModal" class="modal flex">
+    <div class="modal-content">
+      <span class="close-button" onclick="closeModal()">&times;</span>
+      <h3 class="text-xl font-semibold mb-4">Edit Vehicle Entry</h3>
+      <input type="hidden" id="editId" />
+      <input type="hidden" id="editCollection" />
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <input id="editVin" placeholder="VIN Number" class="border p-2 rounded" />
+        <input id="editStock" placeholder="Stock Number" class="border p-2 rounded" />
+        <input id="editMake" placeholder="Make" class="border p-2 rounded" />
+        <input id="editModel" placeholder="Model" class="border p-2 rounded" />
+        <select id="editYear" class="border p-2 rounded"><option value="">Year</option></select>
+        <input id="editDate" type="date" class="border p-2 rounded" />
+        <select id="editDetailed" class="border p-2 rounded"><option value="">Detailed?</option><option value="Yes">Yes</option><option value="No">No</option></select>
+        <select id="editPhotoType" class="border p-2 rounded"><option value="">Photos?</option><option value="Full Photos">Full Photos</option><option value="Half Photos">Half Photos</option></select>
+      </div>
+      <textarea id="editComment" placeholder="Comment" class="border p-2 rounded w-full mb-4" rows="3"></textarea>
+      <button id="saveEditBtn" class="bg-blue-600 text-white px-4 py-2 rounded">Save Changes</button>
+    </div>
+  </div>
+
   <script>
+    // Initialize Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyC-hy3eteka35c3ZkLl7exTQ0nnFz9xhFU",
       authDomain: "thh-merch-report.firebaseapp.com",
-      projectId: "thh-merch-report",
-      storageBucket: "thh-merch-report.appspot.com",
-      messagingSenderId: "214148544505",
-      appId: "1:214148544505:web:ef4889d43b8189f5146f28"
+      projectId: "thh-merch-report"
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    const toast = document.getElementById("toast");
-    const spinner = document.getElementById("spinnerOverlay");
+    // UI helpers
+    const spinner = document.getElementById('spinnerOverlay');
+    const toast = document.getElementById('toast');
+    function showSpinner() { spinner.style.display = 'flex'; }
+    function hideSpinner() { spinner.style.display = 'none'; }
+    function showToast(msg) { toast.textContent = msg; toast.style.display = 'block'; setTimeout(() => { toast.style.display = 'none'; }, 3000); }
 
-    function showToast(message) {
-      toast.textContent = message;
-      toast.style.display = "block";
-      setTimeout(() => { toast.style.display = "none"; }, 3000);
-    }
+    // Populate Year dropdowns
+    document.querySelectorAll('#year, #editYear').forEach(select => {
+      for (let y = 1990; y <= new Date().getFullYear(); y++) {
+        select.append(new Option(y, y));
+      }
+    });
 
-    function showSpinner() {
-      spinner.style.display = "flex";
-    }
+    // Data storage arrays
+    let pendingData = [], completedData = [];
 
-    function hideSpinner() {
-      spinner.style.display = "none";
-    }
-
+    // Add a pending vehicle
     async function addPending() {
-      const vin = document.getElementById("vin").value.trim();
-      const stock = document.getElementById("stock").value.trim();
-      const make = document.getElementById("make").value.trim();
-      const model = document.getElementById("model").value.trim();
-      const year = document.getElementById("year").value;
-      const comment = document.getElementById("comment").value.trim();
-
+      const vin = document.getElementById('vin').value.trim();
+      const stock = document.getElementById('stock').value.trim();
+      const make = document.getElementById('make').value.trim();
+      const model = document.getElementById('model').value.trim();
+      const year = document.getElementById('year').value;
+      const comment = document.getElementById('comment').value.trim();
+      const date = new Date().toISOString().split('T')[0];
       if (!vin || !stock || !make || !model || !year) {
-        showToast("Fill all required fields");
+        showToast('Please fill all required fields');
         return;
       }
-
       showSpinner();
-
       try {
-        await db.collection("pending_vehicles").add({ vin, stock, make, model, year, comment });
-        showToast("Vehicle added to pending list");
-        document.getElementById("vin").value = "";
-        document.getElementById("stock").value = "";
-        document.getElementById("make").value = "";
-        document.getElementById("model").value = "";
-        document.getElementById("year").value = "";
-        document.getElementById("comment").value = "";
-      } catch (error) {
-        showToast("Error adding vehicle");
-        console.error(error);
+        await db.collection('pending_vehicles').add({ vin, stock, make, model, year, date, comment });
+        showToast('Vehicle added to pending list');
+        ['vin','stock','make','model','year','comment'].forEach(id => document.getElementById(id).value = '');
+      } catch (err) {
+        console.error(err);
+        showToast('Error adding vehicle');
       } finally {
         hideSpinner();
       }
     }
 
-    db.collection("pending_vehicles").onSnapshot(snapshot => {
-      const table = document.getElementById("pendingTable");
-      table.innerHTML = "";
-      snapshot.forEach(doc => {
-        const d = doc.data();
-        const row = document.createElement("tr");
+    // Render pending table
+    function renderPending(data = pendingData) {
+      const tbody = document.getElementById('pendingTable'); tbody.innerHTML = '';
+      if (!data.length) {
+        tbody.innerHTML = '<tr><td colspan="8" class="p-4 text-center">No pending vehicles</td></tr>';
+        return;
+      }
+      data.forEach(doc => {
+        const d = doc.data;
+        const row = document.createElement('tr');
         row.innerHTML = `
-          <td class='p-2 border'>${d.vin}</td>
-          <td class='p-2 border'>${d.stock}</td>
-          <td class='p-2 border'>${d.make}</td>
-          <td class='p-2 border'>${d.model}</td>
-          <td class='p-2 border'>${d.year}</td>
-          <td class='p-2 border'>${d.comment || "-"}</td>
-          <td class='p-2 border space-x-1'>
-            <button onclick="markComplete('${doc.id}', ${JSON.stringify(d).replace(/"/g, '&quot;')})" class='bg-green-500 text-white px-2 py-1 rounded text-sm'>Complete</button>
-            <button onclick="editEntry('${doc.id}')" class='bg-yellow-500 text-white px-2 py-1 rounded text-sm'>Edit</button>
-            <button onclick="deleteEntry('${doc.id}')" class='bg-red-600 text-white px-2 py-1 rounded text-sm'>Delete</button>
+          <td class="p-2 border">${d.vin}</td>
+          <td class="p-2 border">${d.stock}</td>
+          <td class="p-2 border">${d.make}</td>
+          <td class="p-2 border">${d.model}</td>
+          <td class="p-2 border">${d.year}</td>
+          <td class="p-2 border">${d.date}</td>
+          <td class="p-2 border">${d.comment || '-'}</td>
+          <td class="p-2 border space-x-1">
+            <button onclick="markComplete('${doc.id}')}" class="bg-green-600 text-white px-2 py-1 rounded text-sm">Complete</button>
+            <button onclick="openEditModal('${doc.id}','pending_vehicles',pendingData.find(x => x.id === '${doc.id}').data)" class="bg-yellow-500 text-white px-2 py-1 rounded text-sm">Edit</button>
+            <button onclick="deleteEntry('${doc.id}','pending_vehicles')" class="bg-red-600 text-white px-2 py-1 rounded text-sm">Delete</button>
           </td>
         `;
-        table.appendChild(row);
+        tbody.appendChild(row);
       });
-    });
+    }
 
-    async function deleteEntry(id) {
-      if (confirm("Delete this vehicle?")) {
-        showSpinner();
-        try {
-          await db.collection("pending_vehicles").doc(id).delete();
-          showToast("Entry deleted");
-        } catch (error) {
-          showToast("Delete failed");
-        } finally {
-          hideSpinner();
+    // Render completed table
+    function renderCompleted(data = completedData) {
+      const tbody = document.getElementById('completedTable'); tbody.innerHTML = '';
+      if (!data.length) {
+        tbody.innerHTML = '<tr><td colspan="10" class="p-4 text-center">No completed vehicles</td></tr>';
+        return;
+      }
+      data.forEach(doc => {
+        const d = doc.data;
+        const daysOld = Math.floor((new Date() - new Date(d.date)) / (1000 * 60 * 60 * 24));
+        let stockClass = '';
+        if (d.photoType === 'Half Photos') {
+          if (daysOld > 15) stockClass = 'bg-red-500 text-white';
+          else if (daysOld > 7) stockClass = 'bg-orange-300 text-orange-900';
         }
+        const rowClass = d.isSold ? 'opacity-60 line-through' : '';
+        const row = document.createElement('tr');
+        row.className = rowClass;
+        row.innerHTML = `
+          <td class="p-2 border">${d.vin}</td>
+          <td class="p-2 border ${stockClass}">${d.stock}</td>
+          <td class="p-2 border">${d.make}</td>
+          <td class="p-2 border">${d.model}</td>
+          <td class="p-2 border">${d.year}</td>
+          <td class="p-2 border">${d.date}</td>
+          <td class="p-2 border">${d.detailed || '-'}</td>
+          <td class="p-2 border">${d.photoType || '-'}</td>
+          <td class="p-2 border">${d.comment || '-'}</td>
+          <td class="p-2 border space-x-1">
+            <button onclick="openEditModal('${doc.id}','vehicles',${JSON.stringify(doc.data)})" class="bg-yellow-500 text-white px-2 py-1 rounded text-sm">Edit</button>
+            <button onclick="deleteEntry('${doc.id}','vehicles')" class="bg-red-600 text-white px-2 py-1 rounded text-sm">Delete</button>
+            <button onclick="toggleSold('${doc.id}', ${d.isSold})" class="bg-purple-600 text-white px-2 py-1 rounded text-sm">${d.isSold ? 'Undo Sold' : 'Mark Sold'}</button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    // Open edit modal
+    function openEditModal(id, collection, data) {
+      document.getElementById('editId').value = id;
+      document.getElementById('editCollection').value = collection;
+      document.getElementById('editVin').value = data.vin || '';
+      document.getElementById('editStock').value = data.stock || '';
+      document.getElementById('editMake').value = data.make || '';
+      document.getElementById('editModel').value = data.model || '';
+      document.getElementById('editYear').value = data.year || '';
+      document.getElementById('editDate').value = data.date || '';
+      document.getElementById('editDetailed').value = data.detailed || '';
+      document.getElementById('editPhotoType').value = data.photoType || '';
+      document.getElementById('editComment').value = data.comment || '';
+      document.getElementById('editModal').style.display = 'flex';
+    }
+
+    // Close edit modal
+    function closeModal() {
+      document.getElementById('editModal').style.display = 'none';
+    }
+
+    // Save edits
+    async function saveEdit() {
+      const id = document.getElementById('editId').value;
+      const collection = document.getElementById('editCollection').value;
+      const updated = {
+        vin: document.getElementById('editVin').value.trim(),
+        stock: document.getElementById('editStock').value.trim(),
+        make: document.getElementById('editMake').value.trim(),
+        model: document.getElementById('editModel').value.trim(),
+        year: document.getElementById('editYear').value,
+        date: document.getElementById('editDate').value,
+        comment: document.getElementById('editComment').value.trim()
+      };
+      if (collection === 'vehicles') {
+        updated.detailed = document.getElementById('editDetailed').value;
+        updated.photoType = document.getElementById('editPhotoType').value;
+      }
+      try {
+        await db.collection(collection).doc(id).update(updated);
+        showToast('Entry updated');
+        closeModal();
+      } catch (err) {
+        console.error(err);
+        showToast('Error updating entry');
       }
     }
 
-    function markComplete(id, data) {
-      showToast("Mark Complete clicked - Add logic here");
+    // Mark complete from pending to vehicles
+    async function markComplete(id) {
+      const entry = pendingData.find(x => x.id === id).data;
+      const detailed = confirm('Is the car detailed?') ? 'Yes' : 'No';
+      const photoType = confirm('Full photos taken?') ? 'Full Photos' : 'Half Photos';
+      showSpinner();
+      try {
+        await db.collection('vehicles').add({ ...entry, detailed, photoType, isSold: false });
+        await db.collection('pending_vehicles').doc(id).delete();
+        showToast('Vehicle marked complete');
+      } catch (err) {
+        console.error(err);
+        showToast('Error marking complete');
+      } finally {
+        hideSpinner();
+      }
     }
 
-    function editEntry(id) {
-      showToast("Edit clicked - Add modal logic here");
+    // Delete entry
+    async function deleteEntry(id, collection) {
+      if (!confirm('Are you sure?')) return;
+      showSpinner();
+      try {
+        await db.collection(collection).doc(id).delete();
+        showToast('Entry deleted');
+      } catch (err) {
+        console.error(err);
+        showToast('Error deleting entry');
+      } finally {
+        hideSpinner();
+      }
     }
+
+    // Toggle sold status
+    async function toggleSold(id, current) {
+      showSpinner();
+      try {
+        await db.collection('vehicles').doc(id).update({ isSold: !current });
+        showToast(current ? 'Sold undone' : 'Marked sold');
+      } catch (err) {
+        console.error(err);
+        showToast('Error updating sold');
+      } finally {
+        hideSpinner();
+      }
+    }
+
+    // Filter completed list
+    document.getElementById('searchCompleted').addEventListener('input', e => {
+      const val = e.target.value.toLowerCase();
+      const filtered = completedData.filter(x => {
+        const d = x.data;
+        return [d.vin, d.stock, d.make, d.model].some(f => f.toLowerCase().includes(val));
+      });
+      renderCompleted(filtered);
+    });
+
+    // Firestore listeners
+    db.collection('pending_vehicles').onSnapshot(snap => {
+      pendingData = snap.docs.map(d => ({ id: d.id, data: d.data() }));
+      renderPending();
+    });
+    db.collection('vehicles').onSnapshot(snap => {
+      completedData = snap.docs.map(d => ({ id: d.id, data: d.data() }));
+      renderCompleted();
+    });
+
+    // Hook saveEditBtn
+    document.getElementById('saveEditBtn').addEventListener('click', saveEdit);
   </script>
 </body>
 </html>
