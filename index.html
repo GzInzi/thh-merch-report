@@ -15,51 +15,7 @@
   </header>
 
   <main class="p-8 space-y-12 max-w-screen-xl mx-auto">
-    <div id="toast" class="fixed top-4 right-4 hidden px-4 py-2 rounded text-white font-semibold z-50"></div>
-    <div id="spinner" class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-40 hidden">
-      <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
-    </div>
-
-    <!-- Data Entry Form -->
-    <section class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-      <h2 class="text-2xl font-semibold mb-6">📝 Data Entry</h2>
-      <form id="pendingForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <input type="text" name="vin" placeholder="VIN Number" class="p-3 border rounded-lg" required>
-        <input type="text" name="stock" placeholder="Stock Number" class="p-3 border rounded-lg" required>
-        <input type="text" name="make" placeholder="Make" class="p-3 border rounded-lg" required>
-        <input type="text" name="model" placeholder="Model" class="p-3 border rounded-lg" required>
-        <select name="year" class="p-3 border rounded-lg" required>
-          <option value="">Year</option>
-          <script>const ysel = document.currentScript.parentElement; for (let y = new Date().getFullYear(); y >= 1990; y--) ysel.innerHTML += `<option value="${y}">${y}</option>`;</script>
-        </select>
-        <input type="date" name="date" class="p-3 border rounded-lg" required>
-        <textarea name="comment" placeholder="Comment" class="p-3 border rounded-lg col-span-1 sm:col-span-2 lg:col-span-3"></textarea>
-        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg col-span-full">Add to Pending List</button>
-      </form>
-    </section>
-
-    <!-- Submitted Entries -->
-    <section class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-      <h2 class="text-2xl font-semibold mb-6">📋 Submitted Entries</h2>
-      <input id="searchInput" type="text" placeholder="Search..." class="mb-4 w-full p-3 border rounded-lg">
-      <div class="overflow-x-auto">
-        <table class="w-full table-auto border text-sm">
-          <thead class="bg-gray-100 text-xs uppercase text-gray-600">
-            <tr>
-              <th class="border px-4 py-2">VIN</th>
-              <th class="border px-4 py-2">Stock #</th>
-              <th class="border px-4 py-2">Make</th>
-              <th class="border px-4 py-2">Model</th>
-              <th class="border px-4 py-2">Year</th>
-              <th class="border px-4 py-2">Date</th>
-              <th class="border px-4 py-2">Comment</th>
-              <th class="border px-4 py-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="entryTable" class="text-center"></tbody>
-        </table>
-      </div>
-    </section>
+    <div id="toast" class="fixed top-4 right-4 hidden px-4 py-2 rounded text-white font-semibold z-50 bg-blue-600"></div>
 
     <!-- Completed Entries -->
     <section class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
@@ -78,6 +34,7 @@
               <th class="border px-4 py-2">Comment</th>
               <th class="border px-4 py-2">Detailed</th>
               <th class="border px-4 py-2">Photos</th>
+              <th class="border px-4 py-2">Actions</th>
             </tr>
           </thead>
           <tbody id="completedTable" class="text-center"></tbody>
@@ -85,29 +42,6 @@
       </div>
     </section>
   </main>
-
-  <!-- Modal for completion -->
-  <div id="completeModal" class="hidden fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center">
-    <div class="bg-white p-6 rounded-xl shadow-lg w-full max-w-sm">
-      <h3 class="text-xl font-bold mb-4">Complete Entry</h3>
-      <label class="block mb-2">Is the car detailed?</label>
-      <select id="detailedInput" class="w-full mb-4 p-2 border rounded">
-        <option value="">Select</option>
-        <option value="Yes">Yes</option>
-        <option value="No">No</option>
-      </select>
-      <label class="block mb-2">Photo type taken:</label>
-      <select id="photoInput" class="w-full mb-4 p-2 border rounded">
-        <option value="">Select</option>
-        <option value="Full Photos">Full Photos</option>
-        <option value="Half Photos">Half Photos</option>
-      </select>
-      <div class="flex justify-end space-x-2">
-        <button onclick="closeModal()" class="px-4 py-2 bg-gray-400 rounded text-white">Cancel</button>
-        <button onclick="confirmComplete()" class="px-4 py-2 bg-green-600 rounded text-white">Confirm</button>
-      </div>
-    </div>
-  </div>
 
   <script>
     const firebaseConfig = {
@@ -122,58 +56,41 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    const form = document.getElementById('pendingForm');
-    const table = document.getElementById('entryTable');
     const completedTable = document.getElementById('completedTable');
+    const toast = document.getElementById('toast');
 
-    let currentCompleteId = null;
-    let currentCompleteData = null;
+    let undoTimer = null;
+    let lastDeleted = null;
 
-    document.getElementById("searchInput").addEventListener("input", function () {
-      const filter = this.value.toLowerCase();
-      [...table.children].forEach(row => {
-        row.style.display = [...row.children].some(td => td.textContent.toLowerCase().includes(filter)) ? "" : "none";
-      });
-    });
+    function showToast(message, undo = false) {
+      toast.textContent = message;
+      toast.classList.remove("hidden");
+      if (undo) {
+        toast.innerHTML = `${message} <button class="ml-4 underline" onclick="undoDelete()">Undo</button>`;
+        undoTimer = setTimeout(() => {
+          toast.classList.add("hidden");
+          lastDeleted = null;
+        }, 5000);
+      } else {
+        setTimeout(() => toast.classList.add("hidden"), 3000);
+      }
+    }
 
-    document.getElementById("searchCompleted").addEventListener("input", function () {
-      const filter = this.value.toLowerCase();
-      [...completedTable.children].forEach(row => {
-        row.style.display = [...row.children].some(td => td.textContent.toLowerCase().includes(filter)) ? "" : "none";
-      });
-    });
+    async function deleteCompletedEntry(docId, data) {
+      if (confirm("Are you sure you want to delete this completed entry?")) {
+        lastDeleted = { id: docId, data };
+        await db.collection("vehicles").doc(docId).delete();
+        showToast("Entry deleted.", true);
+      }
+    }
 
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const data = Object.fromEntries(new FormData(form).entries());
-      data.vin = data.vin.toUpperCase();
-      data.stock = data.stock.toUpperCase();
-      data.make = data.make.charAt(0).toUpperCase() + data.make.slice(1).toLowerCase();
-      data.model = data.model.charAt(0).toUpperCase() + data.model.slice(1).toLowerCase();
-      data.comment = data.comment.charAt(0).toUpperCase() + data.comment.slice(1).toLowerCase();
-      await db.collection("pending_vehicles").add(data);
-      form.reset();
-    });
-
-    function renderTable() {
-      db.collection("pending_vehicles").onSnapshot(snapshot => {
-        table.innerHTML = "";
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td class="border px-2 py-1">${data.vin}</td>
-            <td class="border px-2 py-1">${data.stock}</td>
-            <td class="border px-2 py-1">${data.make}</td>
-            <td class="border px-2 py-1">${data.model}</td>
-            <td class="border px-2 py-1">${data.year}</td>
-            <td class="border px-2 py-1">${data.date}</td>
-            <td class="border px-2 py-1">${data.comment || ""}</td>
-            <td class="border px-2 py-1"><button class="text-green-600 font-bold" onclick='openModal("${doc.id}", ${JSON.stringify(data)})'>✔️</button></td>
-          `;
-          table.appendChild(row);
-        });
-      });
+    async function undoDelete() {
+      if (lastDeleted) {
+        await db.collection("vehicles").doc(lastDeleted.id).set(lastDeleted.data);
+        showToast("Entry restored.");
+        clearTimeout(undoTimer);
+        lastDeleted = null;
+      }
     }
 
     function renderCompletedTable() {
@@ -192,36 +109,22 @@
             <td class="border px-2 py-1">${data.comment || ""}</td>
             <td class="border px-2 py-1">${data.detailed || ""}</td>
             <td class="border px-2 py-1">${data.photoType || ""}</td>
+            <td class="border px-2 py-1">
+              <button class="text-red-600 font-bold" onclick='deleteCompletedEntry("${doc.id}", ${JSON.stringify(data)})'>🗑️</button>
+            </td>
           `;
           completedTable.appendChild(row);
         });
       });
     }
 
-    function openModal(id, data) {
-      currentCompleteId = id;
-      currentCompleteData = data;
-      document.getElementById("completeModal").classList.remove("hidden");
-    }
+    document.getElementById("searchCompleted").addEventListener("input", function () {
+      const filter = this.value.toLowerCase();
+      [...completedTable.children].forEach(row => {
+        row.style.display = [...row.children].some(td => td.textContent.toLowerCase().includes(filter)) ? "" : "none";
+      });
+    });
 
-    function closeModal() {
-      document.getElementById("completeModal").classList.add("hidden");
-    }
-
-    async function confirmComplete() {
-      const detailed = document.getElementById("detailedInput").value;
-      const photoType = document.getElementById("photoInput").value;
-      if (!detailed || !photoType) return alert("Please fill all fields");
-
-      currentCompleteData.detailed = detailed;
-      currentCompleteData.photoType = photoType;
-
-      await db.collection("vehicles").add(currentCompleteData);
-      await db.collection("pending_vehicles").doc(currentCompleteId).delete();
-      closeModal();
-    }
-
-    renderTable();
     renderCompletedTable();
   </script>
 </body>
