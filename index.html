@@ -2,186 +2,91 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>THH Merchandising Report</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>THH Report</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
-    body {
-      font-family: 'Inter', sans-serif;
-    }
-    .sortable-header {
-      cursor: pointer;
-      position: relative;
-    }
-    .sortable-header::after {
-      content: '';
-      position: absolute;
-      right: 5px;
-      top: 50%;
-      transform: translateY(-50%);
-      border: 4px solid transparent;
-    }
-    .sortable-header.asc::after {
-      border-bottom-color: #333;
-      margin-top: -6px;
-    }
-    .sortable-header.desc::after {
-      border-top-color: #333;
-      margin-top: 2px;
-    }
-    /* Modal styles */
-    .modal {
-      display: none;
+    #toast {
       position: fixed;
-      z-index: 1000;
-      left: 0;
+      bottom: 30px;
+      right: 30px;
+      background-color: #333;
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 8px;
+      display: none;
+      z-index: 9999;
+    }
+    #spinnerOverlay {
+      position: fixed;
       top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
-      overflow: auto;
-      background-color: rgba(0,0,0,0.4);
-      justify-content: center;
+      background: rgba(0, 0, 0, 0.3);
+      display: flex;
       align-items: center;
+      justify-content: center;
+      z-index: 9998;
+      display: none;
     }
-    .modal-content {
-      background-color: #fefefe;
-      margin: auto;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-      width: 90%;
-      max-width: 600px;
-      animation: fadeIn 0.3s ease-out;
+    .spinner {
+      border: 8px solid #f3f3f3;
+      border-top: 8px solid #3498db;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
     }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .close-button {
-      color: #aaa;
-      float: right;
-      font-size: 28px;
-      font-weight: bold;
-    }
-    .close-button:hover,
-    .close-button:focus {
-      color: black;
-      text-decoration: none;
-      cursor: pointer;
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
   </style>
 </head>
-<body class="bg-gray-50 text-gray-800">
-  <header class="bg-white shadow-sm p-6 flex items-center justify-between border-b border-gray-200">
-    <img src="logo.png" alt="THH Logo" class="h-12">
-    <h1 class="text-3xl font-bold text-gray-900 flex-grow text-center -ml-10">THH Merchandising Report</h1>
-  </header>
+<body class="bg-gray-100 text-gray-800">
+  <div id="toast"></div>
+  <div id="spinnerOverlay">
+    <div class="spinner"></div>
+  </div>
 
-  <main class="max-w-7xl mx-auto p-8 space-y-12">
-    <section class="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
-      <h2 class="text-2xl font-semibold mb-6 text-gray-900 flex items-center">
-        <span class="text-blue-600 mr-3">📝</span> Data Entry
-      </h2>
-      <div class="grid md:grid-cols-3 gap-6">
-        <input id="vin" class="p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="VIN Number" />
-        <input id="stock" class="p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="Stock Number" />
-        <input id="make" class="p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="Make" />
-        <input id="model" class="p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="Model" />
-        <select id="year" class="p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 bg-white">
-          <option value="">Select Year</option>
+  <main class="max-w-5xl mx-auto p-6">
+    <section class="bg-white p-6 rounded shadow">
+      <h2 class="text-xl font-semibold mb-4">Add Vehicle to Pending List</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <input id="vin" placeholder="VIN" class="border p-2 rounded">
+        <input id="stock" placeholder="Stock Number" class="border p-2 rounded">
+        <input id="make" placeholder="Make" class="border p-2 rounded">
+        <input id="model" placeholder="Model" class="border p-2 rounded">
+        <select id="year" class="border p-2 rounded">
+          <option value="">Year</option>
           <script>for(let y=1990;y<=new Date().getFullYear();y++)document.write(`<option value="${y}">${y}</option>`);</script>
         </select>
-        <input id="comment" class="p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="Comment (Optional)" />
+        <input id="comment" placeholder="Comment" class="border p-2 rounded">
       </div>
-      <button onclick="addPending()" class="mt-8 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow-md transition duration-150 ease-in-out transform hover:-translate-y-0.5">
-        Add to Pending List
-      </button>
+      <button onclick="addPending()" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded">Add</button>
     </section>
 
-    <section class="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
-      <h2 class="text-2xl font-semibold mb-6 text-gray-900 flex items-center">
-        <span class="text-yellow-600 mr-3">📋</span> Submitted Entries
-      </h2>
-      <div class="overflow-x-auto">
-        <table class="min-w-full text-sm table-auto border-collapse">
-          <thead class="bg-gray-100 border-b border-gray-200">
-            <tr>
-              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider border-r border-gray-200 sortable-header" data-sort="vin">VIN</th>
-              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider border-r border-gray-200 sortable-header" data-sort="stock">Stock #</th>
-              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider border-r border-gray-200 sortable-header" data-sort="make">Make</th>
-              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider border-r border-gray-200 sortable-header" data-sort="model">Model</th>
-              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider border-r border-gray-200 sortable-header" data-sort="year">Year</th>
-              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider border-r border-gray-200 sortable-header" data-sort="date">Date</th>
-              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider border-r border-gray-200">Comment</th>
-              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="pendingTable" class="divide-y divide-gray-200"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
-      <h2 class="text-2xl font-semibold mb-6 text-gray-900 flex items-center">
-        <span class="text-green-600 mr-3">✅</span> Completed Vehicles
-      </h2>
-      <input id="searchCompleted" type="text" class="mb-6 p-3 border border-gray-300 rounded-lg w-full md:w-1/3 focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="Search VIN, Stock #, Make, Model..." />
-      <div class="overflow-x-auto">
-        <table class="min-w-full text-sm table-auto border-collapse">
-          <thead class="bg-gray-100 border-b border-gray-200">
-            <tr>
-              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider border-r border-gray-200 sortable-header" data-sort="vin">VIN</th>
-              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider border-r border-gray-200 sortable-header" data-sort="stock">Stock #</th>
-              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider border-r border-gray-200 sortable-header" data-sort="make">Make</th>
-              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider border-r border-gray-200 sortable-header" data-sort="model">Model</th>
-              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider border-r border-gray-200 sortable-header" data-sort="year">Year</th>
-              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider border-r border-gray-200 sortable-header" data-sort="date">Date</th>
-              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider border-r border-gray-200 sortable-header" data-sort="detailed">Detailed</th>
-              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider border-r border-gray-200 sortable-header" data-sort="photoType">Photos</th>
-              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider border-r border-gray-200">Comment</th>
-              <th class="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="completedTable" class="divide-y divide-gray-200"></tbody>
-        </table>
-      </div>
+    <section class="mt-10 bg-white p-6 rounded shadow">
+      <h2 class="text-xl font-semibold mb-4">Pending Vehicles</h2>
+      <table class="w-full table-auto border">
+        <thead>
+          <tr class="bg-gray-200">
+            <th class="p-2 border">VIN</th>
+            <th class="p-2 border">Stock</th>
+            <th class="p-2 border">Make</th>
+            <th class="p-2 border">Model</th>
+            <th class="p-2 border">Year</th>
+            <th class="p-2 border">Comment</th>
+            <th class="p-2 border">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="pendingTable"></tbody>
+      </table>
     </section>
   </main>
-
-  <div id="editModal" class="modal">
-    <div class="modal-content">
-      <span class="close-button" onclick="closeModal()">&times;</span>
-      <h3 class="text-xl font-semibold mb-6">Edit Vehicle Entry</h3>
-      <input type="hidden" id="editDocId">
-      <input type="hidden" id="editCollection">
-      <div class="grid md:grid-cols-2 gap-4 mb-6">
-        <input id="editVin" class="p-3 border border-gray-300 rounded-lg" placeholder="VIN Number" />
-        <input id="editStock" class="p-3 border border-gray-300 rounded-lg" placeholder="Stock Number" />
-        <input id="editMake" class="p-3 border border-gray-300 rounded-lg" placeholder="Make" />
-        <input id="editModel" class="p-3 border border-gray-300 rounded-lg" placeholder="Model" />
-        <select id="editYear" class="p-3 border border-gray-300 rounded-lg bg-white">
-          <option value="">Select Year</option>
-          <script>for(let y=1990;y<=new Date().getFullYear();y++)document.write(`<option value="${y}">${y}</option>`);</script>
-        </select>
-        <input id="editDate" class="p-3 border border-gray-300 rounded-lg" type="date" />
-        <select id="editDetailed" class="p-3 border border-gray-300 rounded-lg bg-white">
-          <option value="">Detailed?</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-        <select id="editPhotoType" class="p-3 border border-gray-300 rounded-lg bg-white">
-          <option value="">Photos?</option>
-          <option value="Full Photos">Full Photos</option>
-          <option value="Half Photos">Half Photos</option>
-        </select>
-      </div>
-      <textarea id="editComment" class="p-3 border border-gray-300 rounded-lg w-full mb-6" rows="3" placeholder="Comment"></textarea>
-      <button onclick="saveEdit()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-150">Save Changes</button>
-    </div>
-  </div>
 
   <script>
     const firebaseConfig = {
@@ -195,26 +100,41 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    let pendingData = [];
-    let completedData = [];
+    const toast = document.getElementById("toast");
+    const spinner = document.getElementById("spinnerOverlay");
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.style.display = "block";
+      setTimeout(() => { toast.style.display = "none"; }, 3000);
+    }
+
+    function showSpinner() {
+      spinner.style.display = "flex";
+    }
+
+    function hideSpinner() {
+      spinner.style.display = "none";
+    }
 
     async function addPending() {
-      const vin = document.getElementById("vin").value.trim().toUpperCase();
-      const stock = document.getElementById("stock").value.trim().toUpperCase();
+      const vin = document.getElementById("vin").value.trim();
+      const stock = document.getElementById("stock").value.trim();
       const make = document.getElementById("make").value.trim();
       const model = document.getElementById("model").value.trim();
       const year = document.getElementById("year").value;
       const comment = document.getElementById("comment").value.trim();
-      const date = new Date().toISOString().split("T")[0];
+
       if (!vin || !stock || !make || !model || !year) {
-        alert("Please fill in all required fields (VIN, Stock #, Make, Model, Year).");
+        showToast("Fill all required fields");
         return;
       }
-      const dataToSave = { vin, stock, make, model, year, comment, date };
-      console.log("Data being sent to Firebase (addPending):", dataToSave); // Debug log
+
+      showSpinner();
+
       try {
-        await db.collection("pending_vehicles").add(dataToSave);
-        alert("Vehicle added to pending list successfully!");
+        await db.collection("pending_vehicles").add({ vin, stock, make, model, year, comment });
+        showToast("Vehicle added to pending list");
         document.getElementById("vin").value = "";
         document.getElementById("stock").value = "";
         document.getElementById("make").value = "";
@@ -222,298 +142,57 @@
         document.getElementById("year").value = "";
         document.getElementById("comment").value = "";
       } catch (error) {
-        console.error("Error adding document: ", error);
-        alert("Failed to add vehicle. Please try again.");
+        showToast("Error adding vehicle");
+        console.error(error);
+      } finally {
+        hideSpinner();
       }
     }
 
-    function renderPending(data = pendingData) {
+    db.collection("pending_vehicles").onSnapshot(snapshot => {
       const table = document.getElementById("pendingTable");
       table.innerHTML = "";
-      if (data.length === 0) {
-        table.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-gray-500">No pending vehicles found.</td></tr>`;
-        return;
-      }
-      data.forEach(entry => {
+      snapshot.forEach(doc => {
+        const d = doc.data();
         const row = document.createElement("tr");
-        row.classList.add('hover:bg-gray-50');
         row.innerHTML = `
-          <td class="px-4 py-2 border-r border-gray-200">${entry.data.vin}</td>
-          <td class="px-4 py-2 border-r border-gray-200">${entry.data.stock}</td>
-          <td class="px-4 py-2 border-r border-gray-200">${entry.data.make}</td>
-          <td class="px-4 py-2 border-r border-gray-200">${entry.data.model}</td>
-          <td class="px-4 py-2 border-r border-gray-200">${entry.data.year}</td>
-          <td class="px-4 py-2 border-r border-gray-200">${entry.data.date}</td>
-          <td class="px-4 py-2 border-r border-gray-200">${entry.data.comment || "-"}</td>
-          <td class="px-4 py-2 text-center flex space-x-2 justify-center">
-            <button onclick="markComplete('${entry.id}', ${JSON.stringify(entry.data)})" class="text-green-600 hover:text-green-800 font-bold py-1 px-2 rounded transition duration-150" title="Mark as Completed">✔️</button>
-            <button onclick="openEditModal('${entry.id}', 'pending_vehicles', ${JSON.stringify(entry.data)})" class="text-blue-500 hover:text-blue-700 py-1 px-2 rounded transition duration-150" title="Edit">✏️</button>
-            <button onclick="deleteEntry('${entry.id}', 'pending_vehicles')" class="text-red-500 hover:text-red-700 py-1 px-2 rounded transition duration-150" title="Delete">🗑️</button>
+          <td class='p-2 border'>${d.vin}</td>
+          <td class='p-2 border'>${d.stock}</td>
+          <td class='p-2 border'>${d.make}</td>
+          <td class='p-2 border'>${d.model}</td>
+          <td class='p-2 border'>${d.year}</td>
+          <td class='p-2 border'>${d.comment || "-"}</td>
+          <td class='p-2 border space-x-1'>
+            <button onclick="markComplete('${doc.id}', ${JSON.stringify(d).replace(/"/g, '&quot;')})" class='bg-green-500 text-white px-2 py-1 rounded text-sm'>Complete</button>
+            <button onclick="editEntry('${doc.id}')" class='bg-yellow-500 text-white px-2 py-1 rounded text-sm'>Edit</button>
+            <button onclick="deleteEntry('${doc.id}')" class='bg-red-600 text-white px-2 py-1 rounded text-sm'>Delete</button>
           </td>
         `;
         table.appendChild(row);
       });
-    }
+    });
 
-    async function markComplete(id, data) {
-      const detailed = confirm("Is the car detailed?") ? "Yes" : "No";
-      const photoType = confirm("Full photos taken?") ? "Full Photos" : "Half Photos";
-      try {
-        await db.collection("vehicles").add({ ...data, detailed, photoType, isSold: false });
-        await db.collection("pending_vehicles").doc(id).delete();
-        alert("Vehicle marked as complete successfully!");
-      } catch (error) {
-        console.error("Error marking complete: ", error);
-        alert("Failed to mark vehicle as complete. Please try again.");
-      }
-    }
-
-    function renderCompleted(data = completedData) {
-      const table = document.getElementById("completedTable");
-      table.innerHTML = "";
-      if (data.length === 0) {
-        table.innerHTML = `<tr><td colspan="10" class="text-center py-4 text-gray-500">No completed vehicles found.</td></tr>`;
-        return;
-      }
-      data.forEach(entry => {
-        const d = entry.data;
-        const daysOld = Math.floor((new Date() - new Date(d.date)) / (1000 * 60 * 60 * 24));
-        let style = "";
-        if (d.photoType === "Half Photos") {
-          if (daysOld > 15) style = "bg-red-500 text-white font-semibold";
-          else if (daysOld > 7) style = "bg-orange-300 text-orange-900 font-medium";
-        }
-        let rowClass = d.isSold ? "opacity-60 line-through bg-gray-100" : "hover:bg-gray-50";
-
-        const row = document.createElement("tr");
-        row.classList.add(...rowClass.split(' '));
-        row.innerHTML = `
-          <td class="px-4 py-2 border-r border-gray-200">${d.vin}</td>
-          <td class="px-4 py-2 border-r border-gray-200 ${style}">${d.stock}</td>
-          <td class="px-4 py-2 border-r border-gray-200">${d.make}</td>
-          <td class="px-4 py-2 border-r border-gray-200">${d.model}</td>
-          <td class="px-4 py-2 border-r border-gray-200">${d.year}</td>
-          <td class="px-4 py-2 border-r border-gray-200">${d.date}</td>
-          <td class="px-4 py-2 border-r border-gray-200">${d.detailed || "-"}</td>
-          <td class="px-4 py-2 border-r border-gray-200">${d.photoType || "-"}</td>
-          <td class="px-4 py-2 border-r border-gray-200">${d.comment || "-"}</td>
-          <td class="px-4 py-2 text-center flex space-x-2 justify-center">
-            <button onclick="openEditModal('${entry.id}', 'vehicles', ${JSON.stringify(d)})" class="text-blue-500 hover:text-blue-700 py-1 px-2 rounded transition duration-150" title="Edit">✏️</button>
-            <button onclick="deleteEntry('${entry.id}', 'vehicles')" class="text-red-500 hover:text-red-700 py-1 px-2 rounded transition duration-150" title="Delete">🗑️</button>
-            <button onclick="toggleSold('${entry.id}', ${d.isSold})" class="${d.isSold ? 'bg-gray-500 hover:bg-gray-600' : 'bg-purple-600 hover:bg-purple-700'} text-white py-1 px-2 rounded transition duration-150 text-xs">
-              ${d.isSold ? 'Undo Sold' : 'Mark Sold'}
-            </button>
-          </td>
-        `;
-        table.appendChild(row);
-      });
-    }
-
-    async function deleteEntry(id, collectionName) {
-      if (confirm(`Are you sure you want to delete this entry from ${collectionName}?`)) {
+    async function deleteEntry(id) {
+      if (confirm("Delete this vehicle?")) {
+        showSpinner();
         try {
-          await db.collection(collectionName).doc(id).delete();
-          alert("Entry deleted successfully!");
+          await db.collection("pending_vehicles").doc(id).delete();
+          showToast("Entry deleted");
         } catch (error) {
-          console.error("Error deleting document: ", error);
-          alert("Failed to delete entry. Please try again.");
+          showToast("Delete failed");
+        } finally {
+          hideSpinner();
         }
       }
     }
 
-    async function toggleSold(id, currentSoldStatus) {
-      try {
-        await db.collection("vehicles").doc(id).update({ isSold: !currentSoldStatus });
-        alert(`Vehicle marked as ${!currentSoldStatus ? 'Sold' : 'Not Sold'}!`);
-      } catch (error) {
-        console.error("Error toggling sold status: ", error);
-        alert("Failed to update sold status. Please try again.");
-      }
+    function markComplete(id, data) {
+      showToast("Mark Complete clicked - Add logic here");
     }
 
-    // --- Modal Functions ---
-    const editModal = document.getElementById("editModal");
-    const editDocId = document.getElementById("editDocId");
-    const editCollection = document.getElementById("editCollection");
-    const editVin = document.getElementById("editVin");
-    const editStock = document.getElementById("editStock");
-    const editMake = document.getElementById("editMake");
-    const editModel = document.getElementById("editModel");
-    const editYear = document.getElementById("editYear");
-    const editDate = document.getElementById("editDate");
-    const editDetailed = document.getElementById("editDetailed");
-    const editPhotoType = document.getElementById("editPhotoType");
-    const editComment = document.getElementById("editComment");
-
-    function openEditModal(id, collection, data) {
-      editDocId.value = id;
-      editCollection.value = collection;
-      editVin.value = data.vin || '';
-      editStock.value = data.stock || '';
-      editMake.value = data.make || '';
-      editModel.value = data.model || '';
-      editYear.value = data.year || '';
-      editDate.value = data.date || '';
-      editDetailed.value = data.detailed || '';
-      editPhotoType.value = data.photoType || '';
-      editComment.value = data.comment || '';
-
-      // Hide fields not relevant to pending vehicles
-      if (collection === 'pending_vehicles') {
-        editDetailed.style.display = 'none';
-        editPhotoType.style.display = 'none';
-      } else {
-        editDetailed.style.display = 'block';
-        editPhotoType.style.display = 'block';
-      }
-
-      editModal.style.display = "flex";
+    function editEntry(id) {
+      showToast("Edit clicked - Add modal logic here");
     }
-
-    function closeModal() {
-      editModal.style.display = "none";
-    }
-
-    async function saveEdit() {
-      const id = editDocId.value;
-      const collectionName = editCollection.value;
-      const updatedData = {
-        vin: editVin.value.trim().toUpperCase(),
-        stock: editStock.value.trim().toUpperCase(),
-        make: editMake.value.trim(),
-        model: editModel.value.trim(),
-        year: editYear.value,
-        date: editDate.value,
-        comment: editComment.value.trim()
-      };
-
-      if (collectionName === 'vehicles') {
-        updatedData.detailed = editDetailed.value;
-        updatedData.photoType = editPhotoType.value;
-      }
-
-      if (!updatedData.vin || !updatedData.stock || !updatedData.make || !updatedData.model || !updatedData.year || !updatedData.date) {
-        alert("Please fill in all required fields.");
-        return;
-      }
-
-      try {
-        await db.collection(collectionName).doc(id).update(updatedData);
-        alert("Entry updated successfully!");
-        closeModal();
-      } catch (error) {
-        console.error("Error updating document: ", error);
-        alert("Failed to update entry. Please try again.");
-      }
-    }
-
-    // Close modal if user clicks outside of it
-    window.onclick = function(event) {
-      if (event.target == editModal) {
-        closeModal();
-      }
-    }
-
-    // --- Sorting Functions ---
-    function sortTable(tableId, dataArray, column, type) {
-      const table = document.getElementById(tableId);
-      const header = table.querySelector(`th[data-sort="${column}"]`);
-      let direction = 'asc';
-
-      // Determine sort direction
-      // Reset all sort indicators first
-      table.querySelectorAll('.sortable-header').forEach(th => {
-          if (th !== header) { // Only clear others
-              th.classList.remove('asc', 'desc');
-          }
-      });
-
-      if (header.classList.contains('asc')) {
-        direction = 'desc';
-        header.classList.remove('asc');
-        header.classList.add('desc');
-      } else if (header.classList.contains('desc')) {
-        direction = 'asc';
-        header.classList.remove('desc');
-        header.classList.add('asc');
-      } else {
-        header.classList.add('asc');
-      }
-
-      dataArray.sort((a, b) => {
-        const valA = a.data[column];
-        const valB = b.data[column];
-
-        let comparison = 0;
-        if (type === 'number') {
-          comparison = (parseFloat(valA) || 0) - (parseFloat(valB) || 0);
-        } else if (type === 'date') {
-          comparison = new Date(valA) - new Date(valB);
-        } else {
-          comparison = String(valA).localeCompare(String(valB)); // Ensure string comparison
-        }
-
-        return direction === 'asc' ? comparison : -comparison;
-      });
-
-      if (tableId === 'pendingTable') {
-        renderPending(dataArray);
-      } else if (tableId === 'completedTable') {
-        renderCompleted(dataArray);
-      }
-    }
-
-    // Attach sort event listeners to all sortable headers
-    document.querySelectorAll('.sortable-header').forEach(header => {
-      header.addEventListener('click', function() {
-        const column = this.dataset.sort;
-        const tableId = this.closest('table').querySelector('tbody').id;
-        let dataType = 'string';
-        if (column === 'year' || column === 'stock') dataType = 'number';
-        if (column === 'date') dataType = 'date';
-
-        if (tableId === 'pendingTable') {
-          sortTable(tableId, pendingData, column, dataType);
-        } else if (tableId === 'completedTable') {
-          sortTable(tableId, completedData, column, dataType);
-        }
-      });
-    });
-
-    // --- Firebase Listeners ---
-    db.collection("pending_vehicles").onSnapshot(snapshot => {
-      pendingData = snapshot.docs.map(doc => {
-        console.log("Data received from Firebase for pending entry:", doc.data()); // Debug log
-        return { id: doc.id, data: doc.data() };
-      });
-      renderPending();
-    }, error => {
-      console.error("Error fetching pending vehicles: ", error);
-      alert("Failed to load pending vehicles. Check console for details.");
-    });
-
-    db.collection("vehicles").onSnapshot(snapshot => {
-      completedData = snapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
-      renderCompleted();
-    }, error => {
-      console.error("Error fetching completed vehicles: ", error);
-      alert("Failed to load completed vehicles. Check console for details.");
-    });
-
-    document.getElementById("searchCompleted").addEventListener("input", function () {
-      const val = this.value.toLowerCase();
-      const filteredData = completedData.filter(entry => {
-        const d = entry.data;
-        return (d.vin && d.vin.toLowerCase().includes(val)) ||
-               (d.stock && d.stock.toLowerCase().includes(val)) ||
-               (d.make && d.make.toLowerCase().includes(val)) ||
-               (d.model && d.model.toLowerCase().includes(val)) ||
-               (d.comment && d.comment.toLowerCase().includes(val));
-      });
-      renderCompleted(filteredData);
-    });
-
-    // Initial render calls are handled by the onSnapshot listeners
   </script>
 </body>
 </html>
