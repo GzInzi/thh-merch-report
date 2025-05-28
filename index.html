@@ -1,20 +1,3 @@
-I will update the provided HTML to include the following features:
-
-1.  **Sortable Tables by Heading:** Implement JavaScript to allow users to click on table headers in both the "Submitted Entries" (pending) and "Completed Vehicles" tables to sort the data by that column.
-2.  **Edit Modal for Full Entry Updates:**
-    * Add an "Edit" button for each entry in both the pending and completed tables.
-    * When clicked, a modal will appear pre-filled with the current entry's data.
-    * Allow users to modify the fields and save the changes, which will update the corresponding entry in Firestore.
-3.  **Delete Button for Entries:** Add a "Delete" button to each row in both pending and completed tables, allowing users to remove entries from Firestore.
-4.  **"SOLD" Toggle + Undo for Completed Vehicles:**
-    * Introduce a "Sold" toggle (e.g., a checkbox or button) for each entry in the "Completed Vehicles" table.
-    * When toggled to "Sold," the entry will be visually distinguished (e.g., strike-through, different background color).
-    * The "Sold" status will be saved to Firestore.
-    * An "Undo" option will be provided to revert the "Sold" status.
-
-Here's the updated and refactored HTML with these features:
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -227,8 +210,10 @@ Here's the updated and refactored HTML with these features:
         alert("Please fill in all required fields (VIN, Stock #, Make, Model, Year).");
         return;
       }
+      const dataToSave = { vin, stock, make, model, year, comment, date };
+      console.log("Data being sent to Firebase (addPending):", dataToSave); // Debug log
       try {
-        await db.collection("pending_vehicles").add({ vin, stock, make, model, year, comment, date });
+        await db.collection("pending_vehicles").add(dataToSave);
         alert("Vehicle added to pending list successfully!");
         document.getElementById("vin").value = "";
         document.getElementById("stock").value = "";
@@ -253,13 +238,13 @@ Here's the updated and refactored HTML with these features:
         const row = document.createElement("tr");
         row.classList.add('hover:bg-gray-50');
         row.innerHTML = `
-          <td class="px-4 py-2 border-r border-gray-200">${entry.vin}</td>
-          <td class="px-4 py-2 border-r border-gray-200">${entry.stock}</td>
-          <td class="px-4 py-2 border-r border-gray-200">${entry.make}</td>
-          <td class="px-4 py-2 border-r border-gray-200">${entry.model}</td>
-          <td class="px-4 py-2 border-r border-gray-200">${entry.year}</td>
-          <td class="px-4 py-2 border-r border-gray-200">${entry.date}</td>
-          <td class="px-4 py-2 border-r border-gray-200">${entry.comment || "-"}</td>
+          <td class="px-4 py-2 border-r border-gray-200">${entry.data.vin}</td>
+          <td class="px-4 py-2 border-r border-gray-200">${entry.data.stock}</td>
+          <td class="px-4 py-2 border-r border-gray-200">${entry.data.make}</td>
+          <td class="px-4 py-2 border-r border-gray-200">${entry.data.model}</td>
+          <td class="px-4 py-2 border-r border-gray-200">${entry.data.year}</td>
+          <td class="px-4 py-2 border-r border-gray-200">${entry.data.date}</td>
+          <td class="px-4 py-2 border-r border-gray-200">${entry.data.comment || "-"}</td>
           <td class="px-4 py-2 text-center flex space-x-2 justify-center">
             <button onclick="markComplete('${entry.id}', ${JSON.stringify(entry.data)})" class="text-green-600 hover:text-green-800 font-bold py-1 px-2 rounded transition duration-150" title="Mark as Completed">✔️</button>
             <button onclick="openEditModal('${entry.id}', 'pending_vehicles', ${JSON.stringify(entry.data)})" class="text-blue-500 hover:text-blue-700 py-1 px-2 rounded transition duration-150" title="Edit">✏️</button>
@@ -436,19 +421,22 @@ Here's the updated and refactored HTML with these features:
       let direction = 'asc';
 
       // Determine sort direction
+      // Reset all sort indicators first
+      table.querySelectorAll('.sortable-header').forEach(th => {
+          if (th !== header) { // Only clear others
+              th.classList.remove('asc', 'desc');
+          }
+      });
+
       if (header.classList.contains('asc')) {
         direction = 'desc';
         header.classList.remove('asc');
         header.classList.add('desc');
       } else if (header.classList.contains('desc')) {
-        direction = 'asc'; // Cycle back to ascending
+        direction = 'asc';
         header.classList.remove('desc');
         header.classList.add('asc');
       } else {
-        // Clear other sort indicators
-        table.querySelectorAll('.sortable-header').forEach(th => {
-          th.classList.remove('asc', 'desc');
-        });
         header.classList.add('asc');
       }
 
@@ -462,7 +450,7 @@ Here's the updated and refactored HTML with these features:
         } else if (type === 'date') {
           comparison = new Date(valA) - new Date(valB);
         } else {
-          comparison = valA.localeCompare(valB);
+          comparison = String(valA).localeCompare(String(valB)); // Ensure string comparison
         }
 
         return direction === 'asc' ? comparison : -comparison;
@@ -475,7 +463,7 @@ Here's the updated and refactored HTML with these features:
       }
     }
 
-    // Attach sort event listeners
+    // Attach sort event listeners to all sortable headers
     document.querySelectorAll('.sortable-header').forEach(header => {
       header.addEventListener('click', function() {
         const column = this.dataset.sort;
@@ -494,13 +482,22 @@ Here's the updated and refactored HTML with these features:
 
     // --- Firebase Listeners ---
     db.collection("pending_vehicles").onSnapshot(snapshot => {
-      pendingData = snapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
+      pendingData = snapshot.docs.map(doc => {
+        console.log("Data received from Firebase for pending entry:", doc.data()); // Debug log
+        return { id: doc.id, data: doc.data() };
+      });
       renderPending();
+    }, error => {
+      console.error("Error fetching pending vehicles: ", error);
+      alert("Failed to load pending vehicles. Check console for details.");
     });
 
     db.collection("vehicles").onSnapshot(snapshot => {
       completedData = snapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
       renderCompleted();
+    }, error => {
+      console.error("Error fetching completed vehicles: ", error);
+      alert("Failed to load completed vehicles. Check console for details.");
     });
 
     document.getElementById("searchCompleted").addEventListener("input", function () {
@@ -510,7 +507,8 @@ Here's the updated and refactored HTML with these features:
         return (d.vin && d.vin.toLowerCase().includes(val)) ||
                (d.stock && d.stock.toLowerCase().includes(val)) ||
                (d.make && d.make.toLowerCase().includes(val)) ||
-               (d.model && d.model.toLowerCase().includes(val));
+               (d.model && d.model.toLowerCase().includes(val)) ||
+               (d.comment && d.comment.toLowerCase().includes(val)); // Added comment to search
       });
       renderCompleted(filteredData);
     });
@@ -519,4 +517,3 @@ Here's the updated and refactored HTML with these features:
   </script>
 </body>
 </html>
-```
