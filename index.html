@@ -14,13 +14,22 @@
     <h1 class="text-3xl font-bold text-center flex-grow -ml-12">THH Merchandising Report</h1>
   </header>
 
-  <main class="p-8 space-y-12 max-w-screen-xl mx-auto">
-    <div id="toast" class="fixed top-4 right-4 hidden px-4 py-2 rounded text-white font-semibold z-50 bg-blue-600"></div>
-
-    <!-- Completed Entries -->
+  <main class="p-8 max-w-screen-xl mx-auto space-y-12">
     <section class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-      <h2 class="text-2xl font-semibold mb-6">✅ Completed Entries</h2>
-      <input id="searchCompleted" type="text" placeholder="Search..." class="mb-4 w-full p-3 border rounded-lg">
+      <h2 class="text-2xl font-semibold mb-6">📝 Data Entry</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <input id="vin" type="text" placeholder="VIN Number" class="p-3 border rounded-lg">
+        <input id="stock" type="text" placeholder="Stock Number" class="p-3 border rounded-lg">
+        <input id="make" type="text" placeholder="Make" class="p-3 border rounded-lg">
+        <input id="model" type="text" placeholder="Model" class="p-3 border rounded-lg">
+        <select id="year" class="p-3 border rounded-lg"></select>
+        <input id="comment" type="text" placeholder="Comment" class="p-3 border rounded-lg">
+      </div>
+      <button onclick="addPending()" class="mt-4 bg-green-600 text-white font-bold py-2 px-6 rounded-lg">Add to Pending List</button>
+    </section>
+
+    <section class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+      <h2 class="text-2xl font-semibold mb-6">📋 Submitted Entries</h2>
       <div class="overflow-x-auto">
         <table class="w-full table-auto border text-sm">
           <thead class="bg-gray-100 text-xs uppercase text-gray-600">
@@ -32,8 +41,30 @@
               <th class="border px-4 py-2">Year</th>
               <th class="border px-4 py-2">Date</th>
               <th class="border px-4 py-2">Comment</th>
-              <th class="border px-4 py-2">Detailed</th>
-              <th class="border px-4 py-2">Photos</th>
+              <th class="border px-4 py-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="pendingTable" class="text-center"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+      <h2 class="text-2xl font-semibold mb-6">✅ Completed Vehicles</h2>
+      <input id="searchCompleted" type="text" placeholder="Search..." class="mb-4 w-full p-3 border rounded-lg">
+      <div class="overflow-x-auto">
+        <table class="w-full table-auto border text-sm">
+          <thead class="bg-gray-100 text-xs uppercase text-gray-600">
+            <tr>
+              <th class="border px-4 py-2 cursor-pointer" onclick="sortTable('vin')">VIN</th>
+              <th class="border px-4 py-2 cursor-pointer" onclick="sortTable('stock')">Stock #</th>
+              <th class="border px-4 py-2 cursor-pointer" onclick="sortTable('make')">Make</th>
+              <th class="border px-4 py-2 cursor-pointer" onclick="sortTable('model')">Model</th>
+              <th class="border px-4 py-2 cursor-pointer" onclick="sortTable('year')">Year</th>
+              <th class="border px-4 py-2 cursor-pointer" onclick="sortTable('date')">Date</th>
+              <th class="border px-4 py-2 cursor-pointer" onclick="sortTable('detailed')">Detailed</th>
+              <th class="border px-4 py-2 cursor-pointer" onclick="sortTable('photoType')">Photos</th>
+              <th class="border px-4 py-2 cursor-pointer" onclick="sortTable('comment')">Comment</th>
               <th class="border px-4 py-2">Actions</th>
             </tr>
           </thead>
@@ -43,89 +74,6 @@
     </section>
   </main>
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyC-hy3eteka35c3ZkLl7exTQ0nnFz9xhFU",
-      authDomain: "thh-merch-report.firebaseapp.com",
-      projectId: "thh-merch-report",
-      storageBucket: "thh-merch-report.appspot.com",
-      messagingSenderId: "214148544505",
-      appId: "1:214148544505:web:ef4889d43b8189f5146f28"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    const completedTable = document.getElementById('completedTable');
-    const toast = document.getElementById('toast');
-
-    let undoTimer = null;
-    let lastDeleted = null;
-
-    function showToast(message, undo = false) {
-      toast.textContent = message;
-      toast.classList.remove("hidden");
-      if (undo) {
-        toast.innerHTML = `${message} <button class="ml-4 underline" onclick="undoDelete()">Undo</button>`;
-        undoTimer = setTimeout(() => {
-          toast.classList.add("hidden");
-          lastDeleted = null;
-        }, 5000);
-      } else {
-        setTimeout(() => toast.classList.add("hidden"), 3000);
-      }
-    }
-
-    async function deleteCompletedEntry(docId, data) {
-      if (confirm("Are you sure you want to delete this completed entry?")) {
-        lastDeleted = { id: docId, data };
-        await db.collection("vehicles").doc(docId).delete();
-        showToast("Entry deleted.", true);
-      }
-    }
-
-    async function undoDelete() {
-      if (lastDeleted) {
-        await db.collection("vehicles").doc(lastDeleted.id).set(lastDeleted.data);
-        showToast("Entry restored.");
-        clearTimeout(undoTimer);
-        lastDeleted = null;
-      }
-    }
-
-    function renderCompletedTable() {
-      db.collection("vehicles").onSnapshot(snapshot => {
-        completedTable.innerHTML = "";
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td class="border px-2 py-1">${data.vin}</td>
-            <td class="border px-2 py-1">${data.stock}</td>
-            <td class="border px-2 py-1">${data.make}</td>
-            <td class="border px-2 py-1">${data.model}</td>
-            <td class="border px-2 py-1">${data.year}</td>
-            <td class="border px-2 py-1">${data.date}</td>
-            <td class="border px-2 py-1">${data.comment || ""}</td>
-            <td class="border px-2 py-1">${data.detailed || ""}</td>
-            <td class="border px-2 py-1">${data.photoType || ""}</td>
-            <td class="border px-2 py-1">
-              <button class="text-red-600 font-bold" onclick='deleteCompletedEntry("${doc.id}", ${JSON.stringify(data)})'>🗑️</button>
-            </td>
-          `;
-          completedTable.appendChild(row);
-        });
-      });
-    }
-
-    document.getElementById("searchCompleted").addEventListener("input", function () {
-      const filter = this.value.toLowerCase();
-      [...completedTable.children].forEach(row => {
-        row.style.display = [...row.children].some(td => td.textContent.toLowerCase().includes(filter)) ? "" : "none";
-      });
-    });
-
-    renderCompletedTable();
-  </script>
+  <!-- JS Script placeholder to load separately -->
 </body>
 </html>
