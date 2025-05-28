@@ -14,7 +14,8 @@
     <h1 class="text-3xl font-bold text-center flex-grow -ml-12">THH Merchandising Report</h1>
   </header>
 
-  <main class="p-8 max-w-screen-xl mx-auto space-y-12">
+  <main class="p-8 space-y-12 max-w-screen-xl mx-auto">
+    <!-- Data Entry Section -->
     <section class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
       <h2 class="text-2xl font-semibold mb-6">📝 Data Entry</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -22,12 +23,13 @@
         <input id="stock" type="text" placeholder="Stock Number" class="p-3 border rounded-lg">
         <input id="make" type="text" placeholder="Make" class="p-3 border rounded-lg">
         <input id="model" type="text" placeholder="Model" class="p-3 border rounded-lg">
-        <select id="year" class="p-3 border rounded-lg"></select>
+        <select id="year" class="p-3 border rounded-lg"><option value="">Select Year</option></select>
         <input id="comment" type="text" placeholder="Comment" class="p-3 border rounded-lg">
       </div>
       <button onclick="addPending()" class="mt-4 bg-green-600 text-white font-bold py-2 px-6 rounded-lg">Add to Pending List</button>
     </section>
 
+    <!-- Pending List -->
     <section class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
       <h2 class="text-2xl font-semibold mb-6">📋 Submitted Entries</h2>
       <div class="overflow-x-auto">
@@ -49,22 +51,39 @@
       </div>
     </section>
 
+    <!-- Filters for Completed Vehicles -->
+    <section class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+      <h2 class="text-2xl font-semibold mb-6">🔍 Filter Completed Vehicles</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <select id="filterDetailed" class="p-3 border rounded-lg">
+          <option value="">Filter by Detailed</option>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+        </select>
+        <select id="filterPhotos" class="p-3 border rounded-lg">
+          <option value="">Filter by Photo Type</option>
+          <option value="Full Photos">Full Photos</option>
+          <option value="Half Photos">Half Photos</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Completed Vehicles -->
     <section class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
       <h2 class="text-2xl font-semibold mb-6">✅ Completed Vehicles</h2>
-      <input id="searchCompleted" type="text" placeholder="Search..." class="mb-4 w-full p-3 border rounded-lg">
       <div class="overflow-x-auto">
         <table class="w-full table-auto border text-sm">
           <thead class="bg-gray-100 text-xs uppercase text-gray-600">
             <tr>
-              <th class="border px-4 py-2 cursor-pointer" onclick="sortTable('vin')">VIN</th>
-              <th class="border px-4 py-2 cursor-pointer" onclick="sortTable('stock')">Stock #</th>
-              <th class="border px-4 py-2 cursor-pointer" onclick="sortTable('make')">Make</th>
-              <th class="border px-4 py-2 cursor-pointer" onclick="sortTable('model')">Model</th>
-              <th class="border px-4 py-2 cursor-pointer" onclick="sortTable('year')">Year</th>
-              <th class="border px-4 py-2 cursor-pointer" onclick="sortTable('date')">Date</th>
-              <th class="border px-4 py-2 cursor-pointer" onclick="sortTable('detailed')">Detailed</th>
-              <th class="border px-4 py-2 cursor-pointer" onclick="sortTable('photoType')">Photos</th>
-              <th class="border px-4 py-2 cursor-pointer" onclick="sortTable('comment')">Comment</th>
+              <th class="border px-4 py-2">VIN</th>
+              <th class="border px-4 py-2">Stock #</th>
+              <th class="border px-4 py-2">Make</th>
+              <th class="border px-4 py-2">Model</th>
+              <th class="border px-4 py-2">Year</th>
+              <th class="border px-4 py-2">Date</th>
+              <th class="border px-4 py-2">Detailed</th>
+              <th class="border px-4 py-2">Photos</th>
+              <th class="border px-4 py-2">Comment</th>
               <th class="border px-4 py-2">Actions</th>
             </tr>
           </thead>
@@ -74,6 +93,17 @@
     </section>
   </main>
 
-  <!-- JS Script placeholder to load separately -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyC-hy3eteka35c3ZkLl7exTQ0nnFz9xhFU",
+      authDomain: "thh-merch-report.firebaseapp.com",
+      projectId: "thh-merch-report",
+      storageBucket: "thh-merch-report.appspot.com",
+      messagingSenderId: "214148544505",
+      appId: "1:214148544505:web:ef4889d43b8189f5146f28"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+  </script>
 </body>
 </html>
