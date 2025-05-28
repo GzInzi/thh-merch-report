@@ -9,7 +9,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body class="bg-gray-100 font-sans">
-  <header class="bg-white shadow p-6 flex items-center justify-between">
+  <header class="bg-white shadow-md p-6 flex items-center justify-between">
     <img src="logo.png" alt="THH Logo" class="h-10">
     <h1 class="text-2xl font-bold text-center w-full -ml-10">THH Merchandising Report</h1>
   </header>
@@ -52,12 +52,10 @@
       </table>
     </section>
 
-    <!-- Step 3: Completed List -->
+    <!-- Step 3: Completed Vehicles -->
     <section class="bg-white p-6 rounded-xl shadow">
       <h2 class="text-xl font-semibold mb-4">✅ Completed Vehicles</h2>
-      <div class="flex flex-col md:flex-row gap-4 mb-4">
-        <input id="searchCompleted" type="text" class="p-3 border rounded w-full md:w-1/3" placeholder="Search...">
-      </div>
+      <input id="searchCompleted" type="text" class="mb-4 p-3 border rounded w-full md:w-1/3" placeholder="Search...">
       <table class="w-full text-sm table-auto border">
         <thead class="bg-gray-100">
           <tr>
@@ -110,8 +108,8 @@
 
     function renderPending() {
       db.collection("pending_vehicles").onSnapshot(snapshot => {
-        const tbody = document.getElementById("pendingTable");
-        tbody.innerHTML = "";
+        const table = document.getElementById("pendingTable");
+        table.innerHTML = "";
         snapshot.forEach(doc => {
           const d = doc.data();
           const row = document.createElement("tr");
@@ -125,7 +123,7 @@
             <td class="border px-2 py-1">\${d.comment || ""}</td>
             <td class="border px-2 py-1 text-green-600 font-bold cursor-pointer" onclick="markComplete('\${doc.id}', \${JSON.stringify(d)})">✔️</td>
           \`;
-          tbody.appendChild(row);
+          table.appendChild(row);
         });
       });
     }
@@ -157,34 +155,14 @@
             <td class="border px-2 py-1">\${d.model}</td>
             <td class="border px-2 py-1">\${d.year}</td>
             <td class="border px-2 py-1">\${d.date}</td>
-            <td class="border px-2 py-1">\${d.detailed}</td>
-            <td class="border px-2 py-1">\${d.photoType}</td>
-            <td class="border px-2 py-1">\${d.comment}</td>
-            <td class="border px-2 py-1 space-x-1">
-              <button class="text-blue-600" onclick="editComment('\${doc.id}', \${JSON.stringify(d)})">✏️</button>
-              <button class="text-red-600" onclick="deleteCompleted('\${doc.id}', \${JSON.stringify(d)})">🗑️</button>
-            </td>
+            <td class="border px-2 py-1">\${d.detailed || ""}</td>
+            <td class="border px-2 py-1">\${d.photoType || ""}</td>
+            <td class="border px-2 py-1">\${d.comment || ""}</td>
+            <td class="border px-2 py-1">✏️ 🗑️</td>
           \`;
           table.appendChild(row);
         });
       });
-    }
-
-    function editComment(id, data) {
-      const newComment = prompt("Edit comment:", data.comment || "");
-      if (newComment !== null) {
-        db.collection("vehicles").doc(id).update({ comment: newComment });
-      }
-    }
-
-    let lastDeleted = null;
-    function deleteCompleted(id, data) {
-      if (confirm("Delete this entry?")) {
-        db.collection("vehicles").doc(id).delete();
-        lastDeleted = { id, data };
-        setTimeout(() => (lastDeleted = null), 5000);
-        alert("Deleted. You can undo for 5 seconds.");
-      }
     }
 
     document.getElementById("searchCompleted").addEventListener("input", function () {
