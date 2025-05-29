@@ -1,23 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>THH Merchandising Report</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <style>
     /* Spinner */
-    #spinnerOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); align-items: center; justify-content: center; z-index: 1000; }
-    .spinner { border:8px solid #f3f3f3; border-top:8px solid #3498db; border-radius:50%; width:60px; height:60px; animation:spin 1s linear infinite; }
-    @keyframes spin { to{transform:rotate(360deg);} }
+    #spinnerOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.3);
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .spinner {
+      border: 8px solid #f3f3f3;
+      border-top: 8px solid #3498db;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
     /* Toast */
-    #toast { display:none; position:fixed; bottom:20px; right:20px; background:#333; color:#fff; padding:12px 20px; border-radius:8px; z-index:1001; }
+    #toast {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #333;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      z-index: 1001;
+    }
     /* Modal */
-    .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); align-items:center; justify-content:center; z-index:1002; }
-    .modal-content { background:#fff; padding:20px; border-radius:8px; width:90%; max-width:500px; }
-    .close-button { float:right; font-size:24px; cursor:pointer; }
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      align-items: center;
+      justify-content: center;
+      z-index: 1002;
+    }
+    .modal-content {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 500px;
+    }
+    .close-button {
+      float: right;
+      font-size: 24px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -151,7 +194,7 @@
   </div>
 
   <script>
-    // Firebase init
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyC-hy3eteka35c3ZkLl7exTQ0nnFz9xhFU",
       authDomain: "thh-merch-report.firebaseapp.com",
@@ -160,74 +203,244 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // UI helpers
+    // Helpers
     const spinner = document.getElementById('spinnerOverlay');
-    const toast   = document.getElementById('toast');
-    function showSpinner(){ spinner.style.display='flex'; }
-    function hideSpinner(){ spinner.style.display='none'; }
-    function showToast(msg){ toast.textContent=msg; toast.style.display='block'; setTimeout(()=>toast.style.display='none',3000); }
+    const toast = document.getElementById('toast');
+    function showSpinner() { spinner.style.display = 'flex'; }
+    function hideSpinner() { spinner.style.display = 'none'; }
+    function showToast(msg) { toast.textContent = msg; toast.style.display = 'block'; setTimeout(() => toast.style.display = 'none', 3000); }
 
-    // Populate years
-    document.querySelectorAll('#year,#editYear').forEach(s=>{ for(let y=1990;y<=new Date().getFullYear();y++) s.append(new Option(y,y)); });
+    // Populate year selects
+    document.querySelectorAll('#year,#editYear').forEach(sel => {
+      for (let y = 1990; y <= new Date().getFullYear(); y++) {
+        sel.append(new Option(y, y));
+      }
+    });
 
-    let pendingData=[], completedData=[];
-    let currentCompleteId=null;
+    let pendingData = [], completedData = [];
+    let currentCompleteId = null;
 
-    // Add pending
-    async function addPending(){
-      const vin=document.getElementById('vin').value.trim(), stock=document.getElementById('stock').value.trim(), make=document.getElementById('make').value.trim(), model=document.getElementById('model').value.trim(), year=document.getElementById('year').value, date=document.getElementById('date').value, comment=document.getElementById('comment').value.trim();
-      if(!vin||!stock||!make||!model||!year||!date){ showToast('Please fill all required fields'); return; }
+    // Add Pending
+    async function addPending() {
+      const vin = document.getElementById('vin').value.trim();
+      const stock = document.getElementById('stock').value.trim();
+      const make = document.getElementById('make').value.trim();
+      const model = document.getElementById('model').value.trim();
+      const year = document.getElementById('year').value;
+      const date = document.getElementById('date').value;
+      const comment = document.getElementById('comment').value.trim();
+      if (!vin || !stock || !make || !model || !year || !date) { showToast('Please fill all required fields'); return; }
       showSpinner();
-      try{ await db.collection('pending_vehicles').add({vin,stock,make,model,year,date,comment}); showToast('Added to pending'); ['vin','stock','make','model','year','date','comment'].forEach(id=>document.getElementById(id).value=''); }catch(e){ console.error(e); showToast('Error adding'); }finally{ hideSpinner(); }
+      try {
+        await db.collection('pending_vehicles').add({ vin, stock, make, model, year, date, comment });
+        showToast('Added to pending');
+        ['vin','stock','make','model','year','date','comment'].forEach(id => document.getElementById(id).value = '');
+      } catch (e) {
+        console.error(e); showToast('Error adding');
+      } finally { hideSpinner(); }
     }
 
-    // Render pending
-    function renderPending(data=pendingData){ const tb=document.getElementById('pendingTable'); tb.innerHTML=''; if(!data.length){ tb.innerHTML='<tr><td colspan="8" class="p-4 text-center">No pending vehicles</td></tr>'; return; } data.forEach(doc=>{ const d=doc.data; const tr=document.createElement('tr'); tr.innerHTML=`<td class="p-2 border">${d.vin}</td><td class="p-2 border">${d.stock}</td><td class="p-2 border">${d.make}</td><td class="p-2 border">${d.model}</td><td class="p-2 border">${d.year}</td><td class="p-2 border">${d.date}</td><td class="p-2 border">${d.comment||'-'}</td><td class="p-2 border"><button onclick="openCompleteModal('${doc.id}')" class="bg-green-600 text-white px-2 py-1 rounded">Complete</button> <button onclick="openEditModal('${doc.id}','pending_vehicles',pendingData.find(x=>x.id===doc.id).data)" class="bg-yellow-500 text-white px-2 py-1 rounded">Edit</button> <button onclick="deleteEntry('${doc.id}','pending_vehicles')" class="bg-red-600 text-white px-2 py-1 rounded">Delete</button></td>`; tb.appendChild(tr); }); }
+    // Render Pending
+    function renderPending(data = pendingData) {
+      const tb = document.getElementById('pendingTable'); tb.innerHTML = '';
+      if (!data.length) { tb.innerHTML = '<tr><td colspan="8" class="p-4 text-center">No pending vehicles</td></tr>'; return; }
+      data.forEach(doc => {
+        const d = doc.data;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="p-2 border">${d.vin}</td>
+          <td class="p-2 border">${d.stock}</td>
+          <td class="p-2 border">${d.make}</td>
+          <td class="p-2 border">${d.model}</td>
+          <td class="p-2 border">${d.year}</td>
+          <td class="p-2 border">${d.date}</td>
+          <td class="p-2 border">${d.comment||'-'}</td>
+          <td class="p-2 border">
+            <button onclick="openCompleteModal('${doc.id}')" class="bg-green-600 text-white px-2 py-1 rounded">Complete</button>
+            <button onclick="openEditModal('${doc.id}','pending_vehicles',pendingData.find(x=>x.id===doc.id).data)" class="bg-yellow-500 text-white px-2 py-1 rounded">Edit</button>
+            <button onclick="deleteEntry('${doc.id}','pending_vehicles')" class="bg-red-600 text-white px-2 py-1 rounded">Delete</button>
+          </td>`;
+        tb.appendChild(tr);
+      });
+    }
 
-    // Render completed
-    function renderCompleted(data=completedData){ const tb=document.getElementById('completedTable'); tb.innerHTML=''; if(!data.length){ tb.innerHTML='<tr><td colspan="11" class="p-4 text-center">No completed vehicles</td></tr>'; return; } data.forEach(doc=>{ const d=doc.data; const diff=(new Date()-new Date(d.date))/(1000*60*60*24); let cls=''; if(d.photoType==='Half Photos'){ if(diff>14) cls='bg-red-500 text-white'; else if(diff>7) cls='bg-green-200 text-green-800'; } const tr=document.createElement('tr'); tr.className=d.isSold?'opacity-60 line-through':''; tr.innerHTML=`<td class="p-2 border">${d.vin}</td><td class="p-2 border ${cls}">${d.stock}</td><td class="p-2 border">${d.make}</td><td class="p-2 border">${d.model}</td><td class="p-2 border">${d.year}</td><td class="p-2 border">${d.date}</td><td class="p-2 border">${d.detailed||'-'}</td><td class="p-2 border">${d.photoType||'-'}</td><td class="p-2 border">${d.halfReason||'-'}</td><td class="p-2 border">${d.comment||'-'}</td><td class="p-2 border"><button onclick="openEditModal('${doc.id}','vehicles',completedData.find(x=>x.id===doc.id).data)" class="bg-yellow-500 text-white px-2 py-1 rounded">Edit</button> <button onclick="deleteEntry('${doc.id}','vehicles')" class="bg-red-600 text-white px-2 py-1 rounded">Delete</button> <button onclick="toggleSold('${doc.id}',${d.isSold})" class="bg-purple-600 text-white px-2 py-1 rounded">${d.isSold?'Undo Sold':'Mark Sold'}</button></td>`; tb.appendChild(tr); }); }
+    // Render Completed
+    function renderCompleted(data = completedData) {
+      const tb = document.getElementById('completedTable'); tb.innerHTML = '';
+      if (!data.length) { tb.innerHTML = '<tr><td colspan="11" class="p-4 text-center">No completed vehicles</td></tr>'; return; }
+      data.forEach(doc => {
+        const d = doc.data;
+        const diff = (new Date() - new Date(d.date)) / (1000*60*60*24);
+        let cls = '';
+        if (d.photoType === 'Half Photos') {
+          if (diff > 14) cls = 'bg-red-500 text-white';
+          else if (diff > 7) cls = 'bg-green-200 text-green-800';
+        }
+        const tr = document.createElement('tr');
+        tr.className = d.isSold ? 'opacity-60 line-through' : '';
+        tr.innerHTML = `
+          <td class="p-2 border">${d.vin}</td>
+          <td class="p-2 border ${cls}">${d.stock}</td>
+          <td class="p-2 border">${d.make}</td>
+          <td class="p-2 border">${d.model}</td>
+          <td class="p-2 border">${d.year}</td>
+          <td class="p-2 border">${d.date}</td>
+          <td class="p-2 border">${d.detailed||'-'}</td>
+          <td class="p-2 border">${d.photoType||'-'}</td>
+          <td class="p-2 border">${d.halfReason||'-'}</td>
+          <td class="p-2 border">${d.comment||'-'}</td>
+          <td class="p-2 border">
+            <button onclick="openEditModal('${doc.id}','vehicles',completedData.find(x=>x.id===doc.id).data)" class="bg-yellow-500 text-white px-2 py-1 rounded">Edit</button>
+            <button onclick="deleteEntry('${doc.id}','vehicles')" class="bg-red-600 text-white px-2 py-1 rounded">Delete</button>
+            <button onclick="toggleSold('${doc.id}',${d.isSold})" class="bg-purple-600 text-white px-2 py-1 rounded">${d.isSold?'Undo Sold':'Mark Sold'}</button>
+          </td>`;
+        tb.appendChild(tr);
+      });
+    }
 
-    // Complete modal controls
-    document.getElementById('completePhotoType').addEventListener('change', e=>{
-      document.getElementById('halfReasonContainer').classList.toggle('hidden', e.target.value!=='Half Photos');
+    // Complete modal logic
+    const completeDetailed = document.getElementById('completeDetailed');
+    const completePhotoType = document.getElementById('completePhotoType');
+    completePhotoType.addEventListener('change', e => {
+      document.getElementById('halfReasonContainer').classList.toggle('hidden', e.target.value !== 'Half Photos');
     });
-    function openCompleteModal(id){ currentCompleteId=id; document.getElementById('completeModal').style.display='flex'; }
-    function closeCompleteModal(){ document.getElementById('completeModal').style.display='none'; document.getElementById('completeDetailed').value=''; document.getElementById('completePhotoType').value=''; document.getElementById('completeHalfReason').value=''; document.getElementById('halfReasonContainer').classList.add('hidden'); }
-
-    // Confirm complete
-    async function confirmComplete(){
-      const detailed = document.getElementById('completeDetailed').value;
-      const photoType= document.getElementById('completePhotoType').value;
-      const halfReason= photoType==='Half Photos'? document.getElementById('completeHalfReason').value.trim(): '';
-      if(!detailed||!photoType){ showToast('Please select both options'); return; }
-      showSpinner(); closeCompleteModal();
-      const entry = pendingData.find(x=>x.id===currentCompleteId).data;
-      try{
-        await db.collection('vehicles').add({...entry,detailed,photoType,halfReason,isSold:false});
+    function openCompleteModal(id) {
+      currentCompleteId = id;
+      document.getElementById('completeModal').style.display = 'flex';
+    }
+    function closeCompleteModal() {
+      document.getElementById('completeModal').style.display = 'none';
+      completeDetailed.value = '';
+      completePhotoType.value = '';
+      document.getElementById('completeHalfReason').value = '';
+      document.getElementById('halfReasonContainer').classList.add('hidden');
+    }
+    async function confirmComplete() {
+      const detailed = completeDetailed.value;
+      const photoType = completePhotoType.value;
+      if (!detailed || !photoType) {
+        showToast('Please select both options');
+        return;
+      }
+      const halfReason = photoType === 'Half Photos' ? document.getElementById('completeHalfReason').value.trim() : '';
+      showSpinner();
+      closeCompleteModal();
+      const entry = pendingData.find(x => x.id === currentCompleteId).data;
+      try {
+        await db.collection('vehicles').add({ ...entry, detailed, photoType, halfReason, isSold: false });
         await db.collection('pending_vehicles').doc(currentCompleteId).delete();
         showToast('Vehicle marked complete');
-      }catch(e){ console.error(e); showToast('Error marking complete'); }
-      finally{ hideSpinner(); }
+      } catch (e) {
+        console.error(e);
+        showToast('Error marking complete');
+      } finally {
+        hideSpinner();
+      }
     }
 
-    // Edit modal functions
-    function openEditModal(id,coll,data){ /* unchanged edit logic */ }
-    function closeModal(){ /* unchanged close logic */ }
-    async function saveEdit(){ /* unchanged save logic */ }
+    // Edit modal logic
+    function openEditModal(id, coll, data) {
+      document.getElementById('editId').value = id;
+      document.getElementById('editCollection').value = coll;
+      document.getElementById('editVin').value = data.vin || '';
+      document.getElementById('editStock').value = data.stock || '';
+      document.getElementById('editMake').value = data.make || '';
+      document.getElementById('editModel').value = data.model || '';
+      document.getElementById('editYear').value = data.year || '';
+      document.getElementById('editDate').value = data.date || '';
+      document.getElementById('editDetailed').value = data.detailed || '';
+      document.getElementById('editPhotoType').value = data.photoType || '';
+      document.getElementById('editComment').value = data.comment || '';
+      document.getElementById('editModal').style.display = 'flex';
+    }
+    function closeModal() {
+      document.getElementById('editModal').style.display = 'none';
+    }
+    async function saveEdit() {
+      const id = document.getElementById('editId').value;
+      const coll = document.getElementById('editCollection').value;
+      const updated = {
+        vin: document.getElementById('editVin').value.trim(),
+        stock: document.getElementById('editStock').value.trim(),
+        make: document.getElementById('editMake').value.trim(),
+        model: document.getElementById('editModel').value.trim(),
+        year: document.getElementById('editYear').value,
+        date: document.getElementById('editDate').value,
+        comment: document.getElementById('editComment').value.trim()
+      };
+      if (coll === 'vehicles') {
+        updated.detailed = document.getElementById('editDetailed').value;
+        updated.photoType = document.getElementById('editPhotoType').value;
+        if (updated.photoType === 'Half Photos') {
+          updated.halfReason = prompt('Reason for half photographs:', updated.halfReason || '');
+        } else {
+          updated.halfReason = '';
+        }
+      }
+      try {
+        await db.collection(coll).doc(id).update(updated);
+        showToast('Entry updated');
+        closeModal();
+      } catch (e) {
+        console.error(e);
+        showToast('Error updating entry');
+      }
+    }
 
-    // Delete & toggle
-    async function deleteEntry(id,coll){ /* unchanged delete logic */ }
-    async function toggleSold(id,c){ /* unchanged toggle logic */ }
+    // Delete
+    async function deleteEntry(id, coll) {
+      if (!confirm('Are you sure?')) return;
+      showSpinner();
+      try {
+        await db.collection(coll).doc(id).delete();
+        showToast('Entry deleted');
+      } catch (e) {
+        console.error(e);
+        showToast('Error deleting entry');
+      } finally {
+        hideSpinner();
+      }
+    }
 
-    // Search
-    document.getElementById('searchCompleted').addEventListener('input', e=>{ const v=e.target.value.toLowerCase(); const f=completedData.filter(x=>{ const d=x.data; return [d.vin,d.stock,d.make,d.model].some(s=>s.toLowerCase().includes(v)); }); renderCompleted(f); });
+    // Toggle Sold
+    async function toggleSold(id, sold) {
+      showSpinner();
+      try {
+        await db.collection('vehicles').doc(id).update({ isSold: !sold });
+        showToast(sold ? 'Sold undone' : 'Marked sold');
+      } catch (e) {
+        console.error(e);
+        showToast('Error updating sold status');
+      } finally {
+        hideSpinner();
+      }
+    }
+
+    // Search filter
+    document.getElementById('searchCompleted').addEventListener('input', e => {
+      const v = e.target.value.toLowerCase();
+      const filtered = completedData.filter(x => {
+        const d = x.data;
+        return [d.vin, d.stock, d.make, d.model].some(s => s.toLowerCase().includes(v));
+      });
+      renderCompleted(filtered);
+    });
 
     // Firestore listeners
-    db.collection('pending_vehicles').onSnapshot(s=>{ pendingData=s.docs.map(d=>({id:d.id,data:d.data()})); renderPending(); });
-    db.collection('vehicles').onSnapshot(s=>{ completedData=s.docs.map(d=>({id:d.id,data:d.data()})); renderCompleted(); });
+    db.collection('pending_vehicles').onSnapshot(snapshot => {
+      pendingData = snapshot.docs.map(d => ({ id: d.id, data: d.data() }));
+      renderPending();
+    });
+    db.collection('vehicles').onSnapshot(snapshot => {
+      completedData = snapshot.docs.map(d => ({ id: d.id, data: d.data() }));
+      renderCompleted();
+    });
 
     // Hook edit save
     document.getElementById('saveEditBtn').addEventListener('click', saveEdit);
+
+    // Hook complete confirm
+    document.getElementById('completeDetailed').addEventListener('change', () => {// no-op});
   </script>
 </body>
 </html>
