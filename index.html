@@ -8,63 +8,18 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <style>
-    /* Prevent cell wrapping */
-    table th, table td {
-      white-space: nowrap;
-    }
     /* Spinner */
-    #spinnerOverlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.3);
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-    .spinner {
-      border: 8px solid #f3f3f3;
-      border-top: 8px solid #3498db;
-      border-radius: 50%;
-      width: 60px;
-      height: 60px;
-      animation: spin 1s linear infinite;
-    }
+    #spinnerOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); align-items: center; justify-content: center; z-index: 1000; }
+    .spinner { border: 8px solid #f3f3f3; border-top: 8px solid #3498db; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
+
     /* Toast */
-    #toast {
-      display: none;
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #333;
-      color: #fff;
-      padding: 12px 20px;
-      border-radius: 8px;
-      z-index: 1001;
-    }
+    #toast { display: none; position: fixed; bottom: 20px; right: 20px; background: #333; color: #fff; padding: 12px 20px; border-radius: 8px; z-index: 1001; }
+
     /* Modals */
-    .modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.4);
-      align-items: center;
-      justify-content: center;
-      z-index: 1002;
-    }
-    .modal-content {
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      width: 90%;
-      max-width: 500px;
-    }
-    .close-button {
-      float: right;
-      font-size: 24px;
-      cursor: pointer;
-    }
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); align-items: center; justify-content: center; z-index: 1002; }
+    .modal-content { background: #fff; padding: 20px; border-radius: 8px; width: 90%; max-width: 500px; }
+    .close-button { float: right; font-size: 24px; cursor: pointer; }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -80,23 +35,21 @@
     <section class="bg-white p-6 rounded shadow">
       <h2 class="text-xl font-semibold mb-4">Data Entry</h2>
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <input id="vin"    placeholder="VIN Number"          class="border p-2 rounded w-full"/>
-        <input id="stock"  placeholder="Stock Number"        class="border p-2 rounded w-full"/>
-        <input id="make"   placeholder="Make"                class="border p-2 rounded w-full"/>
-        <input id="model"  placeholder="Model"               class="border p-2 rounded w-full"/>
+        <input id="vin"    placeholder="VIN Number"          class="border p-2 rounded w-full" />
+        <input id="stock"  placeholder="Stock Number"        class="border p-2 rounded w-full" />
+        <input id="make"   placeholder="Make"                class="border p-2 rounded w-full" />
+        <input id="model"  placeholder="Model"               class="border p-2 rounded w-full" />
         <select id="year"  class="border p-2 rounded w-full"><option value="">Year</option></select>
-        <input id="date"   type="date"                      class="border p-2 rounded w-full"/>
-        <input id="comment"placeholder="Comment (Optional)" class="border p-2 rounded w-full"/>
+        <input id="date"   type="date"                     class="border p-2 rounded w-full" />
+        <input id="comment"placeholder="Comment (Optional)" class="border p-2 rounded w-full" />
       </div>
-      <button onclick="addPending()" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded">
-        Add to Pending
-      </button>
+      <button onclick="addPending()" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded">Add to Pending</button>
     </section>
 
     <!-- Pending Vehicles -->
     <section class="bg-white p-6 rounded shadow">
       <h2 class="text-xl font-semibold mb-4">Pending Vehicles</h2>
-      <div class="overflow-x-auto">
+      <div>
         <table class="min-w-full border-collapse">
           <thead class="bg-gray-100">
             <tr>
@@ -118,13 +71,8 @@
     <!-- Completed Vehicles -->
     <section class="bg-white p-6 rounded shadow">
       <h2 class="text-xl font-semibold mb-4">Completed Vehicles</h2>
-      <input
-        id="searchCompleted"
-        type="text"
-        placeholder="Search VIN, Stock, Make…"
-        class="mb-4 border p-2 rounded w-full"
-      />
-      <div class="overflow-x-auto">
+      <input id="searchCompleted" type="text" placeholder="Search VIN, Stock, Make…" class="mb-4 border p-2 rounded w-full" />
+      <div>
         <table class="min-w-full border-collapse">
           <thead class="bg-gray-100">
             <tr>
@@ -152,6 +100,7 @@
     <div class="modal-content">
       <span class="close-button" onclick="closeCompleteModal()">&times;</span>
       <h3 class="text-xl font-semibold mb-4">Complete Vehicle</h3>
+
       <div class="mb-4">
         <label class="block mb-2">Detailed?</label>
         <select id="completeDetailed" class="border p-2 rounded w-full">
@@ -160,6 +109,7 @@
           <option value="No">No</option>
         </select>
       </div>
+
       <div class="mb-4">
         <label class="block mb-2">Photos?</label>
         <select id="completePhotoType" class="border p-2 rounded w-full">
@@ -168,14 +118,14 @@
           <option value="Half Photos">Half Photos</option>
         </select>
       </div>
+
       <div id="halfReasonContainer" class="mb-4 hidden">
         <label class="block mb-2">Reason for half photographs</label>
         <textarea id="completeHalfReason" class="border p-2 rounded w-full" rows="3"></textarea>
       </div>
+
       <div class="text-right">
-        <button onclick="confirmComplete()" class="bg-green-600 text-white px-4 py-2 rounded">
-          Submit
-        </button>
+        <button onclick="confirmComplete()" class="bg-green-600 text-white px-4 py-2 rounded">Submit</button>
       </div>
     </div>
   </div>
@@ -198,9 +148,7 @@
         <select id="editPhotoType" class="border p-2 rounded w-full"><option value="">Photos?</option><option>Full Photos</option><option>Half Photos</option></select>
       </div>
       <textarea id="editComment" class="border p-2 rounded w-full mb-4" rows="3" placeholder="Comment"></textarea>
-      <button id="saveEditBtn" class="bg-blue-600 text-white px-4 py-2 rounded">
-        Save Changes
-      </button>
+      <button id="saveEditBtn" class="bg-blue-600 text-white px-4 py-2 rounded">Save Changes</button>
     </div>
   </div>
 
@@ -220,54 +168,56 @@
     // UI helpers
     const spinner = document.getElementById('spinnerOverlay');
     const toast = document.getElementById('toast');
-    function showSpinner(){ spinner.style.display = 'flex'; }
-    function hideSpinner(){ spinner.style.display = 'none'; }
-    function showToast(msg){ toast.textContent = msg; toast.style.display = 'block'; setTimeout(()=>toast.style.display='none',3000); }
+    function showSpinner() { spinner.style.display = 'flex'; }
+    function hideSpinner() { spinner.style.display = 'none'; }
+    function showToast(msg) { toast.textContent = msg; toast.style.display = 'block'; setTimeout(() => toast.style.display = 'none', 3000); }
 
-    // Populate years
-    document.querySelectorAll('#year,#editYear').forEach(sel=>{
-      for(let y=1990; y<=new Date().getFullYear(); y++){
-        sel.append(new Option(y,y));
+    // Populate years (2000–current)
+    document.querySelectorAll('#year,#editYear').forEach(sel => {
+      for (let y = 2000; y <= new Date().getFullYear(); y++) {
+        sel.append(new Option(y, y));
       }
     });
 
-    let pendingData=[], completedData=[], currentCompleteId=null;
+    let pendingData = [], completedData = [], currentCompleteId = null;
 
-    // Add to pending
-    async function addPending(){
-      const vin=document.getElementById('vin').value.trim(),
-            stock=document.getElementById('stock').value.trim(),
-            make=document.getElementById('make').value.trim(),
-            model=document.getElementById('model').value.trim(),
-            year=document.getElementById('year').value,
-            date=document.getElementById('date').value,
-            comment=document.getElementById('comment').value.trim();
-      if(!vin||!stock||!make||!model||!year||!date){
+    // Add pending entry
+    async function addPending() {
+      const vin     = document.getElementById('vin').value.trim(),
+            stock   = document.getElementById('stock').value.trim(),
+            make    = document.getElementById('make').value.trim(),
+            model   = document.getElementById('model').value.trim(),
+            year    = document.getElementById('year').value,
+            date    = document.getElementById('date').value,
+            comment = document.getElementById('comment').value.trim();
+      if (!vin||!stock||!make||!model||!year||!date) {
         showToast('Please fill all required fields');
         return;
       }
       showSpinner();
-      try{
-        await db.collection('pending_vehicles').add({vin,stock,make,model,year,date,comment});
+      try {
+        await db.collection('pending_vehicles').add({ vin, stock, make, model, year, date, comment });
         showToast('Added to pending');
-        ['vin','stock','make','model','year','date','comment'].forEach(id=>document.getElementById(id).value='');
-      }catch(e){
+        ['vin','stock','make','model','year','date','comment'].forEach(id => document.getElementById(id).value = '');
+      } catch(e) {
         console.error(e); showToast('Error adding');
-      }finally{ hideSpinner(); }
+      } finally {
+        hideSpinner();
+      }
     }
 
     // Render Pending
-    function renderPending(data=pendingData){
+    function renderPending(data = pendingData) {
       console.log('pending snapshot:', data.length);
-      const tb=document.getElementById('pendingTable'); tb.innerHTML='';
-      if(!data.length){
-        tb.innerHTML='<tr><td colspan="8" class="p-4 text-center">No pending vehicles</td></tr>';
+      const tb = document.getElementById('pendingTable'); tb.innerHTML = '';
+      if (!data.length) {
+        tb.innerHTML = '<tr><td colspan="8" class="p-4 text-center">No pending vehicles</td></tr>';
         return;
       }
-      data.forEach(doc=>{
-        const d=doc.data;
-        const tr=document.createElement('tr');
-        tr.innerHTML=`
+      data.forEach(doc => {
+        const d = doc.data;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
           <td class="p-2 border">${d.vin}</td>
           <td class="p-2 border">${d.stock}</td>
           <td class="p-2 border">${d.make}</td>
@@ -281,31 +231,31 @@
             <button class="delete-btn bg-red-600 text-white px-2 py-1 rounded">Delete</button>
           </td>`;
         tb.appendChild(tr);
-        tr.querySelector('.complete-btn').addEventListener('click',()=>openCompleteModal(doc.id));
-        tr.querySelector('.edit-btn').addEventListener('click',()=>openEditModal(doc.id,'pending_vehicles',d));
-        tr.querySelector('.delete-btn').addEventListener('click',()=>deleteEntry(doc.id,'pending_vehicles'));
+        tr.querySelector('.complete-btn').addEventListener('click', () => openCompleteModal(doc.id));
+        tr.querySelector('.edit-btn').addEventListener('click', () => openEditModal(doc.id,'pending_vehicles',d));
+        tr.querySelector('.delete-btn').addEventListener('click', () => deleteEntry(doc.id,'pending_vehicles'));
       });
     }
 
     // Render Completed
-    function renderCompleted(data=completedData){
+    function renderCompleted(data = completedData) {
       console.log('completed snapshot:', data.length);
-      const tb=document.getElementById('completedTable'); tb.innerHTML='';
-      if(!data.length){
-        tb.innerHTML='<tr><td colspan="11" class="p-4 text-center">No completed vehicles</td></tr>';
+      const tb = document.getElementById('completedTable'); tb.innerHTML = '';
+      if (!data.length) {
+        tb.innerHTML = '<tr><td colspan="11" class="p-4 text-center">No completed vehicles</td></tr>';
         return;
       }
-      data.forEach(doc=>{
-        const d=doc.data;
-        const days=(new Date()-new Date(d.date))/(1000*60*60*24);
-        let cls='';
-        if(d.photoType==='Half Photos'){
-          if(days>14) cls='bg-red-500 text-white';
-          else if(days>7) cls='bg-green-200 text-green-800';
+      data.forEach(doc => {
+        const d = doc.data;
+        const days = (new Date() - new Date(d.date)) / (1000*60*60*24);
+        let cls = '';
+        if (d.photoType==='Half Photos') {
+          if (days>14) cls='bg-red-500 text-white';
+          else if (days>7) cls='bg-green-200 text-green-800';
         }
-        const tr=document.createElement('tr');
-        tr.className=d.isSold?'opacity-60 line-through':'';
-        tr.innerHTML=`
+        const tr = document.createElement('tr');
+        tr.className = d.isSold?'opacity-60 line-through':'';
+        tr.innerHTML = `
           <td class="p-2 border">${d.vin}</td>
           <td class="p-2 border ${cls}">${d.stock}</td>
           <td class="p-2 border">${d.make}</td>
@@ -322,15 +272,15 @@
             <button class="sold-btn bg-purple-600 text-white px-2 py-1 rounded">${d.isSold?'Undo Sold':'Mark Sold'}</button>
           </td>`;
         tb.appendChild(tr);
-        tr.querySelector('.edit-btn').addEventListener('click',()=>openEditModal(doc.id,'vehicles',d));
-        tr.querySelector('.delete-btn').addEventListener('click',()=>deleteEntry(doc.id,'vehicles'));
-        tr.querySelector('.sold-btn').addEventListener('click',()=>toggleSold(doc.id,d.isSold));
+        tr.querySelector('.edit-btn').addEventListener('click', () => openEditModal(doc.id,'vehicles',d));
+        tr.querySelector('.delete-btn').addEventListener('click', () => deleteEntry(doc.id,'vehicles'));
+        tr.querySelector('.sold-btn').addEventListener('click', () => toggleSold(doc.id,d.isSold));
       });
     }
 
-    // Complete modal handlers
-    document.getElementById('completePhotoType').addEventListener('change',e=>{
-      document.getElementById('halfReasonContainer').classList.toggle('hidden',e.target.value!=='Half Photos');
+    // Complete modal logic
+    document.getElementById('completePhotoType').addEventListener('change', e => {
+      document.getElementById('halfReasonContainer').classList.toggle('hidden', e.target.value!=='Half Photos');
     });
     function openCompleteModal(id){ currentCompleteId=id; document.getElementById('completeModal').style.display='flex'; }
     function closeCompleteModal(){
@@ -344,19 +294,18 @@
       const d=document.getElementById('completeDetailed').value;
       const p=document.getElementById('completePhotoType').value;
       if(!d||!p){ showToast('Please select both fields'); return; }
-      const hr=p==='Half Photos'?document.getElementById('completeHalfReason').value.trim():''; 
+      const hr=p==='Half Photos'?document.getElementById('completeHalfReason').value.trim():'';
       showSpinner(); closeCompleteModal();
       const e=pendingData.find(x=>x.id===currentCompleteId).data;
       try{
         await db.collection('vehicles').add({...e,detailed:d,photoType:p,halfReason:hr,isSold:false});
         await db.collection('pending_vehicles').doc(currentCompleteId).delete();
         showToast('Vehicle marked complete');
-      }catch(err){
-        console.error(err); showToast('Error marking complete');
-      }finally{ hideSpinner(); }
+      }catch(err){ console.error(err); showToast('Error marking complete'); }
+      finally{ hideSpinner(); }
     }
 
-    // Edit modal handlers
+    // Edit modal logic
     function openEditModal(id,coll,data){
       document.getElementById('editId').value=id;
       document.getElementById('editCollection').value=coll;
@@ -378,7 +327,7 @@
       const u={
         vin:document.getElementById('editVin').value.trim(),
         stock:document.getElementById('editStock').value.trim(),
-        make:document.getElementById('editMake').value.trim(), 
+        make:document.getElementById('editMake').value.trim(),
         model:document.getElementById('editModel').value.trim(),
         year:document.getElementById('editYear').value,
         date:document.getElementById('editDate').value,
@@ -389,54 +338,19 @@
         u.photoType=document.getElementById('editPhotoType').value;
         u.halfReason=u.photoType==='Half Photos'?prompt('Reason for half photographs:',u.halfReason||''):'';
       }
-      try{
-        await db.collection(coll).doc(id).update(u);
-        showToast('Entry updated');
-        closeModal();
-      }catch(e){
-        console.error(e); showToast('Error updating entry');
-      }
+      try{await db.collection(coll).doc(id).update(u);showToast('Entry updated');closeModal();}catch(e){console.error(e);showToast('Error updating entry');}
     }
 
-    // Delete & Sold
-    async function deleteEntry(id,coll){
-      if(!confirm('Are you sure?'))return;
-      showSpinner();
-      try{ await db.collection(coll).doc(id).delete(); showToast('Deleted'); }
-      catch(e){ console.error(e); showToast('Error deleting'); }
-      finally{ hideSpinner(); }
-    }
-    async function toggleSold(id,sold){
-      showSpinner();
-      try{
-        await db.collection('vehicles').doc(id).update({isSold:!sold});
-        showToast(sold?'Undo Sold':'Marked sold');
-      }catch(e){ console.error(e); showToast('Error updating sold'); }
-      finally{ hideSpinner(); }
-    }
+    // Delete & toggle
+    async function deleteEntry(id,coll){if(!confirm('Are you sure?'))return;showSpinner();try{await db.collection(coll).doc(id).delete();showToast('Deleted');}catch(e){console.error(e);showToast('Error deleting');}finally{hideSpinner();}}
+    async function toggleSold(id,sold){showSpinner();try{await db.collection('vehicles').doc(id).update({isSold:!sold});showToast(sold?'Undo Sold':'Marked sold');}catch(e){console.error(e);showToast('Error updating sold');}finally{hideSpinner();}}
 
     // Search filter
-    document.getElementById('searchCompleted').addEventListener('input',e=>{
-      const v=e.target.value.toLowerCase();
-      const filtered=completedData.filter(x=>{
-        const d=x.data;
-        return [d.vin,d.stock,d.make,d.model].some(s=>s.toLowerCase().includes(v));
-      });
-      renderCompleted(filtered);
-    });
+    document.getElementById('searchCompleted').addEventListener('input',e=>{const v=e.target.value.toLowerCase();const f=completedData.filter(x=>{const d=x.data;return [d.vin,d.stock,d.make,d.model].some(s=>s.toLowerCase().includes(v));});renderCompleted(f);});
 
-    // Firestore listeners with debug
-    db.collection('pending_vehicles').onSnapshot(snap=>{
-      console.log('pending snapshot:', snap.size, snap.docs.map(d=>d.id));
-      pendingData=snap.docs.map(d=>({id:d.id,data:d.data()}));
-      renderPending();
-    },e=>console.error('pending listener error',e));
-
-    db.collection('vehicles').onSnapshot(snap=>{
-      console.log('completed snapshot:', snap.size, snap.docs.map(d=>d.id));
-      completedData=snap.docs.map(d=>({id:d.id,data:d.data()}));
-      renderCompleted();
-    },e=>console.error('completed listener error',e));
+    // Firestore listeners
+    db.collection('pending_vehicles').onSnapshot(snap=>{console.log('pending snapshot:',snap.size,snap.docs.map(d=>d.id));pendingData=snap.docs.map(d=>({id:d.id,data:d.data()}));renderPending();},e=>console.error('pending listener error',e));
+    db.collection('vehicles').onSnapshot(snap=>{console.log('completed snapshot:',snap.size,snap.docs.map(d=>d.id));completedData=snap.docs.map(d=>({id:d.id,data:d.data()}));renderCompleted();},e=>console.error('completed listener error',e));
 
     // Hook save/edit
     document.getElementById('saveEditBtn').addEventListener('click', saveEdit);
