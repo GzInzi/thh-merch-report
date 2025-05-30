@@ -36,16 +36,14 @@
     <!-- Data Entry -->
     <section class="bg-white p-6 rounded-lg shadow">
       <h2 class="text-2xl font-semibold mb-4">Data Entry</h2>
-      <form id="entryForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <input id="vin"     placeholder="VIN Number"         class="border p-3 rounded w-full"/>
-        <input id="stock"   placeholder="Stock Number"       class="border p-3 rounded w-full"/>
-        <input id="make"    placeholder="Make"                class="border p-3 rounded w-full"/>
-        <input id="model"   placeholder="Model"               class="border p-3 rounded w-full"/>
-        <select id="year"   class="border p-3 rounded w-full">
-          <option value="">Year</option>
-        </select>
-        <input id="date"    type="date"                       class="border p-3 rounded w-full"/>
-        <input id="comment" placeholder="Comment (Optional)"  class="border p-3 rounded w-full"/>
+      <form class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <input id="vin"     placeholder="VIN Number"        class="border p-3 rounded w-full"/>
+        <input id="stock"   placeholder="Stock Number"      class="border p-3 rounded w-full"/>
+        <input id="make"    placeholder="Make"               class="border p-3 rounded w-full"/>
+        <input id="model"   placeholder="Model"              class="border p-3 rounded w-full"/>
+        <select id="year"   class="border p-3 rounded w-full"><option value="">Year</option></select>
+        <input id="date"    type="date"                      class="border p-3 rounded w-full"/>
+        <input id="comment" placeholder="Comment (Optional)" class="border p-3 rounded w-full"/>
         <div class="md:col-span-4 text-right">
           <button type="button" onclick="addPending()"
                   class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded shadow">
@@ -111,22 +109,24 @@
   </main>
 
   <!-- Complete Modal -->
-  <div id="completeModal"
-       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
-    <div class="bg-white rounded-lg p-6 w-11/12 max-w-md">
-      <button class="close-button float-right text-gray-500 hover:text-gray-800"
-              onclick="closeCompleteModal()">&times;</button>
+  <div id="completeModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+    <div class="bg-white p-6 rounded-lg w-11/12 max-w-md">
+      <button class="close-button float-right text-gray-500 hover:text-gray-800" onclick="closeCompleteModal()">&times;</button>
       <h3 class="text-xl font-semibold mb-4">Complete Vehicle</h3>
       <div class="mb-4">
         <label class="block mb-1">Detailed?</label>
         <select id="completeDetailed" class="border p-2 rounded w-full">
-          <option value="">Select…</option><option>Yes</option><option>No</option>
+          <option value="">Select…</option>
+          <option>Yes</option>
+          <option>No</option>
         </select>
       </div>
       <div class="mb-4">
         <label class="block mb-1">Photos?</label>
         <select id="completePhotoType" class="border p-2 rounded w-full">
-          <option value="">Select…</option><option>Full Photos</option><option>Half Photos</option>
+          <option value="">Select…</option>
+          <option>Full Photos</option>
+          <option>Half Photos</option>
         </select>
       </div>
       <div id="halfReasonContainer" class="mb-4 hidden">
@@ -134,8 +134,7 @@
         <textarea id="completeHalfReason" class="border p-2 rounded w-full" rows="3"></textarea>
       </div>
       <div class="text-right">
-        <button onclick="confirmComplete()"
-                class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded">
+        <button onclick="confirmComplete()" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded">
           Submit
         </button>
       </div>
@@ -143,11 +142,9 @@
   </div>
 
   <!-- Edit Modal -->
-  <div id="editModal"
-       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
-    <div class="bg-white rounded-lg p-6 w-11/12 max-w-md">
-      <button class="close-button float-right text-gray-500 hover:text-gray-800"
-              onclick="closeModal()">&times;</button>
+  <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+    <div class="bg-white p-6 rounded-lg w-11/12 max-w-md">
+      <button class="close-button float-right text-gray-500 hover:text-gray-800" onclick="closeModal()">&times;</button>
       <h3 class="text-xl font-semibold mb-4">Edit Vehicle Entry</h3>
       <input type="hidden" id="editId"/>
       <input type="hidden" id="editCollection"/>
@@ -159,13 +156,17 @@
         <select id="editYear"  class="border p-2 rounded w-full"><option value="">Year</option></select>
         <input id="editDate"   type="date"          class="border p-2 rounded w-full"/>
         <select id="editDetailed" class="border p-2 rounded w-full">
-          <option value="">Detailed?</option><option>Yes</option><option>No</option>
+          <option value="">Detailed?</option>
+          <option>Yes</option>
+          <option>No</option>
         </select>
         <select id="editPhotoType" class="border p-2 rounded w-full">
-          <option value="">Photos?</option><option>Full Photos</option><option>Half Photos</option>
+          <option value="">Photos?</option>
+          <option>Full Photos</option>
+          <option>Half Photos</option>
         </select>
       </div>
-      <textarea id="editComment" class="border p-2 rounded w-full mb-4" rows="3" placeholder="Comment"></textarea>
+      <textarea id="editComment" rows="3" placeholder="Comment" class="border p-2 rounded w-full mb-4"></textarea>
       <div class="text-right">
         <button id="saveEditBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded">
           Save Changes
@@ -197,7 +198,7 @@
       setTimeout(() => t.classList.add('hidden'), 3000);
     }
 
-    // Populate Year selectors
+    // Populate years
     document.querySelectorAll('#year,#editYear').forEach(sel => {
       for (let y = 2000; y <= new Date().getFullYear(); y++) {
         sel.append(new Option(y, y));
@@ -206,7 +207,7 @@
 
     let pendingData = [], completedData = [], currentCompleteId = null;
 
-    // Add Pending
+    // Add to pending
     async function addPending() {
       const vin     = document.getElementById('vin').value.trim();
       const stock   = document.getElementById('stock').value.trim();
@@ -216,22 +217,22 @@
       const date    = document.getElementById('date').value;
       const comment = document.getElementById('comment').value.trim();
       if (!vin || !stock || !make || !model || !year || !date) {
-        showToast('Please fill all required fields');
+        showToast('Please fill all fields');
         return;
       }
       showSpinner();
       try {
         await db.collection('pending_vehicles').add({ vin, stock, make, model, year, date, comment });
         showToast('Added to pending');
-        ['vin','stock','make','model','year','date','comment'].forEach(id => document.getElementById(id).value = '');
-      } catch(e) {
-        console.error(e); showToast('Error adding');
+      } catch (e) {
+        console.error(e);
+        showToast('Error adding');
       } finally {
         hideSpinner();
       }
     }
 
-    // Render Pending
+    // Render pending
     function renderPending() {
       const tb = document.getElementById('pendingTable');
       tb.innerHTML = '';
@@ -251,15 +252,15 @@
           <td class="p-2 border">${d.date}</td>
           <td class="p-2 border">${d.comment||'-'}</td>
           <td class="p-2 border flex space-x-2 justify-center">
-            <button onclick="openCompleteModal('${doc.id}')" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded">Complete</button>
-            <button onclick="openEditModal('${doc.id}','pending_vehicles',d)" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded">Edit</button>
-            <button onclick="deleteEntry('${doc.id}','pending_vehicles')" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded">Delete</button>
+            <button onclick="openCompleteModal('${doc.id}')" class="bg-green-600 text-white px-3 py-1 rounded">Complete</button>
+            <button onclick="openEditModal('${doc.id}','pending_vehicles')" class="bg-yellow-500 text-white px-3 py-1 rounded">Edit</button>
+            <button onclick="deleteEntry('${doc.id}','pending_vehicles')" class="bg-red-600 text-white px-3 py-1 rounded">Delete</button>
           </td>`;
         tb.appendChild(tr);
       });
     }
 
-    // Render Completed
+    // Render completed
     function renderCompleted(data = completedData) {
       const tb = document.getElementById('completedTable');
       tb.innerHTML = '';
@@ -271,9 +272,9 @@
         const d = doc.data;
         const days = Math.floor((new Date() - new Date(d.date)) / (1000*60*60*24));
         let cls = '';
-        if (d.photoType==='Half Photos') {
-          if (days>14) cls='bg-red-500 text-white';
-          else if (days>7) cls='bg-green-200 text-green-800';
+        if (d.photoType === 'Half Photos') {
+          if (days > 14) cls = 'bg-red-500 text-white';
+          else if (days > 7) cls = 'bg-green-200 text-green-800';
         }
         const tr = document.createElement('tr');
         tr.className = d.isSold ? 'opacity-60 line-through' : '';
@@ -288,116 +289,147 @@
           <td class="p-2 border">${d.photoType||'-'}</td>
           <td class="p-2 border">${d.halfReason||'-'}</td>
           <td class="p-2 border">${d.comment||'-'}</td>
-          <td class="p-2 border text-center">
-            <span class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded-full">${days}</span>
-          </td>
+          <td class="p-2 border text-center"><span class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded-full">${days}</span></td>
           <td class="p-2 border flex space-x-2 justify-center">
-            <button onclick="openEditModal('${doc.id}','vehicles',d)" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded">Edit</button>
-            <button onclick="deleteEntry('${doc.id}','vehicles')" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded">Delete</button>
-            <button onclick="toggleSold('${doc.id}',${d.isSold})" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm">${d.isSold?'Undo Sold':'Mark Sold'}</button>
+            <button onclick="openEditModal('${doc.id}','vehicles')" class="bg-yellow-500 text-white px-3 py-1 rounded">Edit</button>
+            <button onclick="deleteEntry('${doc.id}','vehicles')" class="bg-red-600 text-white px-3 py-1 rounded">Delete</button>
+            <button onclick="toggleSold('${doc.id}',${d.isSold})" class="bg-purple-600 text-white px-3 py-1 rounded text-sm">${d.isSold?'Undo Sold':'Mark Sold'}</button>
           </td>`;
         tb.appendChild(tr);
       });
     }
 
-    // Complete Modal
+    // Complete modal logic
     document.getElementById('completePhotoType').addEventListener('change', e => {
-      document.getElementById('halfReasonContainer').classList.toggle('hidden', e.target.value!=='Half Photos');
+      document.getElementById('halfReasonContainer').classList.toggle('hidden', e.target.value !== 'Half Photos');
     });
     function openCompleteModal(id) {
       currentCompleteId = id;
+      console.log('openCompleteModal', id);
       document.getElementById('completeModal').classList.remove('hidden');
     }
     function closeCompleteModal() {
-      ['completeDetailed','completePhotoType','completeHalfReason'].forEach(i=>document.getElementById(i).value='');
+      ['completeDetailed','completePhotoType','completeHalfReason'].forEach(i => document.getElementById(i).value = '');
       document.getElementById('halfReasonContainer').classList.add('hidden');
       document.getElementById('completeModal').classList.add('hidden');
     }
     async function confirmComplete() {
-      const detailed  = document.getElementById('completeDetailed').value;
-      const photoType = document.getElementById('completePhotoType').value;
-      if (!detailed || !photoType) { showToast('Select both fields'); return; }
-      const halfReason = photoType==='Half Photos' ? document.getElementById('completeHalfReason').value.trim() : '';
+      const det = document.getElementById('completeDetailed').value;
+      const pt  = document.getElementById('completePhotoType').value;
+      if (!det || !pt) { showToast('Select both fields'); return; }
+      const hr = pt === 'Half Photos'
+               ? document.getElementById('completeHalfReason').value.trim()
+               : '';
       showSpinner(); closeCompleteModal();
-      const entry = pendingData.find(x=>x.id===currentCompleteId).data;
+      const entry = pendingData.find(x => x.id === currentCompleteId).data;
       try {
-        await db.collection('vehicles').add({ ...entry, detailed, photoType, halfReason, isSold:false });
+        await db.collection('vehicles').add({ ...entry, detailed: det, photoType: pt, halfReason: hr, isSold: false });
         await db.collection('pending_vehicles').doc(currentCompleteId).delete();
-        showToast('Vehicle marked complete');
-      } catch(e) { console.error(e); showToast('Error marking complete'); }
-      finally { hideSpinner(); }
+        showToast('Marked complete');
+      } catch (e) {
+        console.error(e);
+        showToast('Error');
+      } finally {
+        hideSpinner();
+      }
     }
 
-    // Edit Modal
-    function openEditModal(id, coll, data) {
+    // Edit modal logic
+    function openEditModal(id, coll) {
+      console.log('openEditModal', id, coll);
+      const store = coll === 'pending_vehicles' ? pendingData : completedData;
+      const entry = store.find(e => e.id === id).data;
       document.getElementById('editId').value = id;
       document.getElementById('editCollection').value = coll;
-      ['Vin','Stock','Make','Model','Year','Date','Detailed','PhotoType','Comment'].forEach(f=> {
-        document.getElementById('edit'+f).value = data[f.toLowerCase()]||'';
+      ['Vin','Stock','Make','Model','Year','Date','Detailed','PhotoType','Comment'].forEach(f => {
+        document.getElementById('edit' + f).value = entry[f.toLowerCase()] || '';
       });
       document.getElementById('editModal').classList.remove('hidden');
     }
-    function closeModal() { document.getElementById('editModal').classList.add('hidden'); }
+    function closeModal() {
+      console.log('closeEditModal');
+      document.getElementById('editModal').classList.add('hidden');
+    }
     async function saveEdit() {
       const id   = document.getElementById('editId').value;
       const coll = document.getElementById('editCollection').value;
+      console.log('saveEdit', id, coll);
       const u = {
-        vin:    document.getElementById('editVin').value.trim(),
-        stock:  document.getElementById('editStock').value.trim(),
-        make:   document.getElementById('editMake').value.trim(),
-        model:  document.getElementById('editModel').value.trim(),
-        year:   document.getElementById('editYear').value,
-        date:   document.getElementById('editDate').value,
-        comment:document.getElementById('editComment').value.trim()
+        vin:     document.getElementById('editVin').value.trim(),
+        stock:   document.getElementById('editStock').value.trim(),
+        make:    document.getElementById('editMake').value.trim(),
+        model:   document.getElementById('editModel').value.trim(),
+        year:    document.getElementById('editYear').value,
+        date:    document.getElementById('editDate').value,
+        comment: document.getElementById('editComment').value.trim()
       };
-      if (coll==='vehicles') {
+      if (coll === 'vehicles') {
         u.detailed   = document.getElementById('editDetailed').value;
         u.photoType  = document.getElementById('editPhotoType').value;
-        u.halfReason = u.photoType==='Half Photos' ? prompt('Reason for half photographs:', u.halfReason||'') : '';
+        u.halfReason = u.photoType === 'Half Photos' ? prompt('Reason for half photos:', u.halfReason || '') : '';
       }
       try {
         await db.collection(coll).doc(id).update(u);
-        showToast('Entry updated');
+        showToast('Updated');
         closeModal();
-      } catch(e) { console.error(e); showToast('Error updating'); }
+      } catch (e) {
+        console.error(e);
+        showToast('Error updating');
+      }
     }
 
-    // Delete & Toggle Sold
+    // Delete & toggle sold
     async function deleteEntry(id, coll) {
-      if (!confirm('Are you sure?')) return;
+      console.log('deleteEntry called with id:', id, 'collection:', coll);
+      if (!confirm('Are you sure you want to delete this entry?')) return;
       showSpinner();
-      try { await db.collection(coll).doc(id).delete(); showToast('Deleted'); }
-      catch(e){ console.error(e); showToast('Error deleting'); }
-      finally { hideSpinner(); }
+      try {
+        await db.collection(coll).doc(id).delete();
+        showToast('Entry deleted');
+      } catch (e) {
+        console.error(e);
+        showToast('Error deleting entry');
+      } finally {
+        hideSpinner();
+      }
     }
     async function toggleSold(id, sold) {
+      console.log('toggleSold', id, sold);
       showSpinner();
-      try { await db.collection('vehicles').doc(id).update({ isSold:!sold }); showToast(sold?'Undo Sold':'Marked Sold'); }
-      catch(e){ console.error(e); showToast('Error toggling sold'); }
-      finally{ hideSpinner(); }
+      try {
+        await db.collection('vehicles').doc(id).update({ isSold: !sold });
+        showToast(sold ? 'Undo Sold' : 'Marked Sold');
+      } catch (e) {
+        console.error(e);
+        showToast('Error toggling sold status');
+      } finally {
+        hideSpinner();
+      }
     }
 
     // Search filter
     document.getElementById('searchCompleted').addEventListener('input', e => {
       const v = e.target.value.toLowerCase();
       if (!v) return renderCompleted();
-      const filt = completedData.filter(x=>{
-        const d=x.data; return [d.vin,d.stock,d.make,d.model].some(s=>s.toLowerCase().includes(v));
+      const filtered = completedData.filter(x => {
+        const d = x.data;
+        return [d.vin, d.stock, d.make, d.model]
+          .some(s => s.toLowerCase().includes(v));
       });
-      renderCompleted(filt);
+      renderCompleted(filtered);
     });
 
     // Firestore listeners
-    db.collection('pending_vehicles').onSnapshot(snap=>{
-      pendingData = snap.docs.map(d=>({ id:d.id, data:d.data() }));
+    db.collection('pending_vehicles').onSnapshot(snap => {
+      pendingData = snap.docs.map(d => ({ id: d.id, data: d.data() }));
       renderPending();
     });
-    db.collection('vehicles').onSnapshot(snap=>{
-      completedData = snap.docs.map(d=>({ id:d.id, data:d.data() }));
+    db.collection('vehicles').onSnapshot(snap => {
+      completedData = snap.docs.map(d => ({ id: d.id, data: d.data() }));
       renderCompleted();
     });
 
-    // Expose handlers for inline onclick
+    // Expose inline onclick handlers
     window.openEditModal   = openEditModal;
     window.closeModal      = closeModal;
     window.saveEdit        = saveEdit;
