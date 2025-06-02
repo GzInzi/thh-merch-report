@@ -9,6 +9,7 @@
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
   <style>
     html, body { width:100vw; margin:0; padding:0; }
     table th, table td { white-space: nowrap; }
@@ -17,6 +18,7 @@
     th.sorted-desc::after { content: " ▼"; font-size: 0.7em; }
   </style>
 </head>
+
 <body class="bg-gray-50 text-gray-800">
   <!-- Toast Notification -->
   <div id="toast" class="fixed bottom-5 right-5 hidden bg-gray-800 text-white px-4 py-2 rounded shadow"></div>
@@ -28,26 +30,35 @@
   <!-- HEADER -->
   <header class="bg-white shadow">
     <div class="container mx-auto px-4 py-4">
-      <h1 class="text-3xl font-bold text-center">THH Merchandising Report</h1>
+      <h1 class="text-2xl md:text-3xl font-bold text-center">THH Merchandising Report</h1>
     </div>
   </header>
 
-  <main class="container mx-auto px-4 py-6 space-y-8">
+  <main class="container mx-auto px-2 md:px-4 py-6 space-y-8">
     <!-- ==========================
          DATA ENTRY SECTION
          ========================== -->
-    <section class="bg-white p-6 rounded-lg shadow">
-      <h2 class="text-2xl font-semibold mb-4">Data Entry</h2>
-      <form class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <input id="vin"     placeholder="VIN Number"        class="border p-3 rounded w-full focus:border-blue-500"/>
-        <input id="stock"   placeholder="Stock Number"      class="border p-3 rounded w-full focus:border-blue-500"/>
-        <input id="make"    placeholder="Make"               class="border p-3 rounded w-full focus:border-blue-500"/>
-        <input id="model"   placeholder="Model"              class="border p-3 rounded w-full focus:border-blue-500"/>
-        <select id="year"   class="border p-3 rounded w-full focus:border-blue-500"><option value="">Year</option></select>
-        <input id="date"    type="date"                      class="border p-3 rounded w-full focus:border-blue-500"/>
-        <input id="comment" placeholder="Comment (Optional)" class="border p-3 rounded w-full focus:border-blue-500"/>
-        <div class="md:col-span-4 text-right">
-          <button type="button" onclick="addPending()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded shadow">
+    <section class="bg-white p-4 md:p-6 rounded-lg shadow">
+      <h2 class="text-lg md:text-2xl font-semibold mb-4">Data Entry</h2>
+      <form class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
+        <input id="vin"     placeholder="VIN Number"
+               class="border p-2 md:p-3 rounded w-full focus:border-blue-500 text-xs md:text-sm"/>
+        <input id="stock"   placeholder="Stock Number"
+               class="border p-2 md:p-3 rounded w-full focus:border-blue-500 text-xs md:text-sm"/>
+        <input id="make"    placeholder="Make"
+               class="border p-2 md:p-3 rounded w-full focus:border-blue-500 text-xs md:text-sm"/>
+        <input id="model"   placeholder="Model"
+               class="border p-2 md:p-3 rounded w-full focus:border-blue-500 text-xs md:text-sm"/>
+        <select id="year"   class="border p-2 md:p-3 rounded w-full focus:border-blue-500 text-xs md:text-sm">
+          <option value="">Year</option>
+        </select>
+        <input id="date"    type="date"
+               class="border p-2 md:p-3 rounded w-full focus:border-blue-500 text-xs md:text-sm"/>
+        <input id="comment" placeholder="Comment (Optional)"
+               class="border p-2 md:p-3 rounded w-full focus:border-blue-500 text-xs md:text-sm"/>
+        <div class="sm:col-span-2 md:col-span-4 text-right mt-2">
+          <button type="button" onclick="addPending()"
+                  class="bg-blue-600 hover:bg-blue-700 text-white px-4 md:px-6 py-2 md:py-2 rounded shadow text-sm md:text-base">
             Add to Pending
           </button>
         </div>
@@ -57,21 +68,21 @@
     <!-- ==========================
          PENDING VEHICLES TABLE
          ========================== -->
-    <section class="bg-white p-6 rounded-lg shadow">
-      <h2 class="text-2xl font-semibold mb-4">Pending Vehicles</h2>
+    <section class="bg-white p-4 md:p-6 rounded-lg shadow">
+      <h2 class="text-lg md:text-2xl font-semibold mb-4">Pending Vehicles</h2>
       <div class="overflow-x-auto">
-        <table class="min-w-full bg-white table-auto">
+        <table class="min-w-full bg-white table-auto text-xs md:text-sm">
           <thead class="bg-gray-100">
-            <tr class="text-left text-gray-600 uppercase text-sm">
-              <th data-col="vin"     class="px-4 py-2 border sortable">VIN</th>
-              <th data-col="stock"   class="px-4 py-2 border sortable">Stock</th>
-              <th data-col="make"    class="px-4 py-2 border sortable">Make</th>
-              <th data-col="model"   class="px-4 py-2 border sortable">Model</th>
-              <th data-col="year"    class="px-4 py-2 border sortable">Year</th>
-              <th data-col="date"    class="px-4 py-2 border sortable">Date</th>
-              <th data-col="days"    class="px-4 py-2 border sortable text-center">Days</th>
-              <th class="px-4 py-2 border">Comment</th>
-              <th class="px-4 py-2 border text-center">Actions</th>
+            <tr class="text-left text-gray-600 uppercase text-xs md:text-sm">
+              <th data-col="vin"     class="px-2 md:px-4 py-1 md:py-2 border sortable">VIN</th>
+              <th data-col="stock"   class="px-2 md:px-4 py-1 md:py-2 border sortable">Stock</th>
+              <th data-col="make"    class="px-2 md:px-4 py-1 md:py-2 border sortable">Make</th>
+              <th data-col="model"   class="px-2 md:px-4 py-1 md:py-2 border sortable">Model</th>
+              <th data-col="year"    class="px-2 md:px-4 py-1 md:py-2 border sortable">Year</th>
+              <th data-col="date"    class="px-2 md:px-4 py-1 md:py-2 border sortable">Date</th>
+              <th data-col="days"    class="px-2 md:px-4 py-1 md:py-2 border sortable text-center">Days</th>
+              <th class="px-2 md:px-4 py-1 md:py-2 border">Comment</th>
+              <th class="px-2 md:px-4 py-1 md:py-2 border text-center">Actions</th>
             </tr>
           </thead>
           <tbody id="pendingTable" class="divide-y divide-gray-200"></tbody>
@@ -82,28 +93,28 @@
     <!-- ==========================
          COMPLETED VEHICLES TABLE
          ========================== -->
-    <section class="bg-white p-6 rounded-lg shadow">
+    <section class="bg-white p-4 md:p-6 rounded-lg shadow">
       <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-4">
-        <h2 class="text-2xl font-semibold">Completed Vehicles</h2>
+        <h2 class="text-lg md:text-2xl font-semibold">Completed Vehicles</h2>
         <input id="searchCompleted" type="text" placeholder="Search VIN, Stock, Make…"
-               class="border p-3 rounded w-full md:w-1/3 mt-4 md:mt-0 focus:border-blue-500"/>
+               class="border p-2 md:p-3 rounded w-full md:w-1/3 mt-2 md:mt-0 text-xs md:text-sm focus:border-blue-500"/>
       </div>
       <div class="overflow-x-auto">
-        <table class="min-w-full bg-white table-auto">
+        <table class="min-w-full bg-white table-auto text-xs md:text-sm">
           <thead class="bg-gray-100">
-            <tr class="text-left text-gray-600 uppercase text-sm">
-              <th data-col="vin"        class="px-4 py-2 border sortable">VIN</th>
-              <th data-col="stock"      class="px-4 py-2 border sortable">Stock</th>
-              <th data-col="make"       class="px-4 py-2 border sortable">Make</th>
-              <th data-col="model"      class="px-4 py-2 border sortable">Model</th>
-              <th data-col="year"       class="px-4 py-2 border sortable">Year</th>
-              <th data-col="date"       class="px-4 py-2 border sortable">Date</th>
-              <th data-col="detailed"   class="px-4 py-2 border sortable">Detailed</th>
-              <th data-col="photoType"  class="px-4 py-2 border sortable">Photos</th>
-              <th data-col="halfReason" class="px-4 py-2 border sortable">Half Reason</th>
-              <th data-col="days"       class="px-4 py-2 border sortable text-center">Days</th>
-              <th class="px-4 py-2 border">Comment</th>
-              <th class="px-4 py-2 border text-center">Actions</th>
+            <tr class="text-left text-gray-600 uppercase text-xs md:text-sm">
+              <th data-col="vin"        class="px-2 md:px-4 py-1 md:py-2 border sortable">VIN</th>
+              <th data-col="stock"      class="px-2 md:px-4 py-1 md:py-2 border sortable">Stock</th>
+              <th data-col="make"       class="px-2 md:px-4 py-1 md:py-2 border sortable">Make</th>
+              <th data-col="model"      class="px-2 md:px-4 py-1 md:py-2 border sortable">Model</th>
+              <th data-col="year"       class="px-2 md:px-4 py-1 md:py-2 border sortable">Year</th>
+              <th data-col="date"       class="px-2 md:px-4 py-1 md:py-2 border sortable">Date</th>
+              <th data-col="detailed"   class="px-2 md:px-4 py-1 md:py-2 border sortable">Detailed</th>
+              <th data-col="photoType"  class="px-2 md:px-4 py-1 md:py-2 border sortable">Photos</th>
+              <th data-col="halfReason" class="px-2 md:px-4 py-1 md:py-2 border sortable">Half Reason</th>
+              <th data-col="days"       class="px-2 md:px-4 py-1 md:py-2 border sortable text-center">Days</th>
+              <th class="px-2 md:px-4 py-1 md:py-2 border">Comment</th>
+              <th class="px-2 md:px-4 py-1 md:py-2 border text-center">Actions</th>
             </tr>
           </thead>
           <tbody id="completedTable" class="divide-y divide-gray-200"></tbody>
@@ -116,27 +127,29 @@
        COMPLETE VEHICLE MODAL
        ========================== -->
   <div id="completeModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
-    <div class="bg-white p-6 rounded-lg w-11/12 max-w-md">
-      <button onclick="closeCompleteModal()" class="close-button float-right text-gray-500 hover:text-gray-800">&times;</button>
-      <h3 class="text-xl font-semibold mb-4">Complete Vehicle</h3>
+    <div class="bg-white p-4 md:p-6 rounded-lg w-11/12 max-w-md">
+      <button onclick="closeCompleteModal()" class="close-button float-right text-gray-500 hover:text-gray-800 text-lg">&times;</button>
+      <h3 class="text-lg md:text-xl font-semibold mb-4">Complete Vehicle</h3>
       <div class="mb-4">
-        <label class="block mb-1">Detailed?</label>
-        <select id="completeDetailed" class="border p-2 rounded w-full">
+        <label class="block mb-1 text-sm md:text-base">Detailed?</label>
+        <select id="completeDetailed" class="border p-2 md:p-3 rounded w-full text-sm md:text-base">
           <option value="">Select…</option><option>Yes</option><option>No</option>
         </select>
       </div>
       <div class="mb-4">
-        <label class="block mb-1">Photos?</label>
-        <select id="completePhotoType" class="border p-2 rounded w-full">
+        <label class="block mb-1 text-sm md:text-base">Photos?</label>
+        <select id="completePhotoType" class="border p-2 md:p-3 rounded w-full text-sm md:text-base">
           <option value="">Select…</option><option>Full Photos</option><option>Half Photos</option>
         </select>
       </div>
       <div id="halfReasonContainer" class="mb-4 hidden">
-        <label class="block mb-1">Reason for half photographs</label>
-        <textarea id="completeHalfReason" class="border p-2 rounded w-full" rows="3"></textarea>
+        <label class="block mb-1 text-sm md:text-base">Reason for half photographs</label>
+        <textarea id="completeHalfReason" class="border p-2 md:p-3 rounded w-full text-sm md:text-base" rows="3"></textarea>
       </div>
       <div class="text-right">
-        <button onclick="confirmComplete()" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded">Submit</button>
+        <button onclick="confirmComplete()" class="bg-green-600 hover:bg-green-700 text-white px-4 md:px-6 py-2 md:py-2 rounded text-sm md:text-base">
+          Submit
+        </button>
       </div>
     </div>
   </div>
@@ -145,28 +158,30 @@
        EDIT VEHICLE MODAL
        ========================== -->
   <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
-    <div class="bg-white p-6 rounded-lg w-11/12 max-w-md">
-      <button onclick="closeModal()" class="close-button float-right text-gray-500 hover:text-gray-800">&times;</button>
-      <h3 class="text-xl font-semibold mb-4">Edit Vehicle Entry</h3>
+    <div class="bg-white p-4 md:p-6 rounded-lg w-11/12 max-w-md">
+      <button onclick="closeModal()" class="close-button float-right text-gray-500 hover:text-gray-800 text-lg">&times;</button>
+      <h3 class="text-lg md:text-xl font-semibold mb-4">Edit Vehicle Entry</h3>
       <input type="hidden" id="editId"/>
       <input type="hidden" id="editCollection"/>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-        <input id="editVin"    placeholder="VIN"    class="border p-2 rounded w-full focus:border-blue-500"/>
-        <input id="editStock"  placeholder="Stock"  class="border p-2 rounded w-full focus:border-blue-500"/>
-        <input id="editMake"   placeholder="Make"   class="border p-2 rounded w-full focus:border-blue-500"/>
-        <input id="editModel"  placeholder="Model"  class="border p-2 rounded w-full focus:border-blue-500"/>
-        <select id="editYear"  class="border p-2 rounded w-full focus:border-blue-500"><option value="">Year</option></select>
-        <input id="editDate"   type="date"          class="border p-2 rounded w-full focus:border-blue-500"/>
-        <select id="editDetailed" class="border p-2 rounded w-full focus:border-blue-500">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-4 mb-4">
+        <input id="editVin"    placeholder="VIN"    class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500"/>
+        <input id="editStock"  placeholder="Stock"  class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500"/>
+        <input id="editMake"   placeholder="Make"   class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500"/>
+        <input id="editModel"  placeholder="Model"  class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500"/>
+        <select id="editYear"  class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500"><option value="">Year</option></select>
+        <input id="editDate"   type="date"          class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500"/>
+        <select id="editDetailed" class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500">
           <option value="">Detailed?</option><option>Yes</option><option>No</option>
         </select>
-        <select id="editPhotoType" class="border p-2 rounded w-full focus:border-blue-500">
+        <select id="editPhotoType" class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500">
           <option value="">Photos?</option><option>Full Photos</option><option>Half Photos</option>
         </select>
       </div>
-      <textarea id="editComment" rows="3" placeholder="Comment" class="border p-2 rounded w-full mb-4 focus:border-blue-500"></textarea>
+      <textarea id="editComment" rows="3" placeholder="Comment" class="border p-2 md:p-3 rounded w-full mb-4 text-sm md:text-base focus:border-blue-500"></textarea>
       <div class="text-right">
-        <button id="saveEditBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded">Save Changes</button>
+        <button id="saveEditBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 md:px-6 py-2 md:py-2 rounded text-sm md:text-base">
+          Save Changes
+        </button>
       </div>
     </div>
   </div>
@@ -221,10 +236,10 @@
     };
 
     // ==========================
-    // ADD PENDING ENTRY (with duplicate check)
+    // ADD PENDING ENTRY (duplicate‐check)
     // ==========================
     async function addPending() {
-      // Clear any prior red-border highlights
+      // Clear previous red border
       ['vin','stock'].forEach(id => document.getElementById(id).classList.remove('border-red-500'));
 
       const vin     = document.getElementById('vin').value.trim().toUpperCase();
@@ -240,12 +255,12 @@
         return;
       }
 
-      // Check for duplicate VIN or Stock within pendingData (case-insensitive)
+      // Check duplicate in pendingData
       const duplicate = pendingData.find(item => {
-        return item.data.vin.toUpperCase() === vin || item.data.stock.toUpperCase() === stock;
+        return item.data.vin.toUpperCase() === vin
+            || item.data.stock.toUpperCase() === stock;
       });
       if (duplicate) {
-        // Highlight both input fields in red and show toast
         document.getElementById('vin').classList.add('border-red-500');
         document.getElementById('stock').classList.add('border-red-500');
         showToast('Duplicate VIN or Stock number.');
@@ -269,10 +284,9 @@
     // ==========================
     function applySort(table) {
       const { col, dir } = sortState[table];
-      if (!col) {
-        return table === 'pending' ? pendingData : completedData;
-      }
-      return (table === 'pending' ? pendingData : completedData)
+      if (!col) return (table === 'pending') ? pendingData : completedData;
+
+      return ((table === 'pending') ? pendingData : completedData)
         .slice()
         .sort((a, b) => {
           let va, vb;
@@ -283,6 +297,7 @@
             va = a.data[col] || '';
             vb = b.data[col] || '';
           }
+
           let res = 0;
           if (col === 'year' || col === 'days') {
             res = (parseFloat(va) || 0) - (parseFloat(vb) || 0);
@@ -299,8 +314,9 @@
       document.querySelectorAll('th.sortable').forEach(th => {
         th.onclick = () => {
           const column = th.dataset.col;
-          const tbl = th.closest('table').id === 'pendingTable' ? 'pending' : 'completed';
-          const state = sortState[tbl];
+          const tblId = th.closest('table').id;
+          const tblKey = tblId === 'pendingTable' ? 'pending' : 'completed';
+          const state = sortState[tblKey];
 
           if (state.col !== column) {
             state.col = column;
@@ -310,20 +326,18 @@
             state.dir = null;
           }
 
-          // Clear classes
           document.querySelectorAll('th.sortable').forEach(x => x.classList.remove('sorted-asc','sorted-desc'));
           if (state.col) {
             th.classList.add(state.dir === 'asc' ? 'sorted-asc' : 'sorted-desc');
           }
-
-          if (tbl === 'pending') renderPending();
+          if (tblKey === 'pending') renderPending();
           else renderCompleted();
         };
       });
     }
 
     // ==========================
-    // RENDER PENDING
+    // RENDER PENDING VEHICLES
     // ==========================
     function renderPending(data = applySort('pending')) {
       const tbody = document.getElementById('pendingTable');
@@ -341,26 +355,28 @@
       data.forEach(doc => {
         const d = doc.data;
         const days = Math.floor((new Date() - new Date(d.date)) / (1000 * 60 * 60 * 24));
-        const badgeColor = days > 3 ? 'bg-red-500 text-white' : 'bg-blue-100 text-blue-800';
+        const badgeColor = days > 3
+          ? 'bg-red-500 text-white'
+          : 'bg-blue-100 text-blue-800';
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td class="p-2 border">${d.vin}</td>
-          <td class="p-2 border">${d.stock}</td>
-          <td class="p-2 border">${d.make}</td>
-          <td class="p-2 border">${d.model}</td>
-          <td class="p-2 border">${d.year}</td>
-          <td class="p-2 border">${d.date}</td>
-          <td class="p-2 border text-center">
+          <td class="p-1 md:p-2 border">${d.vin}</td>
+          <td class="p-1 md:p-2 border">${d.stock}</td>
+          <td class="p-1 md:p-2 border">${d.make}</td>
+          <td class="p-1 md:p-2 border">${d.model}</td>
+          <td class="p-1 md:p-2 border">${d.year}</td>
+          <td class="p-1 md:p-2 border">${d.date}</td>
+          <td class="p-1 md:p-2 border text-center">
             <span class="inline-block ${badgeColor} text-xs font-semibold px-2 py-1 rounded-full">
               ${days}
             </span>
           </td>
-          <td class="p-2 border">${d.comment || '-'}</td>
-          <td class="p-2 border flex space-x-2 justify-center">
-            <button onclick="openCompleteModal('${doc.id}')" class="bg-green-600 text-white px-3 py-1 rounded">Complete</button>
-            <button onclick="openEditModal('${doc.id}','pending_vehicles')" class="bg-yellow-500 text-white px-3 py-1 rounded">Edit</button>
-            <button onclick="deleteEntry('${doc.id}','pending_vehicles')" class="bg-red-600 text-white px-3 py-1 rounded">Delete</button>
+          <td class="p-1 md:p-2 border">${d.comment || '-'}</td>
+          <td class="p-1 md:p-2 border flex space-x-1 md:space-x-2 justify-center">
+            <button onclick="openCompleteModal('${doc.id}')" class="bg-green-600 text-white px-2 md:px-3 py-1 md:py-1 rounded text-xs md:text-sm">Complete</button>
+            <button onclick="openEditModal('${doc.id}','pending_vehicles')" class="bg-yellow-500 text-white px-2 md:px-3 py-1 md:py-1 rounded text-xs md:text-sm">Edit</button>
+            <button onclick="deleteEntry('${doc.id}','pending_vehicles')" class="bg-red-600 text-white px-2 md:px-3 py-1 md:py-1 rounded text-xs md:text-sm">Delete</button>
           </td>
         `;
         tbody.appendChild(tr);
@@ -368,7 +384,7 @@
     }
 
     // ==========================
-    // RENDER COMPLETED
+    // RENDER COMPLETED VEHICLES
     // ==========================
     function renderCompleted(data = applySort('completed')) {
       const tbody = document.getElementById('completedTable');
@@ -395,25 +411,27 @@
         const tr = document.createElement('tr');
         tr.className = d.isSold ? 'opacity-60 line-through' : '';
         tr.innerHTML = `
-          <td class="p-2 border">${d.vin}</td>
-          <td class="p-2 border ${stockCellClass}">${d.stock}</td>
-          <td class="p-2 border">${d.make}</td>
-          <td class="p-2 border">${d.model}</td>
-          <td class="p-2 border">${d.year}</td>
-          <td class="p-2 border">${d.date}</td>
-          <td class="p-2 border">${d.detailed || '-'}</td>
-          <td class="p-2 border">${d.photoType || '-'}</td>
-          <td class="p-2 border">${d.halfReason || '-'}</td>
-          <td class="p-2 border text-center">
+          <td class="p-1 md:p-2 border">${d.vin}</td>
+          <td class="p-1 md:p-2 border ${stockCellClass}">${d.stock}</td>
+          <td class="p-1 md:p-2 border">${d.make}</td>
+          <td class="p-1 md:p-2 border">${d.model}</td>
+          <td class="p-1 md:p-2 border">${d.year}</td>
+          <td class="p-1 md:p-2 border">${d.date}</td>
+          <td class="p-1 md:p-2 border">${d.detailed || '-'}</td>
+          <td class="p-1 md:p-2 border">${d.photoType || '-'}</td>
+          <td class="p-1 md:p-2 border">${d.halfReason || '-'}</td>
+          <td class="p-1 md:p-2 border text-center">
             <span class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded-full">
               ${days}
             </span>
           </td>
-          <td class="p-2 border">${d.comment || '-'}</td>
-          <td class="p-2 border flex space-x-2 justify-center">
-            <button onclick="openEditModal('${doc.id}','vehicles')" class="bg-yellow-500 text-white px-3 py-1 rounded">Edit</button>
-            <button onclick="deleteEntry('${doc.id}','vehicles')" class="bg-red-600 text-white px-3 py-1 rounded">Delete</button>
-            <button onclick="toggleSold('${doc.id}',${d.isSold})" class="bg-purple-600 text-white px-3 py-1 rounded text-sm">${d.isSold ? 'Undo Sold' : 'Mark Sold'}</button>
+          <td class="p-1 md:p-2 border">${d.comment || '-'}</td>
+          <td class="p-1 md:p-2 border flex space-x-1 md:space-x-2 justify-center">
+            <button onclick="openEditModal('${doc.id}','vehicles')" class="bg-yellow-500 text-white px-2 md:px-3 py-1 md:py-1 rounded text-xs md:text-sm">Edit</button>
+            <button onclick="deleteEntry('${doc.id}','vehicles')" class="bg-red-600 text-white px-2 md:px-3 py-1 md:py-1 rounded text-xs md:text-sm">Delete</button>
+            <button onclick="toggleSold('${doc.id}',${d.isSold})" class="bg-purple-600 text-white px-2 md:px-3 py-1 md:py-1 rounded text-xs md:text-sm">
+              ${d.isSold ? 'Undo Sold' : 'Mark Sold'}
+            </button>
           </td>
         `;
         tbody.appendChild(tr);
@@ -442,11 +460,11 @@
 
     async function confirmComplete() {
       const det = document.getElementById('completeDetailed').value;
-      const pt = document.getElementById('completePhotoType').value;
+      const pt  = document.getElementById('completePhotoType').value;
       if (!det || !pt) { showToast('Please select both Detailed and Photos.'); return; }
       const hr = (pt === 'Half Photos')
-        ? document.getElementById('completeHalfReason').value.trim()
-        : '';
+               ? document.getElementById('completeHalfReason').value.trim()
+               : '';
 
       showSpinner();
       closeCompleteModal();
@@ -504,7 +522,7 @@
     }
 
     async function saveEdit() {
-      const id         = document.getElementById('editId').value;
+      const id = document.getElementById('editId').value;
       const collection = document.getElementById('editCollection').value;
       const updatedData = {
         vin:    document.getElementById('editVin').value.trim(),
@@ -524,7 +542,6 @@
         }
       }
 
-      // Basic validation
       if (!updatedData.vin || !updatedData.stock || !updatedData.make || !updatedData.model || !updatedData.year || !updatedData.date) {
         showToast('Please fill in all required fields.');
         return;
@@ -579,10 +596,7 @@
     // ==========================
     document.getElementById('searchCompleted').addEventListener('input', evt => {
       const v = evt.target.value.toLowerCase();
-      if (!v) {
-        renderCompleted();
-        return;
-      }
+      if (!v) { renderCompleted(); return; }
       const filtered = completedData.filter(item => {
         const d = item.data;
         return (d.vin || '').toLowerCase().includes(v)
@@ -608,7 +622,7 @@
       setupSorting();
     });
 
-    // Expose global handlers for onclick
+    // Expose global functions for onclick handlers
     window.openCompleteModal  = openCompleteModal;
     window.closeCompleteModal = closeCompleteModal;
     window.openEditModal      = openEditModal;
