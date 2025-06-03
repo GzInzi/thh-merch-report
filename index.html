@@ -147,9 +147,7 @@
         <textarea id="completeHalfReason" class="border p-2 md:p-3 rounded w-full text-sm md:text-base" rows="3"></textarea>
       </div>
       <div class="text-right">
-        <button onclick="confirmComplete()" class="bg-green-600 hover:bg-green-700 text-white px-4 md:px-6 py-2 md:py-2 rounded text-sm md:text-base">
-          Submit
-        </button>
+        <button onclick="confirmComplete()" class="bg-green-600 hover:bg-green-700 text-white px-4 md:px-6 py-2 md:py-2 rounded text-sm md:text-base">Submit</button>
       </div>
     </div>
   </div>
@@ -168,9 +166,7 @@
         <input id="editStock" placeholder="Stock" class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500"/>
         <input id="editMake" placeholder="Make" class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500"/>
         <input id="editModel" placeholder="Model" class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500"/>
-        <select id="editYear" class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500">
-          <option value="">Year</option>
-        </select>
+        <select id="editYear" class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500"><option value="">Year</option></select>
         <input id="editDate" type="date" class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500"/>
         <select id="editDetailed" class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500">
           <option value="">Detailed?</option><option>Yes</option><option>No</option>
@@ -181,9 +177,7 @@
       </div>
       <textarea id="editComment" rows="3" placeholder="Comment" class="border p-2 md:p-3 rounded w-full mb-4 text-sm md:text-base focus:border-blue-500"></textarea>
       <div class="text-right">
-        <button id="saveEditBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 md:px-6 py-2 md:py-2 rounded text-sm md:text-base">
-          Save Changes
-        </button>
+        <button id="saveEditBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 md:px-6 py-2 md:py-2 rounded text-sm md:text-base">Save Changes</button>
       </div>
     </div>
   </div>
@@ -228,10 +222,7 @@
     let pendingData   = [];
     let completedData = [];
     let currentCompleteId = null;
-    const sortState = {
-      pending:   { col: null, dir: null },
-      completed: { col: null, dir: null }
-    };
+    const sortState = { pending: { col: null, dir: null }, completed: { col: null, dir: null } };
 
     // ==========================
     // ADD PENDING ENTRY (stock‐only duplicate check)
@@ -439,13 +430,22 @@
       const pt  = document.getElementById('completePhotoType').value;
       if (!det || !pt) { showToast('Please select both Detailed and Photos.'); return; }
       const hr = (pt === 'Half Photos') ? document.getElementById('completeHalfReason').value.trim() : '';
-
+      
+      // Set current date (YYYY-MM-DD) for completed entry
+      const today = new Date().toISOString().split("T")[0];
+      
       showSpinner();
       closeCompleteModal();
       const e = pendingData.find(item => item.id === currentCompleteId).data;
       try {
         await db.collection('vehicles').add({
-          ...e,
+          vin: e.vin,
+          stock: e.stock,
+          make: e.make,
+          model: e.model,
+          year: e.year,
+          date: today,
+          comment: e.comment,
           detailed: det,
           photoType: pt,
           halfReason: hr,
