@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>THH Merchandising Report</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
   <style>
     html, body { width:100vw; margin:0; padding:0; }
     table th, table td { white-space: nowrap; }
@@ -42,20 +41,20 @@
       <h2 class="text-lg md:text-2xl font-semibold mb-4">Data Entry</h2>
       <form class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
         <input id="vin" placeholder="VIN Number (Optional)"
-               class="border p-2 md:p-3 rounded w-full focus:border-blue-500 text-xs md:text-sm"/>
+               class="border p-2 md:p-3 rounded w-full focus:border-blue-500 text-xs md:text-sm" />
         <input id="stock" placeholder="Stock Number"
-               class="border p-2 md:p-3 rounded w-full focus:border-blue-500 text-xs md:text-sm"/>
+               class="border p-2 md:p-3 rounded w-full focus:border-blue-500 text-xs md:text-sm" />
         <input id="make" placeholder="Make"
-               class="border p-2 md:p-3 rounded w-full focus:border-blue-500 text-xs md:text-sm"/>
+               class="border p-2 md:p-3 rounded w-full focus:border-blue-500 text-xs md:text-sm" />
         <input id="model" placeholder="Model"
-               class="border p-2 md:p-3 rounded w-full focus:border-blue-500 text-xs md:text-sm"/>
+               class="border p-2 md:p-3 rounded w-full focus:border-blue-500 text-xs md:text-sm" />
         <select id="year" class="border p-2 md:p-3 rounded w-full focus:border-blue-500 text-xs md:text-sm">
           <option value="">Year</option>
         </select>
         <input id="date" type="date"
-               class="border p-2 md:p-3 rounded w-full focus:border-blue-500 text-xs md:text-sm"/>
+               class="border p-2 md:p-3 rounded w-full focus:border-blue-500 text-xs md:text-sm" />
         <input id="comment" placeholder="Comment (Optional)"
-               class="border p-2 md:p-3 rounded w-full focus:border-blue-500 text-xs md:text-sm"/>
+               class="border p-2 md:p-3 rounded w-full focus:border-blue-500 text-xs md:text-sm" />
         <div class="sm:col-span-2 md:col-span-4 text-right mt-2">
           <button type="button" onclick="addPending()"
                   class="bg-blue-600 hover:bg-blue-700 text-white px-4 md:px-6 py-2 md:py-2 rounded shadow text-sm md:text-base">
@@ -88,6 +87,18 @@
           <tbody id="pendingTable" class="divide-y divide-gray-200"></tbody>
         </table>
       </div>
+      <!-- Pagination controls for Pending -->
+      <div class="mt-2 flex justify-center space-x-2">
+        <button id="pendingPrevBtn" onclick="changePendingPage(-1)"
+                class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-3 py-1 rounded disabled:opacity-50" disabled>
+          Previous
+        </button>
+        <span id="pendingPageInfo" class="text-sm text-gray-700"></span>
+        <button id="pendingNextBtn" onclick="changePendingPage(1)"
+                class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-3 py-1 rounded disabled:opacity-50" disabled>
+          Next
+        </button>
+      </div>
     </section>
 
     <!-- ==========================
@@ -97,7 +108,7 @@
       <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-4">
         <h2 class="text-lg md:text-2xl font-semibold">Completed Vehicles</h2>
         <input id="searchCompleted" type="text" placeholder="Search VIN, Stock, Make…"
-               class="border p-2 md:p-3 rounded w-full md:w-1/3 mt-2 md:mt-0 text-xs md:text-sm focus:border-blue-500"/>
+               class="border p-2 md:p-3 rounded w-full md:w-1/3 mt-2 md:mt-0 text-xs md:text-sm focus:border-blue-500" />
       </div>
       <div class="overflow-x-auto">
         <table class="min-w-full bg-white table-auto text-xs md:text-sm">
@@ -120,6 +131,18 @@
           <tbody id="completedTable" class="divide-y divide-gray-200"></tbody>
         </table>
       </div>
+      <!-- Pagination controls for Completed -->
+      <div class="mt-2 flex justify-center space-x-2">
+        <button id="completedPrevBtn" onclick="changeCompletedPage(-1)"
+                class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-3 py-1 rounded disabled:opacity-50" disabled>
+          Previous
+        </button>
+        <span id="completedPageInfo" class="text-sm text-gray-700"></span>
+        <button id="completedNextBtn" onclick="changeCompletedPage(1)"
+                class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-3 py-1 rounded disabled:opacity-50" disabled>
+          Next
+        </button>
+      </div>
     </section>
   </main>
 
@@ -128,7 +151,8 @@
        ========================== -->
   <div id="completeModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
     <div class="bg-white p-4 md:p-6 rounded-lg w-11/12 max-w-md">
-      <button onclick="closeCompleteModal()" class="close-button float-right text-gray-500 hover:text-gray-800 text-lg">&times;</button>
+      <button onclick="closeCompleteModal()"
+              class="close-button float-right text-gray-500 hover:text-gray-800 text-lg">&times;</button>
       <h3 class="text-lg md:text-xl font-semibold mb-4">Complete Vehicle</h3>
       <div class="mb-4">
         <label class="block mb-1 text-sm md:text-base">Detailed?</label>
@@ -144,10 +168,14 @@
       </div>
       <div id="halfReasonContainer" class="mb-4 hidden">
         <label class="block mb-1 text-sm md:text-base">Reason for half photographs</label>
-        <textarea id="completeHalfReason" class="border p-2 md:p-3 rounded w-full text-sm md:text-base" rows="3"></textarea>
+        <textarea id="completeHalfReason" class="border p-2 md:p-3 rounded w-full text-sm md:text-base"
+                  rows="3"></textarea>
       </div>
       <div class="text-right">
-        <button onclick="confirmComplete()" class="bg-green-600 hover:bg-green-700 text-white px-4 md:px-6 py-2 md:py-2 rounded text-sm md:text-base">Submit</button>
+        <button onclick="confirmComplete()"
+                class="bg-green-600 hover:bg-green-700 text-white px-4 md:px-6 py-2 md:py-2 rounded text-sm md:text-base">
+          Submit
+        </button>
       </div>
     </div>
   </div>
@@ -159,15 +187,17 @@
     <div class="bg-white p-4 md:p-6 rounded-lg w-11/12 max-w-md">
       <button onclick="closeModal()" class="close-button float-right text-gray-500 hover:text-gray-800 text-lg">&times;</button>
       <h3 class="text-lg md:text-xl font-semibold mb-4">Edit Vehicle Entry</h3>
-      <input type="hidden" id="editId"/>
-      <input type="hidden" id="editCollection"/>
+      <input type="hidden" id="editId" />
+      <input type="hidden" id="editCollection" />
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-4 mb-4">
-        <input id="editVin" placeholder="VIN" class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500"/>
-        <input id="editStock" placeholder="Stock" class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500"/>
-        <input id="editMake" placeholder="Make" class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500"/>
-        <input id="editModel" placeholder="Model" class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500"/>
-        <select id="editYear" class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500"><option value="">Year</option></select>
-        <input id="editDate" type="date" class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500"/>
+        <input id="editVin" placeholder="VIN" class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500" />
+        <input id="editStock" placeholder="Stock" class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500" />
+        <input id="editMake" placeholder="Make" class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500" />
+        <input id="editModel" placeholder="Model" class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500" />
+        <select id="editYear" class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500">
+          <option value="">Year</option>
+        </select>
+        <input id="editDate" type="date" class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500" />
         <select id="editDetailed" class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500">
           <option value="">Detailed?</option><option>Yes</option><option>No</option>
         </select>
@@ -175,9 +205,13 @@
           <option value="">Photos?</option><option>Full Photos</option><option>Half Photos</option>
         </select>
       </div>
-      <textarea id="editComment" rows="3" placeholder="Comment" class="border p-2 md:p-3 rounded w-full mb-4 text-sm md:text-base focus:border-blue-500"></textarea>
+      <textarea id="editComment" rows="3" placeholder="Comment"
+                class="border p-2 md:p-3 rounded w-full mb-4 text-sm md:text-base focus:border-blue-500"></textarea>
       <div class="text-right">
-        <button id="saveEditBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 md:px-6 py-2 md:py-2 rounded text-sm md:text-base">Save Changes</button>
+        <button id="saveEditBtn"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-4 md:px-6 py-2 md:py-2 rounded text-sm md:text-base">
+          Save Changes
+        </button>
       </div>
     </div>
   </div>
@@ -200,8 +234,12 @@
     // ==========================
     // UTILITIES
     // ==========================
-    function showSpinner() { document.getElementById('spinnerOverlay').classList.remove('hidden'); }
-    function hideSpinner() { document.getElementById('spinnerOverlay').classList.add('hidden'); }
+    function showSpinner() {
+      document.getElementById('spinnerOverlay').classList.remove('hidden');
+    }
+    function hideSpinner() {
+      document.getElementById('spinnerOverlay').classList.add('hidden');
+    }
     function showToast(msg) {
       const t = document.getElementById('toast');
       t.textContent = msg;
@@ -217,12 +255,19 @@
     });
 
     // ==========================
-    // DATA ARRAYS & SORT STATE
+    // DATA ARRAYS & SORT / PAGINATION STATE
     // ==========================
     let pendingData   = [];
     let completedData = [];
-    let currentCompleteId = null;
-    const sortState = { pending: { col: null, dir: null }, completed: { col: null, dir: null } };
+    let filteredCompletedData = []; // for search filter
+    let currentPendingPage   = 0;
+    let currentCompletedPage = 0;
+    const pendingPageSize    = 15;
+    const completedPageSize  = 15;
+    const sortState = {
+      pending:   { col: null, dir: null },
+      completed: { col: null, dir: null }
+    };
 
     // ==========================
     // ADD PENDING ENTRY (stock‐only duplicate check)
@@ -267,17 +312,15 @@
     // SORT FUNCTIONALITY
     //    * By default (no column selected) we show latest date first
     // ==========================
-    function applySort(table) {
+    function applySort(table, dataArray) {
       const { col, dir } = sortState[table];
-      const src = (table === 'pending') ? pendingData : completedData;
+      const src = dataArray.slice();
       // If no explicit sort column, default sort by date descending
       if (!col) {
-        return src.slice().sort((a, b) => {
-          return new Date(b.data.date) - new Date(a.data.date);
-        });
+        return src.sort((a, b) => new Date(b.data.date) - new Date(a.data.date));
       }
       // Otherwise, sort by chosen column
-      return src.slice().sort((a, b) => {
+      return src.sort((a, b) => {
         let va, vb;
         if (col === 'days') {
           va = Math.floor((new Date() - new Date(a.data.date)) / (1000 * 60 * 60 * 24));
@@ -313,98 +356,152 @@
             state.dir = null;
           }
           document.querySelectorAll('th.sortable').forEach(x => x.classList.remove('sorted-asc','sorted-desc'));
-          if (state.col) th.classList.add(state.dir === 'asc' ? 'sorted-asc' : 'sorted-desc');
-          if (tblKey === 'pending') renderPending(); else renderCompleted();
+          if (state.col) {
+            th.classList.add(state.dir === 'asc' ? 'sorted-asc' : 'sorted-desc');
+          }
+          if (tblKey === 'pending') {
+            currentPendingPage = 0; // reset to first page
+            renderPending();
+          } else {
+            currentCompletedPage = 0;
+            renderCompleted();
+          }
         };
       });
     }
 
     // ==========================
-    // RENDER PENDING VEHICLES
+    // RENDER PENDING VEHICLES (with pagination)
     // ==========================
-    function renderPending(data = applySort('pending')) {
+    function renderPending() {
+      //
+      // 1) Sort `pendingData` according to sortState
+      // 2) Paginate in pages of size `pendingPageSize`
+      //
+      const sorted = applySort('pending', pendingData);
+      const totalItems = sorted.length;
+      const totalPages = Math.ceil(totalItems / pendingPageSize) || 1;
+      if (currentPendingPage > totalPages - 1) currentPendingPage = totalPages - 1;
+
+      const start = currentPendingPage * pendingPageSize;
+      const end   = start + pendingPageSize;
+      const pageSlice = sorted.slice(start, end);
+
       const tbody = document.getElementById('pendingTable');
       tbody.innerHTML = '';
-      if (!data.length) {
+      if (pageSlice.length === 0) {
         tbody.innerHTML = `
           <tr>
             <td colspan="8" class="p-4 text-center text-gray-500">No pending vehicles</td>
           </tr>
         `;
-        return;
+      } else {
+        pageSlice.forEach(doc => {
+          const d = doc.data;
+          const days = Math.floor((new Date() - new Date(d.date)) / (1000 * 60 * 60 * 24));
+          const badgeColor = days > 3 ? 'bg-red-500 text-white' : 'bg-blue-100 text-blue-800';
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="p-1 md:p-2 border">${d.vin}</td>
+            <td class="p-1 md:p-2 border">${d.stock}</td>
+            <td class="p-1 md:p-2 border">${d.make}</td>
+            <td class="p-1 md:p-2 border">${d.model}</td>
+            <td class="p-1 md:p-2 border">${d.year}</td>
+            <td class="p-1 md:p-2 border">${d.date}</td>
+            <td class="p-1 md:p-2 border text-center">
+              <span class="inline-block ${badgeColor} text-xs font-semibold px-2 py-1 rounded-full">${days}</span>
+            </td>
+            <td class="p-1 md:p-2 border">${d.comment || '-'}</td>
+            <td class="p-1 md:p-2 border flex space-x-1 md:space-x-2 justify-center">
+              <button onclick="openCompleteModal('${doc.id}')" class="bg-green-600 text-white px-2 md:px-3 py-1 md:py-1 rounded text-xs md:text-sm">Complete</button>
+              <button onclick="openEditModal('${doc.id}','pending_vehicles')" class="bg-yellow-500 text-white px-2 md:px-3 py-1 md:py-1 rounded text-xs md:text-sm">Edit</button>
+              <button onclick="deleteEntry('${doc.id}','pending_vehicles')" class="bg-red-600 text-white px-2 md:px-3 py-1 md:py-1 rounded text-xs md:text-sm">Delete</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
       }
-      data.forEach(doc => {
-        const d = doc.data;
-        const days = Math.floor((new Date() - new Date(d.date)) / (1000 * 60 * 60 * 24));
-        const badgeColor = days > 3 ? 'bg-red-500 text-white' : 'bg-blue-100 text-blue-800';
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td class="p-1 md:p-2 border">${d.vin}</td>
-          <td class="p-1 md:p-2 border">${d.stock}</td>
-          <td class="p-1 md:p-2 border">${d.make}</td>
-          <td class="p-1 md:p-2 border">${d.model}</td>
-          <td class="p-1 md:p-2 border">${d.year}</td>
-          <td class="p-1 md:p-2 border">${d.date}</td>
-          <td class="p-1 md:p-2 border text-center">
-            <span class="inline-block ${badgeColor} text-xs font-semibold px-2 py-1 rounded-full">${days}</span>
-          </td>
-          <td class="p-1 md:p-2 border">${d.comment || '-'}</td>
-          <td class="p-1 md:p-2 border flex space-x-1 md:space-x-2 justify-center">
-            <button onclick="openCompleteModal('${doc.id}')" class="bg-green-600 text-white px-2 md:px-3 py-1 md:py-1 rounded text-xs md:text-sm">Complete</button>
-            <button onclick="openEditModal('${doc.id}','pending_vehicles')" class="bg-yellow-500 text-white px-2 md:px-3 py-1 md:py-1 rounded text-xs md:text-sm">Edit</button>
-            <button onclick="deleteEntry('${doc.id}','pending_vehicles')" class="bg-red-600 text-white px-2 md:px-3 py-1 md:py-1 rounded text-xs md:text-sm">Delete</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
+      // Update pagination controls
+      document.getElementById('pendingPageInfo').textContent = `Page ${currentPendingPage + 1} of ${totalPages}`;
+      document.getElementById('pendingPrevBtn').disabled = (currentPendingPage === 0);
+      document.getElementById('pendingNextBtn').disabled = (currentPendingPage >= totalPages - 1);
+    }
+
+    function changePendingPage(delta) {
+      currentPendingPage += delta;
+      renderPending();
     }
 
     // ==========================
-    // RENDER COMPLETED VEHICLES
+    // RENDER COMPLETED VEHICLES (with pagination)
     // ==========================
-    function renderCompleted(data = applySort('completed')) {
+    function renderCompleted() {
+      //
+      // 1) If a search filter is active, use `filteredCompletedData`; otherwise use `completedData`
+      // 2) Sort according to sortState
+      // 3) Paginate in pages of size `completedPageSize`
+      //
+      let workingData = filteredCompletedData.length > 0 ? filteredCompletedData : completedData;
+      const sorted = applySort('completed', workingData);
+      const totalItems = sorted.length;
+      const totalPages = Math.ceil(totalItems / completedPageSize) || 1;
+      if (currentCompletedPage > totalPages - 1) currentCompletedPage = totalPages - 1;
+
+      const start = currentCompletedPage * completedPageSize;
+      const end   = start + completedPageSize;
+      const pageSlice = sorted.slice(start, end);
+
       const tbody = document.getElementById('completedTable');
       tbody.innerHTML = '';
-      if (!data.length) {
+      if (pageSlice.length === 0) {
         tbody.innerHTML = `
           <tr>
             <td colspan="12" class="p-4 text-center text-gray-500">No completed vehicles</td>
           </tr>
         `;
-        return;
+      } else {
+        pageSlice.forEach(doc => {
+          const d = doc.data;
+          const days = Math.floor((new Date() - new Date(d.date)) / (1000 * 60 * 60 * 24));
+          let stockCellClass = '';
+          if (d.photoType === 'Half Photos') {
+            if (days > 14) stockCellClass = 'bg-red-500 text-white';
+            else if (days > 7) stockCellClass = 'bg-green-200 text-green-800';
+          }
+          const tr = document.createElement('tr');
+          tr.className = d.isSold ? 'opacity-60 line-through' : '';
+          tr.innerHTML = `
+            <td class="p-1 md:p-2 border">${d.vin}</td>
+            <td class="p-1 md:p-2 border ${stockCellClass}">${d.stock}</td>
+            <td class="p-1 md:p-2 border">${d.make}</td>
+            <td class="p-1 md:p-2 border">${d.model}</td>
+            <td class="p-1 md:p-2 border">${d.year}</td>
+            <td class="p-1 md:p-2 border">${d.date}</td>
+            <td class="p-1 md:p-2 border">${d.detailed || '-'}</td>
+            <td class="p-1 md:p-2 border">${d.photoType || '-'}</td>
+            <td class="p-1 md:p-2 border">${d.halfReason || '-'}</td>
+            <td class="p-1 md:p-2 border text-center">
+              <span class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded-full">${days}</span>
+            </td>
+            <td class="p-1 md:p-2 border">${d.comment || '-'}</td>
+            <td class="p-1 md:p-2 border flex space-x-1 md:space-x-2 justify-center">
+              <button onclick="openEditModal('${doc.id}','vehicles')" class="bg-yellow-500 text-white px-2 md:px-3 py-1 md:py-1 rounded text-xs md:text-sm">Edit</button>
+              <button onclick="deleteEntry('${doc.id}','vehicles')" class="bg-red-600 text-white px-2 md:px-3 py-1 md:py-1 rounded text-xs md:text-sm">Delete</button>
+              <button onclick="toggleSold('${doc.id}',${d.isSold})" class="bg-purple-600 text-white px-2 md:px-3 py-1 md:py-1 rounded text-xs md:text-sm">${d.isSold?'Undo Sold':'Mark Sold'}</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
       }
-      data.forEach(doc => {
-        const d = doc.data;
-        const days = Math.floor((new Date() - new Date(d.date)) / (1000 * 60 * 60 * 24));
-        let stockCellClass = '';
-        if (d.photoType === 'Half Photos') {
-          if (days > 14) stockCellClass = 'bg-red-500 text-white';
-          else if (days > 7) stockCellClass = 'bg-green-200 text-green-800';
-        }
-        const tr = document.createElement('tr');
-        tr.className = d.isSold ? 'opacity-60 line-through' : '';
-        tr.innerHTML = `
-          <td class="p-1 md:p-2 border">${d.vin}</td>
-          <td class="p-1 md:p-2 border ${stockCellClass}">${d.stock}</td>
-          <td class="p-1 md:p-2 border">${d.make}</td>
-          <td class="p-1 md:p-2 border">${d.model}</td>
-          <td class="p-1 md:p-2 border">${d.year}</td>
-          <td class="p-1 md:p-2 border">${d.date}</td>
-          <td class="p-1 md:p-2 border">${d.detailed || '-'}</td>
-          <td class="p-1 md:p-2 border">${d.photoType || '-'}</td>
-          <td class="p-1 md:p-2 border">${d.halfReason || '-'}</td>
-          <td class="p-1 md:p-2 border text-center">
-            <span class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded-full">${days}</span>
-          </td>
-          <td class="p-1 md:p-2 border">${d.comment || '-'}</td>
-          <td class="p-1 md:p-2 border flex space-x-1 md:space-x-2 justify-center">
-            <button onclick="openEditModal('${doc.id}','vehicles')" class="bg-yellow-500 text-white px-2 md:px-3 py-1 md:py-1 rounded text-xs md:text-sm">Edit</button>
-            <button onclick="deleteEntry('${doc.id}','vehicles')" class="bg-red-600 text-white px-2 md:px-3 py-1 md:py-1 rounded text-xs md:text-sm">Delete</button>
-            <button onclick="toggleSold('${doc.id}',${d.isSold})" class="bg-purple-600 text-white px-2 md:px-3 py-1 md:py-1 rounded text-xs md:text-sm">${d.isSold?'Undo Sold':'Mark Sold'}</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
+      // Update pagination controls
+      document.getElementById('completedPageInfo').textContent = `Page ${currentCompletedPage + 1} of ${totalPages}`;
+      document.getElementById('completedPrevBtn').disabled = (currentCompletedPage === 0);
+      document.getElementById('completedNextBtn').disabled = (currentCompletedPage >= totalPages - 1);
+    }
+
+    function changeCompletedPage(delta) {
+      currentCompletedPage += delta;
+      renderCompleted();
     }
 
     // ==========================
@@ -428,12 +525,14 @@
     async function confirmComplete() {
       const det = document.getElementById('completeDetailed').value;
       const pt  = document.getElementById('completePhotoType').value;
-      if (!det || !pt) { showToast('Please select both Detailed and Photos.'); return; }
+      if (!det || !pt) {
+        showToast('Please select both Detailed and Photos.');
+        return;
+      }
       const hr = (pt === 'Half Photos') ? document.getElementById('completeHalfReason').value.trim() : '';
-      
-      // Set current date (YYYY-MM-DD) for completed entry
+      // Use current date (YYYY-MM-DD)
       const today = new Date().toISOString().split("T")[0];
-      
+
       showSpinner();
       closeCompleteModal();
       const e = pendingData.find(item => item.id === currentCompleteId).data;
@@ -571,15 +670,21 @@
     // ==========================
     document.getElementById('searchCompleted').addEventListener('input', evt => {
       const v = evt.target.value.toLowerCase();
-      if (!v) { renderCompleted(); return; }
-      const filtered = completedData.filter(item => {
+      if (!v) {
+        filteredCompletedData = [];
+        currentCompletedPage = 0;
+        renderCompleted();
+        return;
+      }
+      filteredCompletedData = completedData.filter(item => {
         const d = item.data;
         return (d.vin || '').toLowerCase().includes(v)
             || (d.stock || '').toLowerCase().includes(v)
             || (d.make || '').toLowerCase().includes(v)
             || (d.model || '').toLowerCase().includes(v);
       });
-      renderCompleted(filtered);
+      currentCompletedPage = 0;
+      renderCompleted();
     });
 
     // ==========================
@@ -587,12 +692,17 @@
     // ==========================
     db.collection('pending_vehicles').onSnapshot(snapshot => {
       pendingData = snapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
-      renderPending(); setupSorting();
+      currentPendingPage = 0; // reset when data changes
+      renderPending();
+      setupSorting();
     });
 
     db.collection('vehicles').onSnapshot(snapshot => {
       completedData = snapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
-      renderCompleted(); setupSorting();
+      filteredCompletedData = []; // clear any previous filter
+      currentCompletedPage = 0;
+      renderCompleted();
+      setupSorting();
     });
 
     // Expose global functions
@@ -602,6 +712,8 @@
     window.closeModal         = closeModal;
     window.deleteEntry        = deleteEntry;
     window.toggleSold         = toggleSold;
+    window.changePendingPage  = changePendingPage;
+    window.changeCompletedPage= changeCompletedPage;
   </script>
 </body>
 </html>
