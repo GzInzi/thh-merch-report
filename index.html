@@ -4,212 +4,342 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>THH Merchandising Report</title>
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <style>
-    html, body { width:100vw; margin:0; padding:0; }
-    table th, table td { white-space: nowrap; }
-    th.sortable { cursor: pointer; }
-    th.sorted-asc::after { content: " ▲"; font-size: 0.7em; }
-    th.sorted-desc::after { content: " ▼"; font-size: 0.7em; }
+    /* Custom CSS for a more colorful theme and animations */
+    :root {
+      --primary-color: #6366f1; /* Indigo 500 - for main buttons, focus rings */
+      --secondary-color: #8b5cf6; /* Violet 500 - for secondary actions, accents */
+      --accent-color: #ec4899; /* Pink 500 - for highlights, active states */
+      --background-light: #f3f4f6; /* Gray 100 - for main body background */
+      --background-card: #ffffff; /* White - for section backgrounds */
+      --text-dark: #1f2937; /* Gray 800 - for main text */
+      --text-medium: #4b5563; /* Gray 600 - for labels, secondary text */
+      --border-color: #d1d5db; /* Gray 300 - for input borders, table borders */
+    }
+
+    html, body {
+      width: 100vw;
+      margin: 0;
+      padding: 0;
+      scroll-behavior: smooth;
+      background-color: var(--background-light); /* Apply to body */
+      color: var(--text-dark); /* Apply to body text */
+    }
+    table th, table td {
+      white-space: nowrap;
+    }
+    th.sortable {
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    th.sortable:hover {
+      background-color: #f0f0f0;
+    }
+    th.sorted-asc::after {
+      content: " ▲";
+      font-size: 0.7em;
+      transition: transform 0.3s ease-out; /* Add transition */
+      transform: translateY(-2px); /* Initial transform */
+    }
+    th.sorted-desc::after {
+      content: " ▼";
+      font-size: 0.7em;
+      transition: transform 0.3s ease-out; /* Add transition */
+      transform: translateY(2px); /* Initial transform */
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeOut {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(10px); }
+    }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    @keyframes slideInFromLeft {
+        from { opacity: 0; transform: translateX(-20px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+
+    .toast-enter {
+      animation: fadeIn 0.3s forwards;
+    }
+    .toast-exit {
+      animation: fadeOut 0.3s forwards;
+    }
+    .spinner {
+      animation: spin 1s linear infinite;
+      border-color: var(--border-color); /* Use custom property */
+      border-top-color: var(--primary-color); /* Use custom property */
+    }
+    .modal-enter {
+      animation: fadeIn 0.3s forwards;
+    }
+    .modal-exit {
+      animation: fadeOut 0.3s forwards;
+    }
+
+    /* New custom styles */
+    .section-card-animate {
+        transition: all 0.3s ease-in-out;
+    }
+    .section-card-animate:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Input/Select focus animation */
+    input:focus, select:focus, textarea:focus {
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3); /* Uses primary-color with transparency */
+        border-color: var(--primary-color);
+    }
+
+    .table-row-enter {
+        animation: slideInFromLeft 0.4s ease-out forwards;
+    }
+
+    /* Button Hover Glow */
+    .button-glow-hover {
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+    }
+
+    .button-glow-hover::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        background: rgba(255, 255, 255, 0.2); /* Light glow */
+        border-radius: 50%;
+        opacity: 0;
+        transform: translate(-50%, -50%);
+        transition: width 0.3s ease-out, height 0.3s ease-out, opacity 0.3s ease-out;
+        z-index: -1;
+    }
+
+    .button-glow-hover:hover::before {
+        width: 200%;
+        height: 200%;
+        opacity: 1;
+    }
+
+    .badge-pulse {
+        animation: pulse 1.5s infinite ease-in-out;
+    }
+
+    /* Override some Tailwind defaults with custom properties */
+    .bg-blue-600 { background-color: var(--primary-color); }
+    .hover\:bg-blue-700:hover { background-color: #4f46e5; } /* Darker indigo */
+
+    .bg-green-500 { background-color: #22c55e; } /* Emerald 500 */
+    .hover\:bg-green-600:hover { background-color: #16a34a; } /* Darker emerald */
+    .bg-green-600 { background-color: #22c55e; } /* Emerald 500 */
+    .hover\:bg-green-700:hover { background-color: #16a34a; } /* Darker emerald */
+
+    .bg-yellow-500 { background-color: #f59e0b; } /* Amber 500 */
+    .hover\:bg-yellow-600:hover { background-color: #d97706; } /* Darker amber */
+
+    .bg-red-500 { background-color: #ef4444; } /* Red 500 */
+    .hover\:bg-red-600:hover { background-color: #dc2626; } /* Darker red */
+
+    .bg-purple-600 { background-color: var(--secondary-color); }
+    .hover\:bg-purple-700:hover { background-color: #7c3aed; } /* Darker violet */
+
+    #toast {
+        background-color: var(--text-dark);
+    }
+
   </style>
 </head>
 
-<body class="bg-gray-50 text-gray-800">
-  <!-- Toast Notification -->
-  <div id="toast" class="fixed bottom-5 right-5 hidden bg-gray-800 text-white px-4 py-2 rounded shadow"></div>
-  <!-- Loading Spinner Overlay -->
-  <div id="spinnerOverlay" class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center hidden">
-    <div class="border-8 border-gray-200 border-t-8 border-t-blue-600 rounded-full w-16 h-16 animate-spin"></div>
+<body class="bg-gray-100 text-gray-800 font-sans">
+  <div id="toast" class="fixed bottom-5 right-5 hidden bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg"></div>
+  <div id="spinnerOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="border-8 border-gray-200 border-t-8 border-t-blue-600 rounded-full w-16 h-16 spinner"></div>
   </div>
 
-  <!-- HEADER -->
-  <header class="bg-white shadow">
-    <div class="container mx-auto px-4 py-4">
-      <h1 class="text-2xl md:text-3xl font-bold text-center">THH Merchandising Report</h1>
+  <header class="bg-white shadow-md">
+    <div class="container mx-auto px-4 py-6">
+      <h1 class="text-3xl font-bold text-center text-gray-800">THH Merchandising Report</h1>
     </div>
   </header>
 
-  <main class="container mx-auto px-2 md:px-4 py-6 space-y-8">
-    <!-- ==========================
-         DATA ENTRY SECTION
-         ========================== -->
-    <section class="bg-white p-4 md:p-6 rounded-lg shadow">
-      <h2 class="text-lg md:text-2xl font-semibold mb-4">Data Entry</h2>
-      <form class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
+  <main class="container mx-auto px-4 py-8 space-y-8">
+    <section class="bg-white p-6 rounded-lg shadow-md section-card-animate">
+      <h2 class="text-2xl font-semibold mb-4 text-gray-700">Data Entry</h2>
+      <form class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         <input id="vin" placeholder="VIN Number (Optional)"
-               class="border p-2 md:p-3 rounded w-full focus:border-blue-500 text-xs md:text-sm" />
+               class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300" />
         <input id="stock" placeholder="Stock Number"
-               class="border p-2 md:p-3 rounded w-full focus:border-blue-500 text-xs md:text-sm" />
+               class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300" />
         <input id="make" placeholder="Make"
-               class="border p-2 md:p-3 rounded w-full focus:border-blue-500 text-xs md:text-sm" />
+               class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300" />
         <input id="model" placeholder="Model"
-               class="border p-2 md:p-3 rounded w-full focus:border-blue-500 text-xs md:text-sm" />
-        <select id="year" class="border p-2 md:p-3 rounded w-full focus:border-blue-500 text-xs md:text-sm">
+               class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300" />
+        <select id="year" class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300">
           <option value="">Year</option>
         </select>
         <input id="date" type="date"
-               class="border p-2 md:p-3 rounded w-full focus:border-blue-500 text-xs md:text-sm" />
+               class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300" />
         <input id="comment" placeholder="Comment (Optional)"
-               class="border p-2 md:p-3 rounded w-full focus:border-blue-500 text-xs md:text-sm" />
-        <div class="sm:col-span-2 md:col-span-4 text-right mt-2">
+               class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300" />
+        <div class="sm:col-span-2 md:col-span-4 text-right mt-4">
           <button type="button" onclick="addPending()"
-                  class="bg-blue-600 hover:bg-blue-700 text-white px-4 md:px-6 py-2 md:py-2 rounded shadow text-sm md:text-base">
+                  class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-md transform hover:scale-105 transition-transform duration-300 button-glow-hover">
             Add to Pending
           </button>
         </div>
       </form>
     </section>
 
-    <!-- ==========================
-         PENDING VEHICLES TABLE
-         ========================== -->
-    <section class="bg-white p-4 md:p-6 rounded-lg shadow">
-      <h2 class="text-lg md:text-2xl font-semibold mb-4">Pending Vehicles</h2>
+    <section class="bg-white p-6 rounded-lg shadow-md section-card-animate">
+      <h2 class="text-2xl font-semibold mb-4 text-gray-700">Pending Vehicles</h2>
       <div class="overflow-x-auto">
-        <table class="min-w-full bg-white table-auto text-xs md:text-sm">
-          <thead class="bg-gray-100">
-            <tr class="text-left text-gray-600 uppercase text-xs md:text-sm">
-              <th data-col="vin" class="px-2 md:px-4 py-1 md:py-2 border sortable">VIN</th>
-              <th data-col="stock" class="px-2 md:px-4 py-1 md:py-2 border sortable">Stock</th>
-              <th data-col="make" class="px-2 md:px-4 py-1 md:py-2 border sortable">Make</th>
-              <th data-col="model" class="px-2 md:px-4 py-1 md:py-2 border sortable">Model</th>
-              <th data-col="year" class="px-2 md:px-4 py-1 md:py-2 border sortable">Year</th>
-              <th data-col="date" class="px-2 md:px-4 py-1 md:py-2 border sortable">Date</th>
-              <th data-col="days" class="px-2 md:px-4 py-1 md:py-2 border sortable text-center">Days</th>
-              <th class="px-2 md:px-4 py-1 md:py-2 border">Comment</th>
-              <th class="px-2 md:px-4 py-1 md:py-2 border text-center">Actions</th>
+        <table class="min-w-full bg-white table-auto text-sm">
+          <thead class="bg-gray-200">
+            <tr class="text-left text-gray-600 uppercase text-sm">
+              <th data-col="vin" class="px-4 py-2 border-b-2 border-gray-300 sortable">VIN</th>
+              <th data-col="stock" class="px-4 py-2 border-b-2 border-gray-300 sortable">Stock</th>
+              <th data-col="make" class="px-4 py-2 border-b-2 border-gray-300 sortable">Make</th>
+              <th data-col="model" class="px-4 py-2 border-b-2 border-gray-300 sortable">Model</th>
+              <th data-col="year" class="px-4 py-2 border-b-2 border-gray-300 sortable">Year</th>
+              <th data-col="date" class="px-4 py-2 border-b-2 border-gray-300 sortable">Date</th>
+              <th data-col="days" class="px-4 py-2 border-b-2 border-gray-300 sortable text-center">Days</th>
+              <th class="px-4 py-2 border-b-2 border-gray-300">Comment</th>
+              <th class="px-4 py-2 border-b-2 border-gray-300 text-center">Actions</th>
             </tr>
           </thead>
           <tbody id="pendingTable" class="divide-y divide-gray-200"></tbody>
         </table>
       </div>
-      <!-- Pagination controls for Pending -->
-      <div class="mt-2 flex justify-center space-x-2">
+      <div class="mt-4 flex justify-center space-x-2">
         <button id="pendingPrevBtn" onclick="changePendingPage(-1)"
-                class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-3 py-1 rounded disabled:opacity-50" disabled>
+                 class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg disabled:opacity-50 transition-colors duration-300 button-glow-hover">
           Previous
         </button>
-        <span id="pendingPageInfo" class="text-sm text-gray-700"></span>
+        <span id="pendingPageInfo" class="text-sm text-gray-700 self-center"></span>
         <button id="pendingNextBtn" onclick="changePendingPage(1)"
-                class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-3 py-1 rounded disabled:opacity-50" disabled>
+                 class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg disabled:opacity-50 transition-colors duration-300 button-glow-hover">
           Next
         </button>
       </div>
     </section>
 
-    <!-- ==========================
-         COMPLETED VEHICLES TABLE
-         ========================== -->
-    <section class="bg-white p-4 md:p-6 rounded-lg shadow">
+    <section class="bg-white p-6 rounded-lg shadow-md section-card-animate">
       <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-4">
-        <h2 class="text-lg md:text-2xl font-semibold">Completed Vehicles</h2>
+        <h2 class="text-2xl font-semibold text-gray-700">Completed Vehicles</h2>
         <input id="searchCompleted" type="text" placeholder="Search VIN, Stock, Make…"
-               class="border p-2 md:p-3 rounded w-full md:w-1/3 mt-2 md:mt-0 text-xs md:text-sm focus:border-blue-500" />
+               class="border p-3 rounded-lg w-full md:w-1/3 mt-2 md:mt-0 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300" />
       </div>
       <div class="overflow-x-auto">
-        <table class="min-w-full bg-white table-auto text-xs md:text-sm">
-          <thead class="bg-gray-100">
-            <tr class="text-left text-gray-600 uppercase text-xs md:text-sm">
-              <th data-col="vin" class="px-2 md:px-4 py-1 md:py-2 border sortable">VIN</th>
-              <th data-col="stock" class="px-2 md:px-4 py-1 md:py-2 border sortable">Stock</th>
-              <th data-col="make" class="px-2 md:px-4 py-1 md:py-2 border sortable">Make</th>
-              <th data-col="model" class="px-2 md:px-4 py-1 md:py-2 border sortable">Model</th>
-              <th data-col="year" class="px-2 md:px-4 py-1 md:py-2 border sortable">Year</th>
-              <th data-col="date" class="px-2 md:px-4 py-1 md:py-2 border sortable">Date</th>
-              <th data-col="detailed" class="px-2 md:px-4 py-1 md:py-2 border sortable">Detailed</th>
-              <th data-col="photoType" class="px-2 md:px-4 py-1 md:py-2 border sortable">Photos</th>
-              <th data-col="halfReason" class="px-2 md:px-4 py-1 md:py-2 border sortable">Half Reason</th>
-              <th data-col="days" class="px-2 md:px-4 py-1 md:py-2 border sortable text-center">Days</th>
-              <th class="px-2 md:px-4 py-1 md:py-2 border">Comment</th>
-              <th class="px-2 md:px-4 py-1 md:py-2 border text-center">Actions</th>
+        <table class="min-w-full bg-white table-auto text-sm">
+          <thead class="bg-gray-200">
+            <tr class="text-left text-gray-600 uppercase text-sm">
+              <th data-col="vin" class="px-4 py-2 border-b-2 border-gray-300 sortable">VIN</th>
+              <th data-col="stock" class="px-4 py-2 border-b-2 border-gray-300 sortable">Stock</th>
+              <th data-col="make" class="px-4 py-2 border-b-2 border-gray-300 sortable">Make</th>
+              <th data-col="model" class="px-4 py-2 border-b-2 border-gray-300 sortable">Model</th>
+              <th data-col="year" class="px-4 py-2 border-b-2 border-gray-300 sortable">Year</th>
+              <th data-col="date" class="px-4 py-2 border-b-2 border-gray-300 sortable">Date</th>
+              <th data-col="detailed" class="px-4 py-2 border-b-2 border-gray-300 sortable">Detailed</th>
+              <th data-col="photoType" class="px-4 py-2 border-b-2 border-gray-300 sortable">Photos</th>
+              <th data-col="halfReason" class="px-4 py-2 border-b-2 border-gray-300 sortable">Half Reason</th>
+              <th data-col="days" class="px-4 py-2 border-b-2 border-gray-300 sortable text-center">Days</th>
+              <th class="px-4 py-2 border-b-2 border-gray-300">Comment</th>
+              <th class="px-4 py-2 border-b-2 border-gray-300 text-center">Actions</th>
             </tr>
           </thead>
           <tbody id="completedTable" class="divide-y divide-gray-200"></tbody>
         </table>
       </div>
-      <!-- Pagination controls for Completed -->
-      <div class="mt-2 flex justify-center space-x-2">
+      <div class="mt-4 flex justify-center space-x-2">
         <button id="completedPrevBtn" onclick="changeCompletedPage(-1)"
-                class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-3 py-1 rounded disabled:opacity-50" disabled>
+                 class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg disabled:opacity-50 transition-colors duration-300 button-glow-hover">
           Previous
         </button>
-        <span id="completedPageInfo" class="text-sm text-gray-700"></span>
+        <span id="completedPageInfo" class="text-sm text-gray-700 self-center"></span>
         <button id="completedNextBtn" onclick="changeCompletedPage(1)"
-                class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-3 py-1 rounded disabled:opacity-50" disabled>
+                 class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg disabled:opacity-50 transition-colors duration-300 button-glow-hover">
           Next
         </button>
       </div>
     </section>
   </main>
 
-  <!-- ==========================
-       COMPLETE VEHICLE MODAL
-       ========================== -->
-  <div id="completeModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
-    <div class="bg-white p-4 md:p-6 rounded-lg w-11/12 max-w-md">
+  <div id="completeModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-40">
+    <div class="bg-white p-6 rounded-lg w-11/12 max-w-md shadow-2xl modal-enter">
       <button onclick="closeCompleteModal()"
-              class="close-button float-right text-gray-500 hover:text-gray-800 text-lg">&times;</button>
-      <h3 class="text-lg md:text-xl font-semibold mb-4">Complete Vehicle</h3>
+              class="close-button float-right text-gray-500 hover:text-gray-800 text-2xl transform hover:rotate-90 transition-transform duration-300">&times;</button>
+      <h3 class="text-xl font-semibold mb-4 text-gray-700">Complete Vehicle</h3>
       <div class="mb-4">
-        <label class="block mb-1 text-sm md:text-base">Detailed?</label>
-        <select id="completeDetailed" class="border p-2 md:p-3 rounded w-full text-sm md:text-base">
+        <label class="block mb-2 text-sm font-medium text-gray-600">Detailed?</label>
+        <select id="completeDetailed" class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300">
           <option value="">Select…</option><option>Yes</option><option>No</option>
         </select>
       </div>
       <div class="mb-4">
-        <label class="block mb-1 text-sm md:text-base">Photos?</label>
-        <select id="completePhotoType" class="border p-2 md:p-3 rounded w-full text-sm md:text-base">
+        <label class="block mb-2 text-sm font-medium text-gray-600">Photos?</label>
+        <select id="completePhotoType" class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300">
           <option value="">Select…</option><option>Full Photos</option><option>Half Photos</option>
         </select>
       </div>
       <div id="halfReasonContainer" class="mb-4 hidden">
-        <label class="block mb-1 text-sm md:text-base">Reason for half photographs</label>
-        <textarea id="completeHalfReason" class="border p-2 md:p-3 rounded w-full text-sm md:text-base"
+        <label class="block mb-2 text-sm font-medium text-gray-600">Reason for half photographs</label>
+        <textarea id="completeHalfReason" class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300"
                   rows="3"></textarea>
       </div>
-      <div class="text-right">
+      <div class="text-right mt-6">
         <button onclick="confirmComplete()"
-                class="bg-green-600 hover:bg-green-700 text-white px-4 md:px-6 py-2 md:py-2 rounded text-sm md:text-base">
+                 class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg shadow-md transform hover:scale-105 transition-transform duration-300 button-glow-hover">
           Submit
         </button>
       </div>
     </div>
   </div>
 
-  <!-- ==========================
-       EDIT VEHICLE MODAL
-       ========================== -->
-  <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
-    <div class="bg-white p-4 md:p-6 rounded-lg w-11/12 max-w-md">
-      <button onclick="closeModal()" class="close-button float-right text-gray-500 hover:text-gray-800 text-lg">&times;</button>
-      <h3 class="text-lg md:text-xl font-semibold mb-4">Edit Vehicle Entry</h3>
+  <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-40">
+    <div class="bg-white p-6 rounded-lg w-11/12 max-w-lg shadow-2xl modal-enter">
+      <button onclick="closeModal()" class="close-button float-right text-gray-500 hover:text-gray-800 text-2xl transform hover:rotate-90 transition-transform duration-300">&times;</button>
+      <h3 class="text-xl font-semibold mb-4 text-gray-700">Edit Vehicle Entry</h3>
       <input type="hidden" id="editId" />
       <input type="hidden" id="editCollection" />
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-4 mb-4">
-        <input id="editVin" placeholder="VIN" class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500" />
-        <input id="editStock" placeholder="Stock" class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500" />
-        <input id="editMake" placeholder="Make" class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500" />
-        <input id="editModel" placeholder="Model" class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500" />
-        <select id="editYear" class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+        <input id="editVin" placeholder="VIN" class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300" />
+        <input id="editStock" placeholder="Stock" class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300" />
+        <input id="editMake" placeholder="Make" class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300" />
+        <input id="editModel" placeholder="Model" class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300" />
+        <select id="editYear" class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300">
           <option value="">Year</option>
         </select>
-        <input id="editDate" type="date" class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500" />
-        <select id="editDetailed" class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500">
+        <input id="editDate" type="date" class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300" />
+        <select id="editDetailed" class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300">
           <option value="">Detailed?</option><option>Yes</option><option>No</option>
         </select>
-        <select id="editPhotoType" class="border p-2 md:p-3 rounded w-full text-sm md:text-base focus:border-blue-500">
+        <select id="editPhotoType" class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300">
           <option value="">Photos?</option><option>Full Photos</option><option>Half Photos</option>
         </select>
       </div>
       <textarea id="editComment" rows="3" placeholder="Comment"
-                class="border p-2 md:p-3 rounded w-full mb-4 text-sm md:text-base focus:border-blue-500"></textarea>
+                 class="border p-3 rounded-lg w-full mb-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300"></textarea>
       <div class="text-right">
         <button id="saveEditBtn"
-                class="bg-blue-600 hover:bg-blue-700 text-white px-4 md:px-6 py-2 md:py-2 rounded text-sm md:text-base">
+                 class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-md transform hover:scale-105 transition-transform duration-300 button-glow-hover">
           Save Changes
         </button>
       </div>
@@ -243,30 +373,48 @@
     function showToast(msg) {
       const t = document.getElementById('toast');
       t.textContent = msg;
-      t.classList.remove('hidden');
-      setTimeout(() => t.classList.add('hidden'), 3000);
+      t.classList.remove('hidden', 'toast-exit');
+      t.classList.add('toast-enter');
+      setTimeout(() => {
+        t.classList.remove('toast-enter');
+        t.classList.add('toast-exit');
+        setTimeout(() => t.classList.add('hidden'), 300);
+      }, 3000);
     }
 
-    // Populate Year dropdowns from 2000 to current year
+    // Function to get today's date in YYYY-MM-DD format
+    function getTodayDate() {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+      const day = String(today.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    // Populate Year dropdowns from 2000 to current year and set default date
     document.querySelectorAll('#year,#editYear').forEach(sel => {
-      for (let y = 2000; y <= new Date().getFullYear(); y++) {
+      const currentYear = new Date().getFullYear();
+      for (let y = currentYear; y >= 2000; y--) {
         sel.append(new Option(y, y));
       }
     });
 
+    // Set default date for the data entry form
+    document.getElementById('date').value = getTodayDate();
+
     // ==========================
     // DATA ARRAYS & SORT / PAGINATION STATE
     // ==========================
-    let pendingData   = [];
+    let pendingData = [];
     let completedData = [];
     let filteredCompletedData = []; // for search filter
-    let currentPendingPage   = 0;
+    let currentPendingPage = 0;
     let currentCompletedPage = 0;
-    const pendingPageSize    = 15;
-    const completedPageSize  = 15;
+    const pendingPageSize = 15;
+    const completedPageSize = 15;
     const sortState = {
-      pending:   { col: null, dir: null },
-      completed: { col: null, dir: null }
+      pending: { col: null, dir: 'desc' },
+      completed: { col: null, dir: 'desc' }
     };
 
     // ==========================
@@ -274,12 +422,12 @@
     // ==========================
     async function addPending() {
       document.getElementById('stock').classList.remove('border-red-500');
-      const vin     = document.getElementById('vin').value.trim().toUpperCase();
-      const stock   = document.getElementById('stock').value.trim().toUpperCase();
-      const make    = document.getElementById('make').value.trim();
-      const model   = document.getElementById('model').value.trim();
-      const year    = document.getElementById('year').value;
-      const date    = document.getElementById('date').value;
+      const vin = document.getElementById('vin').value.trim().toUpperCase();
+      const stock = document.getElementById('stock').value.trim().toUpperCase();
+      const make = document.getElementById('make').value.trim();
+      const model = document.getElementById('model').value.trim();
+      const year = document.getElementById('year').value;
+      const date = document.getElementById('date').value;
       const comment = document.getElementById('comment').value.trim();
 
       // Stock, Make, Model, Year, Date are required; VIN is optional
@@ -300,6 +448,14 @@
       try {
         await db.collection('pending_vehicles').add({ vin, stock, make, model, year, date, comment });
         showToast('Added to pending.');
+        // Clear form fields EXCEPT for year (as it's often the same) and reset date to current
+        document.getElementById('vin').value = '';
+        document.getElementById('stock').value = '';
+        document.getElementById('make').value = '';
+        document.getElementById('model').value = '';
+        // document.getElementById('year').value = ''; // Don't clear year as per typical workflow
+        document.getElementById('date').value = getTodayDate(); // Set to current date
+        document.getElementById('comment').value = '';
       } catch (e) {
         console.error(e);
         showToast('Error adding entry.');
@@ -314,7 +470,7 @@
     // ==========================
     function applySort(table, dataArray) {
       const { col, dir } = sortState[table];
-      const src = dataArray.slice();
+      const src = [...dataArray]; // Create a shallow copy
       // If no explicit sort column, default sort by date descending
       if (!col) {
         return src.sort((a, b) => new Date(b.data.date) - new Date(a.data.date));
@@ -335,7 +491,7 @@
         } else if (col === 'date') {
           res = new Date(va) - new Date(vb);
         } else {
-          res = String(va).localeCompare(String(vb));
+          res = String(va).localeCompare(String(vb), undefined, { numeric: true, sensitivity: 'base' });
         }
         return dir === 'asc' ? res : -res;
       });
@@ -343,30 +499,36 @@
 
     function setupSorting() {
       document.querySelectorAll('th.sortable').forEach(th => {
-        th.onclick = () => {
+        th.addEventListener('click', () => {
           const column = th.dataset.col;
-          const parent = th.closest('table').id;
-          const tblKey = parent === 'pendingTable' ? 'pending' : 'completed';
+          const parentTable = th.closest('table');
+          const tblKey = parentTable.querySelector('tbody').id === 'pendingTable' ? 'pending' : 'completed';
           const state = sortState[tblKey];
-          if (state.col !== column) {
+
+          // Remove sorting classes from all headers in the same table
+          parentTable.querySelectorAll('th.sortable').forEach(x => x.classList.remove('sorted-asc','sorted-desc'));
+
+          if (state.col === column) {
+            state.dir = state.dir === 'asc' ? 'desc' : 'asc';
+          } else {
             state.col = column;
             state.dir = 'asc';
-          } else {
-            state.col = null;
-            state.dir = null;
           }
-          document.querySelectorAll('th.sortable').forEach(x => x.classList.remove('sorted-asc','sorted-desc'));
-          if (state.col) {
-            th.classList.add(state.dir === 'asc' ? 'sorted-asc' : 'sorted-desc');
-          }
+
+          th.classList.add(state.dir === 'asc' ? 'sorted-asc' : 'sorted-desc');
+
           if (tblKey === 'pending') {
             currentPendingPage = 0; // reset to first page
             renderPending();
-          } else {
+          }
+          // Only re-render completed if the search filter is cleared
+          // Otherwise, the search filter will be applied first
+          // and then sort will be applied to the filtered data.
+          else {
             currentCompletedPage = 0;
             renderCompleted();
           }
-        };
+        });
       });
     }
 
@@ -374,17 +536,13 @@
     // RENDER PENDING VEHICLES (with pagination)
     // ==========================
     function renderPending() {
-      //
-      // 1) Sort `pendingData` according to sortState
-      // 2) Paginate in pages of size `pendingPageSize`
-      //
       const sorted = applySort('pending', pendingData);
       const totalItems = sorted.length;
       const totalPages = Math.ceil(totalItems / pendingPageSize) || 1;
-      if (currentPendingPage > totalPages - 1) currentPendingPage = totalPages - 1;
+      if (currentPendingPage >= totalPages) currentPendingPage = totalPages - 1;
 
       const start = currentPendingPage * pendingPageSize;
-      const end   = start + pendingPageSize;
+      const end = start + pendingPageSize;
       const pageSlice = sorted.slice(start, end);
 
       const tbody = document.getElementById('pendingTable');
@@ -392,30 +550,32 @@
       if (pageSlice.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="8" class="p-4 text-center text-gray-500">No pending vehicles</td>
+            <td colspan="9" class="p-4 text-center text-gray-500">No pending vehicles</td>
           </tr>
         `;
       } else {
-        pageSlice.forEach(doc => {
+        pageSlice.forEach((doc, idx) => { /* Added idx for staggered animation */
           const d = doc.data;
           const days = Math.floor((new Date() - new Date(d.date)) / (1000 * 60 * 60 * 24));
-          const badgeColor = days > 3 ? 'bg-red-500 text-white' : 'bg-blue-100 text-blue-800';
+          const badgeColor = days > 3 ? 'bg-red-500 text-white badge-pulse' : 'bg-blue-100 text-blue-800'; /* Added badge-pulse */
           const tr = document.createElement('tr');
+          tr.className = 'hover:bg-gray-50 transition-colors duration-200 table-row-enter'; /* Added table-row-enter */
+          tr.style.animationDelay = `${idx * 0.05}s`; /* Staggered animation delay */
           tr.innerHTML = `
-            <td class="p-1 md:p-2 border">${d.vin}</td>
-            <td class="p-1 md:p-2 border">${d.stock}</td>
-            <td class="p-1 md:p-2 border">${d.make}</td>
-            <td class="p-1 md:p-2 border">${d.model}</td>
-            <td class="p-1 md:p-2 border">${d.year}</td>
-            <td class="p-1 md:p-2 border">${d.date}</td>
-            <td class="p-1 md:p-2 border text-center">
+            <td class="p-2 border-b">${d.vin}</td>
+            <td class="p-2 border-b">${d.stock}</td>
+            <td class="p-2 border-b">${d.make}</td>
+            <td class="p-2 border-b">${d.model}</td>
+            <td class="p-2 border-b">${d.year}</td>
+            <td class="p-2 border-b">${d.date}</td>
+            <td class="p-2 border-b text-center">
               <span class="inline-block ${badgeColor} text-xs font-semibold px-2 py-1 rounded-full">${days}</span>
             </td>
-            <td class="p-1 md:p-2 border">${d.comment || '-'}</td>
-            <td class="p-1 md:p-2 border flex space-x-1 md:space-x-2 justify-center">
-              <button onclick="openCompleteModal('${doc.id}')" class="bg-green-600 text-white px-2 md:px-3 py-1 md:py-1 rounded text-xs md:text-sm">Complete</button>
-              <button onclick="openEditModal('${doc.id}','pending_vehicles')" class="bg-yellow-500 text-white px-2 md:px-3 py-1 md:py-1 rounded text-xs md:text-sm">Edit</button>
-              <button onclick="deleteEntry('${doc.id}','pending_vehicles')" class="bg-red-600 text-white px-2 md:px-3 py-1 md:py-1 rounded text-xs md:text-sm">Delete</button>
+            <td class="p-2 border-b">${d.comment || '-'}</td>
+            <td class="p-2 border-b flex space-x-2 justify-center">
+              <button onclick="openCompleteModal('${doc.id}')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover">Complete</button>
+              <button onclick="openEditModal('${doc.id}','pending_vehicles')" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover">Edit</button>
+              <button onclick="deleteEntry('${doc.id}','pending_vehicles')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover">Delete</button>
             </td>
           `;
           tbody.appendChild(tr);
@@ -428,27 +588,34 @@
     }
 
     function changePendingPage(delta) {
-      currentPendingPage += delta;
-      renderPending();
+      const newPage = currentPendingPage + delta;
+      const totalPages = Math.ceil(pendingData.length / pendingPageSize) || 1;
+      if (newPage >= 0 && newPage < totalPages) {
+        currentPendingPage = newPage;
+        renderPending();
+      }
     }
 
     // ==========================
     // RENDER COMPLETED VEHICLES (with pagination)
     // ==========================
     function renderCompleted() {
-      //
-      // 1) If a search filter is active, use `filteredCompletedData`; otherwise use `completedData`
-      // 2) Sort according to sortState
-      // 3) Paginate in pages of size `completedPageSize`
-      //
-      let workingData = filteredCompletedData.length > 0 ? filteredCompletedData : completedData;
+      const searchVal = document.getElementById('searchCompleted').value.toLowerCase();
+      let workingData = searchVal ? completedData.filter(item => {
+        const d = item.data;
+        return (d.vin || '').toLowerCase().includes(searchVal)
+             || (d.stock || '').toLowerCase().includes(searchVal)
+             || (d.make || '').toLowerCase().includes(searchVal)
+             || (d.model || '').toLowerCase().includes(searchVal);
+      }) : completedData;
+
       const sorted = applySort('completed', workingData);
       const totalItems = sorted.length;
       const totalPages = Math.ceil(totalItems / completedPageSize) || 1;
-      if (currentCompletedPage > totalPages - 1) currentCompletedPage = totalPages - 1;
+      if (currentCompletedPage >= totalPages) currentCompletedPage = totalPages - 1;
 
       const start = currentCompletedPage * completedPageSize;
-      const end   = start + completedPageSize;
+      const end = start + completedPageSize;
       const pageSlice = sorted.slice(start, end);
 
       const tbody = document.getElementById('completedTable');
@@ -456,38 +623,39 @@
       if (pageSlice.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="12" class="p-4 text-center text-gray-500">No completed vehicles</td>
+            <td colspan="12" class="p-4 text-center text-gray-500">${searchVal ? 'No matches found' : 'No completed vehicles'}</td>
           </tr>
         `;
       } else {
-        pageSlice.forEach(doc => {
+        pageSlice.forEach((doc, idx) => { /* Added idx for staggered animation */
           const d = doc.data;
           const days = Math.floor((new Date() - new Date(d.date)) / (1000 * 60 * 60 * 24));
           let stockCellClass = '';
           if (d.photoType === 'Half Photos') {
-            if (days > 14) stockCellClass = 'bg-red-500 text-white';
-            else if (days > 7) stockCellClass = 'bg-green-200 text-green-800';
+            if (days > 14) stockCellClass = 'bg-red-200 text-red-800';
+            else if (days > 7) stockCellClass = 'bg-yellow-200 text-yellow-800';
           }
           const tr = document.createElement('tr');
-          tr.className = d.isSold ? 'opacity-60 line-through' : '';
+          tr.className = `${d.isSold ? 'opacity-50 line-through' : ''} hover:bg-gray-50 transition-all duration-200 table-row-enter`; /* Added table-row-enter */
+          tr.style.animationDelay = `${idx * 0.05}s`; /* Staggered animation delay */
           tr.innerHTML = `
-            <td class="p-1 md:p-2 border">${d.vin}</td>
-            <td class="p-1 md:p-2 border ${stockCellClass}">${d.stock}</td>
-            <td class="p-1 md:p-2 border">${d.make}</td>
-            <td class="p-1 md:p-2 border">${d.model}</td>
-            <td class="p-1 md:p-2 border">${d.year}</td>
-            <td class="p-1 md:p-2 border">${d.date}</td>
-            <td class="p-1 md:p-2 border">${d.detailed || '-'}</td>
-            <td class="p-1 md:p-2 border">${d.photoType || '-'}</td>
-            <td class="p-1 md:p-2 border">${d.halfReason || '-'}</td>
-            <td class="p-1 md:p-2 border text-center">
-              <span class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded-full">${days}</span>
+            <td class="p-2 border-b">${d.vin}</td>
+            <td class="p-2 border-b ${stockCellClass}">${d.stock}</td>
+            <td class="p-2 border-b">${d.make}</td>
+            <td class="p-2 border-b">${d.model}</td>
+            <td class="p-2 border-b">${d.year}</td>
+            <td class="p-2 border-b">${d.date}</td>
+            <td class="p-2 border-b">${d.detailed || '-'}</td>
+            <td class="p-2 border-b">${d.photoType || '-'}</td>
+            <td class="p-2 border-b">${d.halfReason || '-'}</td>
+            <td class="p-2 border-b text-center">
+              <span class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded-full badge-pulse">${days}</span>
             </td>
-            <td class="p-1 md:p-2 border">${d.comment || '-'}</td>
-            <td class="p-1 md:p-2 border flex space-x-1 md:space-x-2 justify-center">
-              <button onclick="openEditModal('${doc.id}','vehicles')" class="bg-yellow-500 text-white px-2 md:px-3 py-1 md:py-1 rounded text-xs md:text-sm">Edit</button>
-              <button onclick="deleteEntry('${doc.id}','vehicles')" class="bg-red-600 text-white px-2 md:px-3 py-1 md:py-1 rounded text-xs md:text-sm">Delete</button>
-              <button onclick="toggleSold('${doc.id}',${d.isSold})" class="bg-purple-600 text-white px-2 md:px-3 py-1 md:py-1 rounded text-xs md:text-sm">${d.isSold?'Undo Sold':'Mark Sold'}</button>
+            <td class="p-2 border-b">${d.comment || '-'}</td>
+            <td class="p-2 border-b flex space-x-2 justify-center">
+              <button onclick="openEditModal('${doc.id}','vehicles')" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover">Edit</button>
+              <button onclick="deleteEntry('${doc.id}','vehicles')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover">Delete</button>
+              <button onclick="toggleSold('${doc.id}',${d.isSold || false})" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover">${d.isSold?'Undo Sold':'Mark Sold'}</button>
             </td>
           `;
           tbody.appendChild(tr);
@@ -500,58 +668,76 @@
     }
 
     function changeCompletedPage(delta) {
-      currentCompletedPage += delta;
-      renderCompleted();
+      const searchVal = document.getElementById('searchCompleted').value.toLowerCase();
+      const workingData = searchVal ? completedData.filter(item => {
+        const d = item.data;
+        return (d.vin || '').toLowerCase().includes(searchVal)
+             || (d.stock || '').toLowerCase().includes(searchVal)
+             || (d.make || '').toLowerCase().includes(searchVal)
+             || (d.model || '').toLowerCase().includes(searchVal);
+      }) : completedData;
+      const totalPages = Math.ceil(workingData.length / completedPageSize) || 1;
+      const newPage = currentCompletedPage + delta;
+      if (newPage >= 0 && newPage < totalPages) {
+        currentCompletedPage = newPage;
+        renderCompleted();
+      }
     }
 
     // ==========================
     // COMPLETE MODAL LOGIC
     // ==========================
+    let currentCompleteId = null;
     document.getElementById('completePhotoType').addEventListener('change', e => {
       document.getElementById('halfReasonContainer').classList.toggle('hidden', e.target.value !== 'Half Photos');
     });
 
     function openCompleteModal(id) {
       currentCompleteId = id;
-      document.getElementById('completeModal').classList.remove('hidden');
+      const modal = document.getElementById('completeModal');
+      modal.classList.remove('hidden');
+      modal.querySelector('.modal-enter').classList.remove('modal-exit');
     }
 
     function closeCompleteModal() {
-      ['completeDetailed','completePhotoType','completeHalfReason'].forEach(fid => document.getElementById(fid).value = '');
-      document.getElementById('halfReasonContainer').classList.add('hidden');
-      document.getElementById('completeModal').classList.add('hidden');
+      const modal = document.getElementById('completeModal');
+      const modalContent = modal.querySelector('.modal-enter');
+      modalContent.classList.add('modal-exit');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        ['completeDetailed','completePhotoType','completeHalfReason'].forEach(fid => document.getElementById(fid).value = '');
+        document.getElementById('halfReasonContainer').classList.add('hidden');
+      }, 300);
     }
 
     async function confirmComplete() {
       const det = document.getElementById('completeDetailed').value;
-      const pt  = document.getElementById('completePhotoType').value;
+      const pt = document.getElementById('completePhotoType').value;
       if (!det || !pt) {
         showToast('Please select both Detailed and Photos.');
         return;
       }
       const hr = (pt === 'Half Photos') ? document.getElementById('completeHalfReason').value.trim() : '';
-      // Use current date (YYYY-MM-DD)
-      const today = new Date().toISOString().split("T")[0];
+      const today = getTodayDate(); // Use the utility function for today's date
 
       showSpinner();
-      closeCompleteModal();
-      const e = pendingData.find(item => item.id === currentCompleteId).data;
+      const entryToComplete = pendingData.find(item => item.id === currentCompleteId);
+      if (!entryToComplete) {
+        showToast('Error: Could not find the vehicle to complete.');
+        hideSpinner();
+        return;
+      }
+      const e = entryToComplete.data;
+
       try {
         await db.collection('vehicles').add({
-          vin: e.vin,
-          stock: e.stock,
-          make: e.make,
-          model: e.model,
-          year: e.year,
-          date: today,
-          comment: e.comment,
-          detailed: det,
-          photoType: pt,
-          halfReason: hr,
-          isSold: false
+          vin: e.vin, stock: e.stock, make: e.make, model: e.model,
+          year: e.year, date: today, comment: e.comment, detailed: det,
+          photoType: pt, halfReason: hr, isSold: false
         });
         await db.collection('pending_vehicles').doc(currentCompleteId).delete();
         showToast('Vehicle marked as complete.');
+        closeCompleteModal();
       } catch (err) {
         console.error(err);
         showToast('Error completing vehicle.');
@@ -565,155 +751,138 @@
     // ==========================
     function openEditModal(id, collection) {
       const arr = (collection === 'pending_vehicles') ? pendingData : completedData;
-      const e = arr.find(item => item.id === id).data;
+      const item = arr.find(item => item.id === id);
+      if (!item) return;
+      const e = item.data;
 
       document.getElementById('editId').value = id;
       document.getElementById('editCollection').value = collection;
-      document.getElementById('editVin').value    = e.vin || '';
-      document.getElementById('editStock').value  = e.stock || '';
-      document.getElementById('editMake').value   = e.make || '';
-      document.getElementById('editModel').value  = e.model || '';
-      document.getElementById('editYear').value   = e.year || '';
-      document.getElementById('editDate').value   = e.date || '';
-      document.getElementById('editComment').value= e.comment || '';
+      document.getElementById('editVin').value = e.vin || '';
+      document.getElementById('editStock').value = e.stock || '';
+      document.getElementById('editMake').value = e.make || '';
+      document.getElementById('editModel').value = e.model || '';
+      document.getElementById('editYear').value = e.year || '';
+      document.getElementById('editDate').value = e.date || '';
+      document.getElementById('editComment').value = e.comment || '';
 
-      if (collection === 'vehicles') {
-        document.getElementById('editDetailed').value  = e.detailed || '';
+      const isCompleted = collection === 'vehicles';
+      document.getElementById('editDetailed').style.display = isCompleted ? 'block' : 'none';
+      document.getElementById('editPhotoType').style.display = isCompleted ? 'block' : 'none';
+      if (isCompleted) {
+        document.getElementById('editDetailed').value = e.detailed || '';
         document.getElementById('editPhotoType').value = e.photoType || '';
-      } else {
-        document.getElementById('editDetailed').value  = '';
-        document.getElementById('editPhotoType').value = '';
       }
 
-      document.getElementById('editModal').classList.remove('hidden');
+      const modal = document.getElementById('editModal');
+      modal.classList.remove('hidden');
+      modal.querySelector('.modal-enter').classList.remove('modal-exit');
     }
 
     function closeModal() {
-      ['editVin','editStock','editMake','editModel','editYear','editDate','editDetailed','editPhotoType','editComment']
-        .forEach(id => document.getElementById(id).value = '');
-      document.getElementById('editModal').classList.add('hidden');
+      const modal = document.getElementById('editModal');
+      const modalContent = modal.querySelector('.modal-enter');
+      modalContent.classList.add('modal-exit');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 300);
     }
 
-    async function saveEdit() {
+    document.getElementById('saveEditBtn').addEventListener('click', async () => {
       const id = document.getElementById('editId').value;
       const collection = document.getElementById('editCollection').value;
-      const updatedData = {
-        vin:    document.getElementById('editVin').value.trim(),
-        stock:  document.getElementById('editStock').value.trim(),
-        make:   document.getElementById('editMake').value.trim(),
-        model:  document.getElementById('editModel').value.trim(),
-        year:   document.getElementById('editYear').value,
-        date:   document.getElementById('editDate').value,
-        comment:document.getElementById('editComment').value.trim()
-      };
+      const vin = document.getElementById('editVin').value.trim().toUpperCase();
+      const stock = document.getElementById('editStock').value.trim().toUpperCase();
+      const make = document.getElementById('editMake').value.trim();
+      const model = document.getElementById('editModel').value.trim();
+      const year = document.getElementById('editYear').value;
+      const date = document.getElementById('editDate').value;
+      const comment = document.getElementById('editComment').value.trim();
 
-      if (collection === 'vehicles') {
-        updatedData.detailed   = document.getElementById('editDetailed').value;
-        updatedData.photoType  = document.getElementById('editPhotoType').value;
-        if (updatedData.photoType === 'Half Photos') {
-          updatedData.halfReason = prompt('Reason for half photographs:', '') || '';
-        }
-      }
-
-      // Stock, Make, Model, Year, Date are required
-      if (!updatedData.stock || !updatedData.make || !updatedData.model || !updatedData.year || !updatedData.date) {
-        showToast('Please fill in all required fields.');
+      if (!stock || !make || !model || !year || !date) {
+        showToast('Please fill in Stock, Make, Model, Year & Date.');
         return;
       }
 
       showSpinner();
       try {
-        await db.collection(collection).doc(id).update(updatedData);
-        showToast('Entry updated.');
+        const updateData = { vin, stock, make, model, year, date, comment };
+        if (collection === 'vehicles') {
+          updateData.detailed = document.getElementById('editDetailed').value;
+          updateData.photoType = document.getElementById('editPhotoType').value;
+        }
+        await db.collection(collection).doc(id).update(updateData);
+        showToast('Entry updated successfully.');
         closeModal();
-      } catch (err) {
-        console.error(err);
+      } catch (e) {
+        console.error(e);
         showToast('Error updating entry.');
       } finally {
         hideSpinner();
       }
-    }
-    document.getElementById('saveEditBtn').addEventListener('click', saveEdit);
+    });
 
     // ==========================
-    // DELETE & TOGGLE SOLD
+    // DELETE ENTRY
     // ==========================
     async function deleteEntry(id, collection) {
-      if (!confirm('Are you sure?')) return;
+      if (!confirm('Are you sure you want to delete this entry?')) return;
       showSpinner();
       try {
         await db.collection(collection).doc(id).delete();
         showToast('Entry deleted.');
-      } catch (err) {
-        console.error(err);
+      } catch (e) {
+        console.error(e);
         showToast('Error deleting entry.');
       } finally {
         hideSpinner();
       }
     }
 
-    async function toggleSold(id, currentSoldStatus) {
+    // ==========================
+    // MARK SOLD / UNDO SOLD
+    // ==========================
+    async function toggleSold(id, isCurrentlySold) {
       showSpinner();
       try {
-        await db.collection('vehicles').doc(id).update({ isSold: !currentSoldStatus });
-        showToast(currentSoldStatus ? 'Marked as not sold' : 'Marked as sold');
-      } catch (err) {
-        console.error(err);
-        showToast('Error toggling sold status.');
+        await db.collection('vehicles').doc(id).update({ isSold: !isCurrentlySold });
+        showToast(isCurrentlySold ? 'Vehicle marked as unsold.' : 'Vehicle marked as sold.');
+      } catch (e) {
+        console.error(e);
+        showToast('Error updating sold status.');
       } finally {
         hideSpinner();
       }
     }
 
     // ==========================
-    // SEARCH FILTER (Completed Only)
-    // ==========================
-    document.getElementById('searchCompleted').addEventListener('input', evt => {
-      const v = evt.target.value.toLowerCase();
-      if (!v) {
-        filteredCompletedData = [];
-        currentCompletedPage = 0;
-        renderCompleted();
-        return;
-      }
-      filteredCompletedData = completedData.filter(item => {
-        const d = item.data;
-        return (d.vin || '').toLowerCase().includes(v)
-            || (d.stock || '').toLowerCase().includes(v)
-            || (d.make || '').toLowerCase().includes(v)
-            || (d.model || '').toLowerCase().includes(v);
-      });
-      currentCompletedPage = 0;
-      renderCompleted();
-    });
-
-    // ==========================
-    // FIRESTORE REAL-TIME LISTENERS
+    // REALTIME LISTENERS
     // ==========================
     db.collection('pending_vehicles').onSnapshot(snapshot => {
       pendingData = snapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
-      currentPendingPage = 0; // reset when data changes
       renderPending();
-      setupSorting();
+    }, err => {
+      console.error('Error fetching pending vehicles:', err);
+      showToast('Error loading pending vehicles.');
     });
 
     db.collection('vehicles').onSnapshot(snapshot => {
       completedData = snapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
-      filteredCompletedData = []; // clear any previous filter
-      currentCompletedPage = 0;
       renderCompleted();
-      setupSorting();
+    }, err => {
+      console.error('Error fetching completed vehicles:', err);
+      showToast('Error loading completed vehicles.');
     });
 
-    // Expose global functions
-    window.openCompleteModal  = openCompleteModal;
-    window.closeCompleteModal = closeCompleteModal;
-    window.openEditModal      = openEditModal;
-    window.closeModal         = closeModal;
-    window.deleteEntry        = deleteEntry;
-    window.toggleSold         = toggleSold;
-    window.changePendingPage  = changePendingPage;
-    window.changeCompletedPage= changeCompletedPage;
+    // Initial setup
+    document.addEventListener('DOMContentLoaded', () => {
+      setupSorting();
+      document.getElementById('searchCompleted').addEventListener('input', () => {
+        currentCompletedPage = 0; // Reset page on search
+        renderCompleted();
+      });
+      // Ensure the date input has today's date on initial load
+      document.getElementById('date').value = getTodayDate();
+    });
   </script>
 </body>
 </html>
