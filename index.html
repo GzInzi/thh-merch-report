@@ -423,7 +423,7 @@
     };
 
     // ==========================
-    // ADD PENDING ENTRY (stock‐only duplicate check)
+    // ADD PENDING ENTRY (stock-only duplicate check)
     // ==========================
     async function addPending() {
       document.getElementById('stock').classList.remove('border-red-500');
@@ -555,7 +555,7 @@
       if (pageSlice.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="9" class="p-4 text-center text-gray-500">No pending vehicles</td>
+            <td colspan="9" class="p-4 text-center text-gray-500 border-0">No pending vehicles</td>
           </tr>
         `;
       } else {
@@ -628,7 +628,7 @@
       if (pageSlice.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="12" class="p-4 text-center text-gray-500">${searchVal ? 'No matches found' : 'No completed vehicles'}</td>
+            <td colspan="12" class="p-4 text-center text-gray-500 border-0">${searchVal ? 'No matches found' : 'No completed vehicles'}</td>
           </tr>
         `;
       } else {
@@ -640,6 +640,13 @@
             if (days > 14) stockCellClass = 'bg-red-200 text-red-800';
             else if (days > 7) stockCellClass = 'bg-yellow-200 text-yellow-800';
           }
+
+          // Determine if comment is a URL and create appropriate content
+          let commentContent = d.comment || '-';
+          if (commentContent.startsWith('http://') || commentContent.startsWith('https://')) {
+            commentContent = `<a href="${commentContent}" target="_blank" class="text-blue-600 hover:underline">${commentContent}</a>`;
+          }
+
           const tr = document.createElement('tr');
           tr.className = `${d.isSold ? 'opacity-50 line-through' : ''} hover:bg-gray-50 transition-all duration-200 table-row-enter`; /* Added table-row-enter */
           tr.style.animationDelay = `${idx * 0.05}s`; /* Staggered animation delay */
@@ -656,8 +663,7 @@
             <td class="px-4 py-2 text-center">
               <span class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded-full badge-pulse">${days}</span>
             </td>
-            <td class="px-4 py-2">${d.comment || '-'}</td>
-            <td class="px-4 py-2 flex space-x-2 justify-center">
+            <td class="px-4 py-2">${commentContent}</td> <td class="px-4 py-2 flex space-x-2 justify-center">
               <button onclick="openEditModal('${doc.id}','vehicles')" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover">Edit</button>
               <button onclick="deleteEntry('${doc.id}','vehicles')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover">Delete</button>
               <button onclick="toggleSold('${doc.id}',${d.isSold || false})" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover">${d.isSold?'Undo Sold':'Mark Sold'}</button>
