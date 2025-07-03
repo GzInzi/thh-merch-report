@@ -28,8 +28,13 @@
       background-color: var(--background-light); /* Apply to body */
       color: var(--text-dark); /* Apply to body text */
     }
+    /* Adjusted table styling for borders */
+    table {
+        border-collapse: collapse; /* Essential for proper border rendering */
+    }
     table th, table td {
       white-space: nowrap;
+      border: 1px solid var(--border-color); /* Apply border to all cells */
     }
     th.sortable {
       cursor: pointer;
@@ -211,21 +216,21 @@
     <section class="bg-white p-6 rounded-lg shadow-md section-card-animate">
       <h2 class="text-2xl font-semibold mb-4 text-gray-700">Pending Vehicles</h2>
       <div class="overflow-x-auto">
-        <table class="min-w-full bg-white table-auto text-sm">
+        <table class="min-w-full bg-white table-auto text-sm border border-gray-300">
           <thead class="bg-gray-200">
             <tr class="text-left text-gray-600 uppercase text-sm">
-              <th data-col="vin" class="px-4 py-2 border-b-2 border-gray-300 sortable">VIN</th>
-              <th data-col="stock" class="px-4 py-2 border-b-2 border-gray-300 sortable">Stock</th>
-              <th data-col="make" class="px-4 py-2 border-b-2 border-gray-300 sortable">Make</th>
-              <th data-col="model" class="px-4 py-2 border-b-2 border-gray-300 sortable">Model</th>
-              <th data-col="year" class="px-4 py-2 border-b-2 border-gray-300 sortable">Year</th>
-              <th data-col="date" class="px-4 py-2 border-b-2 border-gray-300 sortable">Date</th>
-              <th data-col="days" class="px-4 py-2 border-b-2 border-gray-300 sortable text-center">Days</th>
-              <th class="px-4 py-2 border-b-2 border-gray-300">Comment</th>
-              <th class="px-4 py-2 border-b-2 border-gray-300 text-center">Actions</th>
+              <th data-col="vin" class="px-4 py-2 sortable">VIN</th>
+              <th data-col="stock" class="px-4 py-2 sortable">Stock</th>
+              <th data-col="make" class="px-4 py-2 sortable">Make</th>
+              <th data-col="model" class="px-4 py-2 sortable">Model</th>
+              <th data-col="year" class="px-4 py-2 sortable">Year</th>
+              <th data-col="date" class="px-4 py-2 sortable">Date</th>
+              <th data-col="days" class="px-4 py-2 sortable text-center">Days</th>
+              <th class="px-4 py-2">Comment</th>
+              <th class="px-4 py-2 text-center">Actions</th>
             </tr>
           </thead>
-          <tbody id="pendingTable" class="divide-y divide-gray-200"></tbody>
+          <tbody id="pendingTable"></tbody>
         </table>
       </div>
       <div class="mt-4 flex justify-center space-x-2">
@@ -248,24 +253,24 @@
                class="border p-3 rounded-lg w-full md:w-1/3 mt-2 md:mt-0 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300" />
       </div>
       <div class="overflow-x-auto">
-        <table class="min-w-full bg-white table-auto text-sm">
+        <table class="min-w-full bg-white table-auto text-sm border border-gray-300">
           <thead class="bg-gray-200">
             <tr class="text-left text-gray-600 uppercase text-sm">
-              <th data-col="vin" class="px-4 py-2 border-b-2 border-gray-300 sortable">VIN</th>
-              <th data-col="stock" class="px-4 py-2 border-b-2 border-gray-300 sortable">Stock</th>
-              <th data-col="make" class="px-4 py-2 border-b-2 border-gray-300 sortable">Make</th>
-              <th data-col="model" class="px-4 py-2 border-b-2 border-gray-300 sortable">Model</th>
-              <th data-col="year" class="px-4 py-2 border-b-2 border-gray-300 sortable">Year</th>
-              <th data-col="date" class="px-4 py-2 border-b-2 border-gray-300 sortable">Date</th>
-              <th data-col="detailed" class="px-4 py-2 border-b-2 border-gray-300 sortable">Detailed</th>
-              <th data-col="photoType" class="px-4 py-2 border-b-2 border-gray-300 sortable">Photos</th>
-              <th data-col="halfReason" class="px-4 py-2 border-b-2 border-gray-300 sortable">Half Reason</th>
-              <th data-col="days" class="px-4 py-2 border-b-2 border-gray-300 sortable text-center">Days</th>
-              <th class="px-4 py-2 border-b-2 border-gray-300">Comment</th>
-              <th class="px-4 py-2 border-b-2 border-gray-300 text-center">Actions</th>
+              <th data-col="vin" class="px-4 py-2 sortable">VIN</th>
+              <th data-col="stock" class="px-4 py-2 sortable">Stock</th>
+              <th data-col="make" class="px-4 py-2 sortable">Make</th>
+              <th data-col="model" class="px-4 py-2 sortable">Model</th>
+              <th data-col="year" class="px-4 py-2 sortable">Year</th>
+              <th data-col="date" class="px-4 py-2 sortable">Date</th>
+              <th data-col="detailed" class="px-4 py-2 sortable">Detailed</th>
+              <th data-col="photoType" class="px-4 py-2 sortable">Photos</th>
+              <th data-col="halfReason" class="px-4 py-2 sortable">Half Reason</th>
+              <th data-col="days" class="px-4 py-2 sortable text-center">Days</th>
+              <th class="px-4 py-2">Comment</th>
+              <th class="px-4 py-2 text-center">Actions</th>
             </tr>
           </thead>
-          <tbody id="completedTable" class="divide-y divide-gray-200"></tbody>
+          <tbody id="completedTable"></tbody>
         </table>
       </div>
       <div class="mt-4 flex justify-center space-x-2">
@@ -391,7 +396,7 @@
       return `${year}-${month}-${day}`;
     }
 
-    // Populate Year dropdowns from 2000 to current year and set default date
+    // Populate Year dropdowns from 2000 to current year
     document.querySelectorAll('#year,#editYear').forEach(sel => {
       const currentYear = new Date().getFullYear();
       for (let y = currentYear; y >= 2000; y--) {
@@ -399,7 +404,7 @@
       }
     });
 
-    // Set default date for the data entry form
+    // Set default date for the data entry form on page load
     document.getElementById('date').value = getTodayDate();
 
     // ==========================
@@ -453,7 +458,7 @@
         document.getElementById('stock').value = '';
         document.getElementById('make').value = '';
         document.getElementById('model').value = '';
-        // document.getElementById('year').value = ''; // Don't clear year as per typical workflow
+        // document.getElementById('year').value = ''; // You can uncomment this if you want the year to reset
         document.getElementById('date').value = getTodayDate(); // Set to current date
         document.getElementById('comment').value = '';
       } catch (e) {
@@ -562,17 +567,17 @@
           tr.className = 'hover:bg-gray-50 transition-colors duration-200 table-row-enter'; /* Added table-row-enter */
           tr.style.animationDelay = `${idx * 0.05}s`; /* Staggered animation delay */
           tr.innerHTML = `
-            <td class="p-2 border-b">${d.vin}</td>
-            <td class="p-2 border-b">${d.stock}</td>
-            <td class="p-2 border-b">${d.make}</td>
-            <td class="p-2 border-b">${d.model}</td>
-            <td class="p-2 border-b">${d.year}</td>
-            <td class="p-2 border-b">${d.date}</td>
-            <td class="p-2 border-b text-center">
+            <td class="px-4 py-2">${d.vin}</td>
+            <td class="px-4 py-2">${d.stock}</td>
+            <td class="px-4 py-2">${d.make}</td>
+            <td class="px-4 py-2">${d.model}</td>
+            <td class="px-4 py-2">${d.year}</td>
+            <td class="px-4 py-2">${d.date}</td>
+            <td class="px-4 py-2 text-center">
               <span class="inline-block ${badgeColor} text-xs font-semibold px-2 py-1 rounded-full">${days}</span>
             </td>
-            <td class="p-2 border-b">${d.comment || '-'}</td>
-            <td class="p-2 border-b flex space-x-2 justify-center">
+            <td class="px-4 py-2">${d.comment || '-'}</td>
+            <td class="px-4 py-2 flex space-x-2 justify-center">
               <button onclick="openCompleteModal('${doc.id}')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover">Complete</button>
               <button onclick="openEditModal('${doc.id}','pending_vehicles')" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover">Edit</button>
               <button onclick="deleteEntry('${doc.id}','pending_vehicles')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover">Delete</button>
@@ -639,20 +644,20 @@
           tr.className = `${d.isSold ? 'opacity-50 line-through' : ''} hover:bg-gray-50 transition-all duration-200 table-row-enter`; /* Added table-row-enter */
           tr.style.animationDelay = `${idx * 0.05}s`; /* Staggered animation delay */
           tr.innerHTML = `
-            <td class="p-2 border-b">${d.vin}</td>
-            <td class="p-2 border-b ${stockCellClass}">${d.stock}</td>
-            <td class="p-2 border-b">${d.make}</td>
-            <td class="p-2 border-b">${d.model}</td>
-            <td class="p-2 border-b">${d.year}</td>
-            <td class="p-2 border-b">${d.date}</td>
-            <td class="p-2 border-b">${d.detailed || '-'}</td>
-            <td class="p-2 border-b">${d.photoType || '-'}</td>
-            <td class="p-2 border-b">${d.halfReason || '-'}</td>
-            <td class="p-2 border-b text-center">
+            <td class="px-4 py-2">${d.vin}</td>
+            <td class="px-4 py-2 ${stockCellClass}">${d.stock}</td>
+            <td class="px-4 py-2">${d.make}</td>
+            <td class="px-4 py-2">${d.model}</td>
+            <td class="px-4 py-2">${d.year}</td>
+            <td class="px-4 py-2">${d.date}</td>
+            <td class="px-4 py-2">${d.detailed || '-'}</td>
+            <td class="px-4 py-2">${d.photoType || '-'}</td>
+            <td class="px-4 py-2">${d.halfReason || '-'}</td>
+            <td class="px-4 py-2 text-center">
               <span class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded-full badge-pulse">${days}</span>
             </td>
-            <td class="p-2 border-b">${d.comment || '-'}</td>
-            <td class="p-2 border-b flex space-x-2 justify-center">
+            <td class="px-4 py-2">${d.comment || '-'}</td>
+            <td class="px-4 py-2 flex space-x-2 justify-center">
               <button onclick="openEditModal('${doc.id}','vehicles')" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover">Edit</button>
               <button onclick="deleteEntry('${doc.id}','vehicles')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover">Delete</button>
               <button onclick="toggleSold('${doc.id}',${d.isSold || false})" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover">${d.isSold?'Undo Sold':'Mark Sold'}</button>
