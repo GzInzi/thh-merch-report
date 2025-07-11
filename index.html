@@ -297,10 +297,11 @@
               <th class="px-4 py-2">Model</th>
               <th class="px-4 py-2">Year</th>
               <th class="px-4 py-2">Detailed</th>
-              <th class="px-4 py-2">Photos</th>
-              <th class="px-4 py-2">Comment</th>
-              <th class="px-4 py-2 text-center">Recaptured</th>
-              <th class="px-4 py-2 text-center">Actions</th> </tr>
+              <th class="px-4 py-2 text-center">Description</th>
+              <th class="px-4 py-2 text-center">Glovebox</th>
+              <th class="px-4 py-2 text-center">Recaptured</th> <th class="px-4 py-2">Photos</th> <th class="px-4 py-2">Comment</th>
+              <th class="px-4 py-2 text-center">Actions</th>
+            </tr>
           </thead>
           <tbody id="dailySummaryTable">
             </tbody>
@@ -636,7 +637,7 @@
     function renderCompleted() {
       const searchVal = document.getElementById('searchCompleted').value.toLowerCase();
       // Assign the filtered data to the global filteredCompletedData
-      filteredCompletedData = searchVal ? completedData.filter(item => { // CHANGE HERE: ASSIGN TO filteredCompletedData
+      filteredCompletedData = searchVal ? completedData.filter(item => {
         const d = item.data;
         return (d.vin || '').toLowerCase().includes(searchVal)
              || (d.stock || '').toLowerCase().includes(searchVal)
@@ -644,7 +645,7 @@
              || (d.model || '').toLowerCase().includes(searchVal);
       }) : completedData;
 
-      const sorted = applySort('completed', filteredCompletedData); // Use filteredCompletedData for sorting
+      const sorted = applySort('completed', filteredCompletedData);
       const totalItems = sorted.length;
       const totalPages = Math.ceil(totalItems / completedPageSize) || 1;
       if (currentCompletedPage >= totalPages) currentCompletedPage = totalPages - 1;
@@ -747,6 +748,17 @@
           const recapturedButtonClass = isRecaptured ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-300 hover:bg-gray-400 text-gray-700';
           const recapturedButtonText = isRecaptured ? 'Yes' : 'No';
 
+          // Determine initial button state and color for Description Uploaded
+          const isDescriptionUploaded = d.descriptionUploaded === true;
+          const descUploadButtonClass = isDescriptionUploaded ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-300 hover:bg-gray-400 text-gray-700';
+          const descUploadButtonText = isDescriptionUploaded ? 'Yes' : 'No';
+
+          // Determine initial button state and color for Glovebox Documents
+          const isGloveboxDocuments = d.gloveboxDocuments === true;
+          const gloveboxButtonClass = isGloveboxDocuments ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-300 hover:bg-gray-400 text-gray-700';
+          const gloveboxButtonText = isGloveboxDocuments ? 'Yes' : 'No';
+
+
           const tr = document.createElement('tr');
           tr.className = 'hover:bg-gray-50 transition-colors duration-200 table-row-enter';
           tr.style.animationDelay = `${idx * 0.05}s`; // Staggered animation for rows
@@ -756,15 +768,24 @@
             <td class="px-4 py-2">${d.model}</td>
             <td class="px-4 py-2">${d.year}</td>
             <td class="px-4 py-2">${d.detailed || '-'}</td>
-            <td class="px-4 py-2">${d.photoType || '-'}</td>
-            <td class="px-4 py-2">${commentContent}</td>
-            <td class="px-4 py-2 text-center">
-              <button onclick="toggleRecapturedStatus('${doc.id}', ${isRecaptured})"
+            <td class="px-4 py-2 text-center"> <button onclick="toggleDailySummaryStatus('${doc.id}', 'descriptionUploaded', ${isDescriptionUploaded})"
+                      class="px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover ${descUploadButtonClass} text-white">
+                ${descUploadButtonText}
+              </button>
+            </td>
+            <td class="px-4 py-2 text-center"> <button onclick="toggleDailySummaryStatus('${doc.id}', 'gloveboxDocuments', ${isGloveboxDocuments})"
+                      class="px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover ${gloveboxButtonClass} text-white">
+                ${gloveboxButtonText}
+              </button>
+            </td>
+            <td class="px-4 py-2 text-center"> <button onclick="toggleDailySummaryStatus('${doc.id}', 'recaptured', ${isRecaptured})"
                       class="px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover ${recapturedButtonClass} text-white">
                 ${recapturedButtonText}
               </button>
             </td>
-            <td class="px-4 py-2 flex space-x-2 justify-center"> <button onclick="openEditModal('${doc.id}','vehicles')" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover">Edit</button>
+            <td class="px-4 py-2">${d.photoType || '-'}</td> <td class="px-4 py-2">${commentContent}</td>
+            <td class="px-4 py-2 flex space-x-2 justify-center">
+              <button onclick="openEditModal('${doc.id}','vehicles')" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover">Edit</button>
             </td>
           `;
           tbody.appendChild(tr);
@@ -773,25 +794,37 @@
     }
 
     // ==========================
-    // RECAPTURED STATUS FUNCTION
+    // GENERIC DAILY SUMMARY STATUS TOGGLE FUNCTION
     // ==========================
-    async function toggleRecapturedStatus(id, currentStatus) {
+    async function toggleDailySummaryStatus(id, fieldName, currentStatus) {
       const newStatus = !currentStatus; // Toggle status
       showSpinner();
       try {
-        await db.collection('vehicles').doc(id).update({
-          recaptured: newStatus,
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp() // Optional: record when status changed
-        });
-        showToast(`Recaptured status updated to: ${newStatus ? 'Yes' : 'No'}`);
+        const updateData = {};
+        updateData[fieldName] = newStatus;
+        updateData.updatedAt = firebase.firestore.FieldValue.serverTimestamp(); // Optional: record when status changed
+
+        await db.collection('vehicles').doc(id).update(updateData);
+        // Format fieldName for toast message
+        let displayFieldName = fieldName;
+        if (fieldName === 'descriptionUploaded') {
+          displayFieldName = 'Description';
+        } else if (fieldName === 'gloveboxDocuments') {
+          displayFieldName = 'Glovebox';
+        } else {
+          // Fallback for other fields (like 'recaptured')
+          displayFieldName = fieldName.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+        }
+        showToast(`${displayFieldName} status updated to: ${newStatus ? 'Yes' : 'No'}`);
         // The Firebase listener for 'vehicles' will automatically re-render the tables
       } catch (e) {
-        console.error("Error updating recaptured status:", e);
-        showToast('Error updating recaptured status.');
+        console.error(`Error updating ${fieldName} status:`, e);
+        showToast(`Error updating ${fieldName} status.`);
       } finally {
         hideSpinner();
       }
     }
+
 
     // ==========================
     // MODAL FUNCTIONS
@@ -851,7 +884,9 @@
             photoType: photoType,
             halfReason: halfReason,
             date: completionDate, // Set the date to today's date for the completed entry
-            recaptured: false, // Initialize recaptured status to false for new completions
+            recaptured: false, // Initialize recaptured status
+            descriptionUploaded: false, // NEW: Initialize description uploaded status
+            gloveboxDocuments: false, // NEW: Initialize glovebox documents status
             completedAt: firebase.firestore.FieldValue.serverTimestamp() // Optional: timestamp of actual completion
           });
 
@@ -895,6 +930,10 @@
           document.getElementById('editDetailed').value = d.detailed || '';
           document.getElementById('editPhotoType').value = d.photoType || '';
           document.getElementById('editComment').value = d.comment || '';
+          // If you ever add these fields to the Edit Modal, you'd populate them here too
+          // document.getElementById('editDescriptionUploaded').checked = d.descriptionUploaded === true;
+          // document.getElementById('editGloveboxDocuments').checked = d.gloveboxDocuments === true;
+
           document.getElementById('editModal').classList.remove('hidden');
         } else {
           showToast('Document not found.');
@@ -938,7 +977,10 @@
       } else if (collectionName === 'vehicles' && updatedData.photoType !== 'Half Photos') {
         updatedData.halfReason = ''; // Clear halfReason if photoType is not "Half Photos"
       }
-
+      
+      // Note: If you want to edit descriptionUploaded or gloveboxDocuments via the edit modal,
+      // you would need to add inputs for them in the modal's HTML and update them here.
+      // For now, they are only toggleable in the daily summary.
 
       showSpinner();
       try {
