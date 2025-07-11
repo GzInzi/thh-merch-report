@@ -299,7 +299,8 @@
               <th class="px-4 py-2">Detailed</th>
               <th class="px-4 py-2">Photos</th>
               <th class="px-4 py-2">Comment</th>
-            </tr>
+              <th class="px-4 py-2 text-center">Recaptured</th>
+              <th class="px-4 py-2 text-center">Actions</th> </tr>
           </thead>
           <tbody id="dailySummaryTable">
             </tbody>
@@ -739,6 +740,11 @@
             commentContent = `<a href="${commentContent}" target="_blank" class="text-blue-600 hover:underline">${commentContent}</a>`;
           }
 
+          // Determine initial button state and color for Recaptured
+          const isRecaptured = d.recaptured === true; // Check if explicitly true
+          const recapturedButtonClass = isRecaptured ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-300 hover:bg-gray-400 text-gray-700';
+          const recapturedButtonText = isRecaptured ? 'Yes' : 'No';
+
           const tr = document.createElement('tr');
           tr.className = 'hover:bg-gray-50 transition-colors duration-200 table-row-enter';
           tr.style.animationDelay = `${idx * 0.05}s`; // Staggered animation for rows
@@ -750,9 +756,38 @@
             <td class="px-4 py-2">${d.detailed || '-'}</td>
             <td class="px-4 py-2">${d.photoType || '-'}</td>
             <td class="px-4 py-2">${commentContent}</td>
+            <td class="px-4 py-2 text-center">
+              <button onclick="toggleRecapturedStatus('${doc.id}', ${isRecaptured})"
+                      class="px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover ${recapturedButtonClass} text-white">
+                ${recapturedButtonText}
+              </button>
+            </td>
+            <td class="px-4 py-2 flex space-x-2 justify-center"> <button onclick="openEditModal('${doc.id}','vehicles')" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover">Edit</button>
+            </td>
           `;
           tbody.appendChild(tr);
         });
+      }
+    }
+
+    // ==========================
+    // RECAPTURED STATUS FUNCTION
+    // ==========================
+    async function toggleRecapturedStatus(id, currentStatus) {
+      const newStatus = !currentStatus; // Toggle status
+      showSpinner();
+      try {
+        await db.collection('vehicles').doc(id).update({
+          recaptured: newStatus,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp() // Optional: record when status changed
+        });
+        showToast(`Recaptured status updated to: ${newStatus ? 'Yes' : 'No'}`);
+        // The Firebase listener for 'vehicles' will automatically re-render the tables
+      } catch (e) {
+        console.error("Error updating recaptured status:", e);
+        showToast('Error updating recaptured status.');
+      } finally {
+        hideSpinner();
       }
     }
 
@@ -814,6 +849,7 @@
             photoType: photoType,
             halfReason: halfReason,
             date: completionDate, // Set the date to today's date for the completed entry
+            recaptured: false, // Initialize recaptured status to false for new completions
             completedAt: firebase.firestore.FieldValue.serverTimestamp() // Optional: timestamp of actual completion
           });
 
