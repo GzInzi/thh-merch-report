@@ -285,7 +285,29 @@
         </button>
       </div>
     </section>
-  </main>
+
+    <section class="bg-white p-6 rounded-lg shadow-md section-card-animate">
+      <h2 class="text-2xl font-semibold mb-4 text-gray-700">Daily Summary Report for <span id="reportDate" class="text-primary-color"></span></h2>
+      <div class="overflow-x-auto">
+        <table class="min-w-full bg-white table-auto text-sm border border-gray-300">
+          <thead class="bg-gray-200">
+            <tr class="text-left text-gray-600 uppercase text-sm">
+              <th class="px-4 py-2">Stock</th>
+              <th class="px-4 py-2">Make</th>
+              <th class="px-4 py-2">Model</th>
+              <th class="px-4 py-2">Year</th>
+              <th class="px-4 py-2">Detailed</th>
+              <th class="px-4 py-2">Photos</th>
+              <th class="px-4 py-2">Comment</th>
+            </tr>
+          </thead>
+          <tbody id="dailySummaryTable">
+            </tbody>
+        </table>
+      </div>
+      <div id="noDailyEntries" class="p-4 text-center text-gray-500 hidden">No completed tasks for today. Keep up the great work!</div>
+    </section>
+    </main>
 
   <div id="completeModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-40">
     <div class="bg-white p-6 rounded-lg w-11/12 max-w-md shadow-2xl modal-enter">
@@ -394,6 +416,12 @@
       const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
       const day = String(today.getDate()).padStart(2, '0');
       return `${year}-${month}-${day}`;
+    }
+
+    // Function to get display-friendly date format
+    function getDisplayDate(dateString) {
+      const options = { year: 'numeric', month: 'long', day: 'numeric' };
+      return new Date(dateString).toLocaleDateString(undefined, options);
     }
 
     // Populate Year dropdowns from 2000 to current year
@@ -663,32 +691,23 @@
             <td class="px-4 py-2 text-center">
               <span class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded-full badge-pulse">${days}</span>
             </td>
-            <td class="px-4 py-2">${commentContent}</td> <td class="px-4 py-2 flex space-x-2 justify-center">
+            <td class="px-4 py-2">${commentContent}</td>
+            <td class="px-4 py-2 flex space-x-2 justify-center">
               <button onclick="openEditModal('${doc.id}','vehicles')" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover">Edit</button>
               <button onclick="deleteEntry('${doc.id}','vehicles')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover">Delete</button>
-              <button onclick="toggleSold('${doc.id}',${d.isSold || false})" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover">${d.isSold?'Undo Sold':'Mark Sold'}</button>
             </td>
           `;
           tbody.appendChild(tr);
         });
       }
-      // Update pagination controls
       document.getElementById('completedPageInfo').textContent = `Page ${currentCompletedPage + 1} of ${totalPages}`;
       document.getElementById('completedPrevBtn').disabled = (currentCompletedPage === 0);
       document.getElementById('completedNextBtn').disabled = (currentCompletedPage >= totalPages - 1);
     }
 
     function changeCompletedPage(delta) {
-      const searchVal = document.getElementById('searchCompleted').value.toLowerCase();
-      const workingData = searchVal ? completedData.filter(item => {
-        const d = item.data;
-        return (d.vin || '').toLowerCase().includes(searchVal)
-             || (d.stock || '').toLowerCase().includes(searchVal)
-             || (d.make || '').toLowerCase().includes(searchVal)
-             || (d.model || '').toLowerCase().includes(searchVal);
-      }) : completedData;
-      const totalPages = Math.ceil(workingData.length / completedPageSize) || 1;
       const newPage = currentCompletedPage + delta;
+      const totalPages = Math.ceil(filteredCompletedData.length / completedPageSize) || 1;
       if (newPage >= 0 && newPage < totalPages) {
         currentCompletedPage = newPage;
         renderCompleted();
@@ -696,151 +715,217 @@
     }
 
     // ==========================
-    // COMPLETE MODAL LOGIC
+    // RENDER DAILY SUMMARY
     // ==========================
-    let currentCompleteId = null;
-    document.getElementById('completePhotoType').addEventListener('change', e => {
-      document.getElementById('halfReasonContainer').classList.toggle('hidden', e.target.value !== 'Half Photos');
-    });
+    function renderDailySummary() {
+      const today = getTodayDate();
+      document.getElementById('reportDate').textContent = getDisplayDate(today);
+
+      // Filter completed vehicles for today's date
+      const dailyEntries = completedData.filter(doc => doc.data.date === today);
+      const tbody = document.getElementById('dailySummaryTable');
+      tbody.innerHTML = ''; // Clear existing entries
+      const noEntriesMessage = document.getElementById('noDailyEntries');
+
+      if (dailyEntries.length === 0) {
+        noEntriesMessage.classList.remove('hidden'); // Show "no entries" message
+      } else {
+        noEntriesMessage.classList.add('hidden'); // Hide "no entries" message
+        dailyEntries.forEach((doc, idx) => {
+          const d = doc.data;
+          // Check if the comment is a URL and format it as a clickable link
+          let commentContent = d.comment || '-';
+          if (commentContent.startsWith('http://') || commentContent.startsWith('https://')) {
+            commentContent = `<a href="${commentContent}" target="_blank" class="text-blue-600 hover:underline">${commentContent}</a>`;
+          }
+
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-gray-50 transition-colors duration-200 table-row-enter';
+          tr.style.animationDelay = `${idx * 0.05}s`; // Staggered animation for rows
+          tr.innerHTML = `
+            <td class="px-4 py-2">${d.stock}</td>
+            <td class="px-4 py-2">${d.make}</td>
+            <td class="px-4 py-2">${d.model}</td>
+            <td class="px-4 py-2">${d.year}</td>
+            <td class="px-4 py-2">${d.detailed || '-'}</td>
+            <td class="px-4 py-2">${d.photoType || '-'}</td>
+            <td class="px-4 py-2">${commentContent}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+    }
+
+    // ==========================
+    // MODAL FUNCTIONS
+    // ==========================
+    let currentPendingId = null; // Store the ID of the pending vehicle being completed
 
     function openCompleteModal(id) {
-      currentCompleteId = id;
-      const modal = document.getElementById('completeModal');
-      modal.classList.remove('hidden');
-      modal.querySelector('.modal-enter').classList.remove('modal-exit');
+      currentPendingId = id;
+      document.getElementById('completeDetailed').value = '';
+      document.getElementById('completePhotoType').value = '';
+      document.getElementById('completeHalfReason').value = '';
+      document.getElementById('halfReasonContainer').classList.add('hidden');
+      document.getElementById('completeModal').classList.remove('hidden');
     }
 
     function closeCompleteModal() {
-      const modal = document.getElementById('completeModal');
-      const modalContent = modal.querySelector('.modal-enter');
-      modalContent.classList.add('modal-exit');
-      setTimeout(() => {
-        modal.classList.add('hidden');
-        ['completeDetailed','completePhotoType','completeHalfReason'].forEach(fid => document.getElementById(fid).value = '');
-        document.getElementById('halfReasonContainer').classList.add('hidden');
-      }, 300);
+      document.getElementById('completeModal').classList.add('hidden');
     }
 
+    document.getElementById('completePhotoType').addEventListener('change', function() {
+      if (this.value === 'Half Photos') {
+        document.getElementById('halfReasonContainer').classList.remove('hidden');
+      } else {
+        document.getElementById('halfReasonContainer').classList.add('hidden');
+        document.getElementById('completeHalfReason').value = ''; // Clear reason if not half photos
+      }
+    });
+
     async function confirmComplete() {
-      const det = document.getElementById('completeDetailed').value;
-      const pt = document.getElementById('completePhotoType').value;
-      if (!det || !pt) {
-        showToast('Please select both Detailed and Photos.');
+      const detailed = document.getElementById('completeDetailed').value;
+      const photoType = document.getElementById('completePhotoType').value;
+      const halfReason = document.getElementById('completeHalfReason').value;
+
+      if (!detailed || !photoType) {
+        showToast('Please select Detailed? and Photos? options.');
         return;
       }
-      const hr = (pt === 'Half Photos') ? document.getElementById('completeHalfReason').value.trim() : '';
-      const today = getTodayDate(); // Use the utility function for today's date
+      if (photoType === 'Half Photos' && !halfReason.trim()) {
+        showToast('Please provide a reason for half photographs.');
+        return;
+      }
 
       showSpinner();
-      const entryToComplete = pendingData.find(item => item.id === currentCompleteId);
-      if (!entryToComplete) {
-        showToast('Error: Could not find the vehicle to complete.');
-        hideSpinner();
-        return;
-      }
-      const e = entryToComplete.data;
-
       try {
-        await db.collection('vehicles').add({
-          vin: e.vin, stock: e.stock, make: e.make, model: e.model,
-          year: e.year, date: today, comment: e.comment, detailed: det,
-          photoType: pt, halfReason: hr, isSold: false
-        });
-        await db.collection('pending_vehicles').doc(currentCompleteId).delete();
-        showToast('Vehicle marked as complete.');
-        closeCompleteModal();
-      } catch (err) {
-        console.error(err);
+        // Get the pending vehicle's data
+        const pendingDocRef = db.collection('pending_vehicles').doc(currentPendingId);
+        const pendingDoc = await pendingDocRef.get();
+
+        if (pendingDoc.exists) {
+          const data = pendingDoc.data();
+          const completionDate = getTodayDate(); // This will be today's date
+
+          // Add to completed_vehicles collection with today's date for completion
+          await db.collection('vehicles').add({
+            ...data, // Copy all existing data from pending
+            detailed: detailed,
+            photoType: photoType,
+            halfReason: halfReason,
+            date: completionDate, // Set the date to today's date for the completed entry
+            completedAt: firebase.firestore.FieldValue.serverTimestamp() // Optional: timestamp of actual completion
+          });
+
+          // Delete from pending_vehicles
+          await pendingDocRef.delete();
+
+          closeCompleteModal();
+          showToast('Vehicle marked as complete!');
+          // The Firebase listeners will automatically trigger renders for both tables
+          // including the daily summary, as 'completedData' will be re-fetched.
+        } else {
+          showToast('Pending vehicle not found.');
+        }
+      } catch (e) {
+        console.error(e);
         showToast('Error completing vehicle.');
       } finally {
         hideSpinner();
       }
     }
 
-    // ==========================
-    // EDIT MODAL LOGIC
-    // ==========================
-    function openEditModal(id, collection) {
-      const arr = (collection === 'pending_vehicles') ? pendingData : completedData;
-      const item = arr.find(item => item.id === id);
-      if (!item) return;
-      const e = item.data;
 
+    // EDIT MODAL
+    let currentEditDocRef = null; // Store the document reference for the item being edited
+
+    function openEditModal(id, collectionName) {
+      currentEditDocRef = db.collection(collectionName).doc(id);
       document.getElementById('editId').value = id;
-      document.getElementById('editCollection').value = collection;
-      document.getElementById('editVin').value = e.vin || '';
-      document.getElementById('editStock').value = e.stock || '';
-      document.getElementById('editMake').value = e.make || '';
-      document.getElementById('editModel').value = e.model || '';
-      document.getElementById('editYear').value = e.year || '';
-      document.getElementById('editDate').value = e.date || '';
-      document.getElementById('editComment').value = e.comment || '';
+      document.getElementById('editCollection').value = collectionName;
 
-      const isCompleted = collection === 'vehicles';
-      document.getElementById('editDetailed').style.display = isCompleted ? 'block' : 'none';
-      document.getElementById('editPhotoType').style.display = isCompleted ? 'block' : 'none';
-      if (isCompleted) {
-        document.getElementById('editDetailed').value = e.detailed || '';
-        document.getElementById('editPhotoType').value = e.photoType || '';
-      }
-
-      const modal = document.getElementById('editModal');
-      modal.classList.remove('hidden');
-      modal.querySelector('.modal-enter').classList.remove('modal-exit');
+      showSpinner();
+      currentEditDocRef.get().then(doc => {
+        if (doc.exists) {
+          const d = doc.data();
+          document.getElementById('editVin').value = d.vin || '';
+          document.getElementById('editStock').value = d.stock || '';
+          document.getElementById('editMake').value = d.make || '';
+          document.getElementById('editModel').value = d.model || '';
+          document.getElementById('editYear').value = d.year || '';
+          document.getElementById('editDate').value = d.date || getTodayDate();
+          document.getElementById('editDetailed').value = d.detailed || '';
+          document.getElementById('editPhotoType').value = d.photoType || '';
+          document.getElementById('editComment').value = d.comment || '';
+          document.getElementById('editModal').classList.remove('hidden');
+        } else {
+          showToast('Document not found.');
+        }
+      }).catch(e => {
+        console.error(e);
+        showToast('Error fetching document for edit.');
+      }).finally(() => {
+        hideSpinner();
+      });
     }
 
     function closeModal() {
-      const modal = document.getElementById('editModal');
-      const modalContent = modal.querySelector('.modal-enter');
-      modalContent.classList.add('modal-exit');
-      setTimeout(() => {
-        modal.classList.add('hidden');
-      }, 300);
+      document.getElementById('editModal').classList.add('hidden');
     }
 
     document.getElementById('saveEditBtn').addEventListener('click', async () => {
-      const id = document.getElementById('editId').value;
-      const collection = document.getElementById('editCollection').value;
-      const vin = document.getElementById('editVin').value.trim().toUpperCase();
-      const stock = document.getElementById('editStock').value.trim().toUpperCase();
-      const make = document.getElementById('editMake').value.trim();
-      const model = document.getElementById('editModel').value.trim();
-      const year = document.getElementById('editYear').value;
-      const date = document.getElementById('editDate').value;
-      const comment = document.getElementById('editComment').value.trim();
-
-      if (!stock || !make || !model || !year || !date) {
-        showToast('Please fill in Stock, Make, Model, Year & Date.');
+      if (!currentEditDocRef) {
+        showToast('No document selected for edit.');
         return;
       }
 
+      const updatedData = {
+        vin: document.getElementById('editVin').value.trim().toUpperCase(),
+        stock: document.getElementById('editStock').value.trim().toUpperCase(),
+        make: document.getElementById('editMake').value.trim(),
+        model: document.getElementById('editModel').value.trim(),
+        year: document.getElementById('editYear').value,
+        date: document.getElementById('editDate').value,
+        detailed: document.getElementById('editDetailed').value,
+        photoType: document.getElementById('editPhotoType').value,
+        comment: document.getElementById('editComment').value.trim(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      // Handle halfReason specifically for completed vehicles if photoType is "Half Photos"
+      const collectionName = document.getElementById('editCollection').value;
+      if (collectionName === 'vehicles' && updatedData.photoType === 'Half Photos') {
+        const existingData = (await currentEditDocRef.get()).data();
+        updatedData.halfReason = existingData.halfReason || ''; // Keep existing reason if not provided in edit modal
+      } else if (collectionName === 'vehicles' && updatedData.photoType !== 'Half Photos') {
+        updatedData.halfReason = ''; // Clear halfReason if photoType is not "Half Photos"
+      }
+
+
       showSpinner();
       try {
-        const updateData = { vin, stock, make, model, year, date, comment };
-        if (collection === 'vehicles') {
-          updateData.detailed = document.getElementById('editDetailed').value;
-          updateData.photoType = document.getElementById('editPhotoType').value;
-        }
-        await db.collection(collection).doc(id).update(updateData);
-        showToast('Entry updated successfully.');
+        await currentEditDocRef.update(updatedData);
+        showToast('Changes saved!');
         closeModal();
       } catch (e) {
         console.error(e);
-        showToast('Error updating entry.');
+        showToast('Error saving changes.');
       } finally {
         hideSpinner();
       }
     });
 
     // ==========================
-    // DELETE ENTRY
+    // DELETE FUNCTION
     // ==========================
-    async function deleteEntry(id, collection) {
-      if (!confirm('Are you sure you want to delete this entry?')) return;
+    async function deleteEntry(id, collectionName) {
+      if (!confirm('Are you sure you want to delete this entry?')) {
+        return;
+      }
       showSpinner();
       try {
-        await db.collection(collection).doc(id).delete();
-        showToast('Entry deleted.');
+        await db.collection(collectionName).doc(id).delete();
+        showToast('Entry deleted!');
       } catch (e) {
         console.error(e);
         showToast('Error deleting entry.');
@@ -850,49 +935,47 @@
     }
 
     // ==========================
-    // MARK SOLD / UNDO SOLD
-    // ==========================
-    async function toggleSold(id, isCurrentlySold) {
-      showSpinner();
-      try {
-        await db.collection('vehicles').doc(id).update({ isSold: !isCurrentlySold });
-        showToast(isCurrentlySold ? 'Vehicle marked as unsold.' : 'Vehicle marked as sold.');
-      } catch (e) {
-        console.error(e);
-        showToast('Error updating sold status.');
-      } finally {
-        hideSpinner();
-      }
-    }
-
-    // ==========================
-    // REALTIME LISTENERS
+    // FIREBASE LISTENERS (REAL-TIME UPDATES)
     // ==========================
     db.collection('pending_vehicles').onSnapshot(snapshot => {
       pendingData = snapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
       renderPending();
     }, err => {
-      console.error('Error fetching pending vehicles:', err);
+      console.error(err);
       showToast('Error loading pending vehicles.');
     });
 
     db.collection('vehicles').onSnapshot(snapshot => {
       completedData = snapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
+      // The search input might affect which completed vehicles are shown,
+      // so re-filter and re-render completed.
+      document.getElementById('searchCompleted').dispatchEvent(new Event('input')); // Re-trigger search filter
       renderCompleted();
+      renderDailySummary(); // CALL NEW DAILY SUMMARY RENDER
+      hideSpinner();
     }, err => {
-      console.error('Error fetching completed vehicles:', err);
+      console.error(err);
       showToast('Error loading completed vehicles.');
+      hideSpinner();
     });
 
     // Initial setup
     document.addEventListener('DOMContentLoaded', () => {
       setupSorting();
-      document.getElementById('searchCompleted').addEventListener('input', () => {
-        currentCompletedPage = 0; // Reset page on search
+      // Set the initial value for the search bar from local storage if exists
+      const savedSearch = localStorage.getItem('completedSearch');
+      if (savedSearch) {
+          document.getElementById('searchCompleted').value = savedSearch;
+      }
+      // Trigger initial render for completed items after search value is set
+      document.getElementById('searchCompleted').dispatchEvent(new Event('input'));
+    });
+
+    // Add search functionality for completed vehicles
+    document.getElementById('searchCompleted').addEventListener('input', function() {
+        localStorage.setItem('completedSearch', this.value); // Save search query
+        currentCompletedPage = 0; // Reset to first page on new search
         renderCompleted();
-      });
-      // Ensure the date input has today's date on initial load
-      document.getElementById('date').value = getTodayDate();
     });
   </script>
 </body>
