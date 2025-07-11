@@ -635,7 +635,8 @@
     // ==========================
     function renderCompleted() {
       const searchVal = document.getElementById('searchCompleted').value.toLowerCase();
-      let workingData = searchVal ? completedData.filter(item => {
+      // Assign the filtered data to the global filteredCompletedData
+      filteredCompletedData = searchVal ? completedData.filter(item => { // CHANGE HERE: ASSIGN TO filteredCompletedData
         const d = item.data;
         return (d.vin || '').toLowerCase().includes(searchVal)
              || (d.stock || '').toLowerCase().includes(searchVal)
@@ -643,7 +644,7 @@
              || (d.model || '').toLowerCase().includes(searchVal);
       }) : completedData;
 
-      const sorted = applySort('completed', workingData);
+      const sorted = applySort('completed', filteredCompletedData); // Use filteredCompletedData for sorting
       const totalItems = sorted.length;
       const totalPages = Math.ceil(totalItems / completedPageSize) || 1;
       if (currentCompletedPage >= totalPages) currentCompletedPage = totalPages - 1;
@@ -708,6 +709,7 @@
 
     function changeCompletedPage(delta) {
       const newPage = currentCompletedPage + delta;
+      // NOW filteredCompletedData.length will accurately reflect the currently filtered data
       const totalPages = Math.ceil(filteredCompletedData.length / completedPageSize) || 1;
       if (newPage >= 0 && newPage < totalPages) {
         currentCompletedPage = newPage;
