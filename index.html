@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -203,7 +204,7 @@
                class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300" />
         <input id="stock" placeholder="Stock Number"
                class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300" />
-        <input id="make" placeholder="Make"
+        <span id="stockError" class="text-red-500 text-sm mt-1 hidden col-span-full"></span> <input id="make" placeholder="Make"
                class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300" />
         <input id="model" placeholder="Model"
                class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300" />
@@ -309,7 +310,9 @@
               <th class="px-4 py-2">Detailed</th>
               <th class="px-4 py-2 text-center">Description</th>
               <th class="px-4 py-2 text-center">Glovebox</th>
-              <th class="px-4 py-2 text-center">Recaptured</th> <th class="px-4 py-2">Photos</th> <th class="px-4 py-2">Comment</th>
+              <th class="px-4 py-2 text-center">Recaptured</th>
+              <th class="px-4 py-2">Photos</th>
+              <th class="px-4 py-2">Comment</th>
               <th class="px-4 py-2 text-center">Actions</th>
             </tr>
           </thead>
@@ -463,69 +466,57 @@
     };
 
     // ==========================
-    // ADD PENDING ENTRY (stock-only duplicate check)
+    // ADD PENDING ENTRY (Simplified for debugging)
     // ==========================
     async function addPending() {
-      document.getElementById('stock').classList.remove('border-red-500'); // Remove previous error highlight
+      console.log("addPending function started - SIMPLIFIED VERSION."); // DEBUG: Start of function
+
+      // Clear previous error states from stock input (from real-time listener)
+      document.getElementById('stock').classList.remove('border-red-500');
+      document.getElementById('stockError').classList.add('hidden');
+      document.getElementById('stockError').textContent = '';
 
       const vin = document.getElementById('vin').value.trim().toUpperCase();
       const stock = document.getElementById('stock').value.trim().toUpperCase();
-      const make = document.getElementById('make').trim();
+      const make = document.getElementById('make').value.trim();
       const model = document.getElementById('model').trim();
       const year = document.getElementById('year').value;
       const date = document.getElementById('date').value;
       const comment = document.getElementById('comment').value.trim();
 
-      // Stock, Make, Model, Year, Date are required; VIN is optional
+      // 1. Basic Field Validation (Still essential)
+      console.log("Checking basic fields..."); // DEBUG
       if (!stock || !make || !model || !year || !date) {
         showToast('Please fill in Stock, Make, Model, Year & Date.');
-        return;
+        console.log("Basic fields missing. Returning."); // DEBUG
+        return; // Stop if essential fields are missing
       }
+      console.log("Basic fields are filled. Proceeding to Firebase add."); // DEBUG
 
-      // --- DUPLICATE CHECK AND HIGHLIGHT START ---
-      const duplicateEntry = pendingData.find(item => item.data.stock.toUpperCase() === stock);
-      if (duplicateEntry) {
-        document.getElementById('stock').classList.add('border-red-500');
-        showToast('Duplicate Stock number found in Pending List. Highlighting entry.');
+      // TEMPORARILY REMOVED: Duplicate check logic is bypassed in this version.
 
-        // Find the corresponding row in the DOM and apply highlight
-        const tbody = document.getElementById('pendingTable');
-        // Ensure the row has a data-id matching the doc.id for robust selection
-        const duplicateRow = tbody.querySelector(`tr[data-id="${duplicateEntry.id}"]`);
-
-        if (duplicateRow) {
-            // Remove any existing highlight-flash class first to ensure re-animation on repeated attempts
-            duplicateRow.classList.remove('highlight-flash');
-            duplicateRow.classList.add('highlight-flash');
-            // Scroll to the element if it's not in view
-            duplicateRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-            // Remove the highlight after the animation duration
-            setTimeout(() => {
-              duplicateRow.classList.remove('highlight-flash');
-            }, 1500); // Matches animation duration
-        }
-        return; // Prevent adding duplicate
-      }
-      // --- DUPLICATE CHECK AND HIGHLIGHT END ---
-
-      showSpinner();
+      // 2. Proceed to add to Firebase
+      showSpinner(); // Show spinner before Firebase operation
+      console.log("Attempting to add to Firebase collection 'pending_vehicles'..."); // DEBUG
       try {
         await db.collection('pending_vehicles').add({ vin, stock, make, model, year, date, comment });
-        showToast('Added to pending.');
-        // Clear form fields EXCEPT for year (as it's often the same) and reset date to current
+        console.log("Firebase add successful!"); // DEBUG
+        showToast('Vehicle added to pending successfully!'); // More specific success message
+
+        // Clear form fields after successful addition
         document.getElementById('vin').value = '';
         document.getElementById('stock').value = '';
         document.getElementById('make').value = '';
         document.getElementById('model').value = '';
-        // document.getElementById('year').value = ''; // You can uncomment this if you want the year to reset
-        document.getElementById('date').value = getTodayDate(); // Set to current date
+        document.getElementById('date').value = getTodayDate(); // Reset date
         document.getElementById('comment').value = '';
+
       } catch (e) {
-        console.error(e);
-        showToast('Error adding entry.');
+        console.error("CRITICAL Firebase Add Error:", e); // Log the actual error to console
+        showToast('FATAL ERROR: Could not add entry. Please check console (F12) immediately for details.'); // Urgent toast
       } finally {
-        hideSpinner();
+        hideSpinner(); // Always hide spinner, even on error
+        console.log("addPending function finished (simplified version)."); // DEBUG: End of function
       }
     }
 
@@ -828,9 +819,9 @@
     // GENERIC DAILY SUMMARY STATUS TOGGLE FUNCTION
     // ==========================
     async function toggleDailySummaryStatus(id, fieldName, currentStatus) {
-      const newStatus = !currentStatus; // Toggle status
       showSpinner();
       try {
+        const newStatus = !currentStatus; // Toggle status
         const updateData = {};
         updateData[fieldName] = newStatus;
         updateData.updatedAt = firebase.firestore.FieldValue.serverTimestamp(); // Optional: record when status changed
@@ -1037,7 +1028,8 @@
       try {
         await db.collection(collectionName).doc(id).delete();
         showToast('Entry deleted!');
-      } catch (e) {
+      }
+      catch (e) {
         console.error(e);
         showToast('Error deleting entry.');
       } finally {
@@ -1051,6 +1043,8 @@
     db.collection('pending_vehicles').onSnapshot(snapshot => {
       pendingData = snapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
       renderPending();
+      // After pendingData updates, re-check current stock input for real-time validation
+      document.getElementById('stock').dispatchEvent(new Event('input')); // Trigger check after data loads/updates
     }, err => {
       console.error(err);
       showToast('Error loading pending vehicles.');
@@ -1080,6 +1074,9 @@
       }
       // Trigger initial render for completed items after search value is set
       document.getElementById('searchCompleted').dispatchEvent(new Event('input'));
+
+      // Initial check for stock input on page load (if a value is pre-filled, etc.)
+      document.getElementById('stock').dispatchEvent(new Event('input')); // Trigger initial real-time stock validation
     });
 
     // Add search functionality for completed vehicles
@@ -1087,6 +1084,29 @@
         localStorage.setItem('completedSearch', this.value); // Save search query
         currentCompletedPage = 0; // Reset to first page on new search
         renderCompleted();
+    });
+
+    // Add real-time validation for stock number input
+    document.getElementById('stock').addEventListener('input', function() {
+        const stockInput = this;
+        const stockErrorSpan = document.getElementById('stockError');
+        const stockValue = stockInput.value.trim().toUpperCase();
+
+        // Clear previous error states
+        stockInput.classList.remove('border-red-500');
+        stockErrorSpan.classList.add('hidden');
+        stockErrorSpan.textContent = '';
+
+        // Only check if input is not empty
+        if (stockValue.length > 0) {
+            const duplicate = pendingData.find(item => item.data.stock.toUpperCase() === stockValue);
+            if (duplicate) {
+                stockInput.classList.add('border-red-500');
+                stockErrorSpan.textContent = 'Duplicate Stock number!';
+                stockErrorSpan.classList.remove('hidden');
+                // No highlight here, highlight only happens on 'Add to Pending' button click
+            }
+        }
     });
   </script>
 </body>
