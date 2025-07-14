@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -466,10 +465,10 @@
     };
 
     // ==========================
-    // ADD PENDING ENTRY (Simplified for debugging)
+    // ADD PENDING ENTRY (Full logic, with duplicate check)
     // ==========================
     async function addPending() {
-      console.log("addPending function started - SIMPLIFIED VERSION."); // DEBUG: Start of function
+      console.log("addPending function started - FULL VERSION."); // DEBUG: Start of function
 
       // Clear previous error states from stock input (from real-time listener)
       document.getElementById('stock').classList.remove('border-red-500');
@@ -479,29 +478,53 @@
       const vin = document.getElementById('vin').value.trim().toUpperCase();
       const stock = document.getElementById('stock').value.trim().toUpperCase();
       const make = document.getElementById('make').value.trim();
-      const model = document.getElementById('model').trim();
+      const model = document.getElementById('model').value.trim(); // <--- This line is now correctly .value.trim()
       const year = document.getElementById('year').value;
       const date = document.getElementById('date').value;
       const comment = document.getElementById('comment').value.trim();
 
-      // 1. Basic Field Validation (Still essential)
-      console.log("Checking basic fields..."); // DEBUG
+      // 1. Basic Field Validation
+      console.log("Checking basic fields for submission..."); // DEBUG
       if (!stock || !make || !model || !year || !date) {
         showToast('Please fill in Stock, Make, Model, Year & Date.');
-        console.log("Basic fields missing. Returning."); // DEBUG
+        console.log("Basic fields missing on submit. Returning."); // DEBUG
         return; // Stop if essential fields are missing
       }
-      console.log("Basic fields are filled. Proceeding to Firebase add."); // DEBUG
+      console.log("Basic fields are filled for submission."); // DEBUG
 
-      // TEMPORARILY REMOVED: Duplicate check logic is bypassed in this version.
+      // 2. Duplicate Check for Submission (This is what prevents adding actual duplicates)
+      console.log("Checking for duplicates on submission..."); // DEBUG
+      const duplicateEntry = pendingData.find(item => item.data.stock.toUpperCase() === stock);
+      if (duplicateEntry) {
+        console.log("Duplicate found on submission:", duplicateEntry); // DEBUG
+        document.getElementById('stock').classList.add('border-red-500');
+        document.getElementById('stockError').textContent = 'Duplicate Stock number found!';
+        document.getElementById('stockError').classList.remove('hidden'); // Show error message on submit button click
 
-      // 2. Proceed to add to Firebase
+        const tbody = document.getElementById('pendingTable');
+        const duplicateRow = tbody.querySelector(`tr[data-id="${duplicateEntry.id}"]`);
+
+        if (duplicateRow) {
+            duplicateRow.classList.remove('highlight-flash'); // Remove existing animation for re-trigger
+            duplicateRow.classList.add('highlight-flash');
+            duplicateRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(() => {
+              duplicateRow.classList.remove('highlight-flash');
+            }, 1500);
+        }
+        showToast('Duplicate Stock number prevented from adding to list.'); // Inform user a duplicate was found
+        console.log("Prevented duplicate submission. Returning."); // DEBUG
+        return; // Crucial: Stop if it's a duplicate
+      }
+      console.log("No duplicate found on submission. Proceeding to add."); // DEBUG
+
+      // 3. If validation passes and no duplicate, proceed to add to Firebase
       showSpinner(); // Show spinner before Firebase operation
-      console.log("Attempting to add to Firebase collection 'pending_vehicles'..."); // DEBUG
+      console.log("Attempting Firebase add for new entry..."); // DEBUG
       try {
         await db.collection('pending_vehicles').add({ vin, stock, make, model, year, date, comment });
         console.log("Firebase add successful!"); // DEBUG
-        showToast('Vehicle added to pending successfully!'); // More specific success message
+        showToast('Vehicle added to pending successfully!'); // Specific success message
 
         // Clear form fields after successful addition
         document.getElementById('vin').value = '';
@@ -512,11 +535,11 @@
         document.getElementById('comment').value = '';
 
       } catch (e) {
-        console.error("CRITICAL Firebase Add Error:", e); // Log the actual error to console
-        showToast('FATAL ERROR: Could not add entry. Please check console (F12) immediately for details.'); // Urgent toast
+        console.error("CRITICAL Firebase Add Error on submission:", e); // Log the actual error to console
+        showToast('FATAL ERROR: Could not add entry. Check console for details.'); // Urgent toast
       } finally {
         hideSpinner(); // Always hide spinner, even on error
-        console.log("addPending function finished (simplified version)."); // DEBUG: End of function
+        console.log("addPending function finished."); // DEBUG: End of function
       }
     }
 
@@ -1092,23 +1115,24 @@
         const stockErrorSpan = document.getElementById('stockError');
         const stockValue = stockInput.value.trim().toUpperCase();
 
-        // Clear previous error states
+        // Always clear previous error states on every input change
         stockInput.classList.remove('border-red-500');
         stockErrorSpan.classList.add('hidden');
         stockErrorSpan.textContent = '';
 
-        // Only check if input is not empty
+        // Only check if the input has a value
         if (stockValue.length > 0) {
-            const duplicate = pendingData.find(item => item.data.stock.toUpperCase() === stockValue);
-            if (duplicate) {
-                stockInput.classList.add('border-red-500');
-                stockErrorSpan.textContent = 'Duplicate Stock number!';
-                stockErrorSpan.classList.remove('hidden');
-                // No highlight here, highlight only happens on 'Add to Pending' button click
+            // Check if any item in the current pendingData array matches the typed stockValue
+            const isDuplicate = pendingData.some(item => item.data.stock.toUpperCase() === stockValue);
+
+            if (isDuplicate) {
+                stockInput.classList.add('border-red-500'); // Highlight the input field
+                stockErrorSpan.textContent = 'Duplicate Stock number!'; // Display the error message
+                stockErrorSpan.classList.remove('hidden'); // Make the message visible
             }
         }
     });
   </script>
 </body>
+</body>
 </html>
-```
