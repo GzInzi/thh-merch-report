@@ -806,7 +806,7 @@
 
           const tr = document.createElement('tr');
           tr.className = 'hover:bg-gray-50 transition-colors duration-200 table-row-enter';
-          tr.style.animationDelay = `${idx * 0.05}s`; // Staggered animation for rows
+          tr.style.animationDelay = `${idx * 0.05}s`; /* Staggered animation for rows */
           tr.innerHTML = `
             <td class="px-4 py-2">${d.stock}</td>
             <td class="px-4 py-2">${d.make}</td>
@@ -1122,17 +1122,30 @@
 
         // Only check if the input has a value
         if (stockValue.length > 0) {
-            // Check if any item in the current pendingData array matches the typed stockValue
-            const isDuplicate = pendingData.some(item => item.data.stock.toUpperCase() === stockValue);
+            // Check if any item in the currently RENDERED pending table matches the typed stockValue
+            // This is more robust against internal pendingData inconsistencies for real-time feedback
+            const pendingTableBody = document.getElementById('pendingTable');
+            const rows = pendingTableBody.querySelectorAll('tr');
+            let isDuplicateInVisibleList = false;
 
-            if (isDuplicate) {
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                // Assuming stock number is in the second <td> (index 1) of the row based on renderPending()
+                const stockCell = row.children[1];
+                if (stockCell && stockCell.textContent.trim().toUpperCase() === stockValue) {
+                    isDuplicateInVisibleList = true;
+                    break;
+                }
+            }
+
+            if (isDuplicateInVisibleList) {
                 stockInput.classList.add('border-red-500'); // Highlight the input field
-                stockErrorSpan.textContent = 'Duplicate Stock number!'; // Display the error message
+                stockErrorSpan.textContent = 'Stock number already in Pending list!'; // Display the error message
                 stockErrorSpan.classList.remove('hidden'); // Make the message visible
             }
         }
     });
   </script>
 </body>
-</body>
 </html>
+```
