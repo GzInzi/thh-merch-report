@@ -465,10 +465,10 @@
     };
 
     // ==========================
-    // ADD PENDING ENTRY (Full logic, with duplicate check)
+    // ADD PENDING ENTRY (Fixed to preserve original date for re-added completed vehicles)
     // ==========================
     async function addPending() {
-      console.log("addPending function started - FULL VERSION."); // DEBUG: Start of function
+      console.log("addPending function started - FULL VERSION (Date Fix)."); // DEBUG: Start of function
 
       // Clear previous error states from stock input (from real-time listener)
       document.getElementById('stock').classList.remove('border-red-500');
@@ -478,9 +478,9 @@
       const vin = document.getElementById('vin').value.trim().toUpperCase();
       const stock = document.getElementById('stock').value.trim().toUpperCase();
       const make = document.getElementById('make').value.trim();
-      const model = document.getElementById('model').value.trim(); // <--- This line is now correctly .value.trim()
+      const model = document.getElementById('model').value.trim();
       const year = document.getElementById('year').value;
-      const date = document.getElementById('date').value;
+      let date = document.getElementById('date').value; // 'date' can now be modified
       const comment = document.getElementById('comment').value.trim();
 
       // 1. Basic Field Validation
@@ -492,54 +492,70 @@
       }
       console.log("Basic fields are filled for submission."); // DEBUG
 
-      // 2. Duplicate Check for Submission (This is what prevents adding actual duplicates)
-      console.log("Checking for duplicates on submission..."); // DEBUG
-      const duplicateEntry = pendingData.find(item => item.data.stock.toUpperCase() === stock);
-      if (duplicateEntry) {
-        console.log("Duplicate found on submission:", duplicateEntry); // DEBUG
+      // 2. Duplicate Check for Submission in PENDING LIST (Prevents adding if already pending)
+      console.log("Checking for duplicates in PENDING list on submission..."); // DEBUG
+      const duplicateInPending = pendingData.find(item => item.data.stock.toUpperCase() === stock);
+      if (duplicateInPending) {
+        console.log("Duplicate found in PENDING list on submission:", duplicateInPending); // DEBUG
         document.getElementById('stock').classList.add('border-red-500');
-        document.getElementById('stockError').textContent = 'Duplicate Stock number found!';
-        document.getElementById('stockError').classList.remove('hidden'); // Show error message on submit button click
+        document.getElementById('stockError').textContent = 'Duplicate Stock number already in Pending list!';
+        document.getElementById('stockError').classList.remove('hidden');
 
         const tbody = document.getElementById('pendingTable');
-        const duplicateRow = tbody.querySelector(`tr[data-id="${duplicateEntry.id}"]`);
+        const duplicateRow = tbody.querySelector(`tr[data-id="${duplicateInPending.id}"]`);
 
         if (duplicateRow) {
-            duplicateRow.classList.remove('highlight-flash'); // Remove existing animation for re-trigger
+            duplicateRow.classList.remove('highlight-flash');
             duplicateRow.classList.add('highlight-flash');
             duplicateRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
             setTimeout(() => {
               duplicateRow.classList.remove('highlight-flash');
             }, 1500);
         }
-        showToast('Duplicate Stock number prevented from adding to list.'); // Inform user a duplicate was found
-        console.log("Prevented duplicate submission. Returning."); // DEBUG
-        return; // Crucial: Stop if it's a duplicate
+        showToast('Stock number already exists in Pending list. Not added again.');
+        console.log("Prevented duplicate submission to Pending. Returning."); // DEBUG
+        return;
       }
-      console.log("No duplicate found on submission. Proceeding to add."); // DEBUG
+      console.log("No duplicate found in PENDING list."); // DEBUG
 
-      // 3. If validation passes and no duplicate, proceed to add to Firebase
-      showSpinner(); // Show spinner before Firebase operation
-      console.log("Attempting Firebase add for new entry..."); // DEBUG
+      // --- NEW LOGIC: Check for existence in COMPLETED list to retrieve original date ---
+      console.log("Checking for existence in COMPLETED list to retrieve original date..."); // DEBUG
+      const existingInCompleted = completedData.find(item => item.data.stock.toUpperCase() === stock);
+      if (existingInCompleted) {
+          // If found in completed, use its original 'date' field
+          // It's crucial that your completed entries accurately store their original date.
+          date = existingInCompleted.data.date;
+          console.log(`Stock ${stock} found in Completed list. Using its original date: ${date}`); // DEBUG
+          showToast(`Stock ${stock} re-added. Preserving original date.`);
+      } else {
+          // If not found in completed, use the date entered in the form (which defaults to today)
+          date = document.getElementById('date').value;
+          console.log(`Stock ${stock} not found in Completed. Using form date: ${date}`); // DEBUG
+      }
+      // --- END NEW LOGIC ---
+
+      // Proceed to add to Firebase
+      showSpinner();
+      console.log("Attempting Firebase add for new entry to PENDING list..."); // DEBUG
       try {
         await db.collection('pending_vehicles').add({ vin, stock, make, model, year, date, comment });
-        console.log("Firebase add successful!"); // DEBUG
-        showToast('Vehicle added to pending successfully!'); // Specific success message
+        console.log("Firebase add to PENDING successful!"); // DEBUG
+        showToast('Vehicle added to pending successfully!');
 
         // Clear form fields after successful addition
         document.getElementById('vin').value = '';
         document.getElementById('stock').value = '';
         document.getElementById('make').value = '';
         document.getElementById('model').value = '';
-        document.getElementById('date').value = getTodayDate(); // Reset date
+        document.getElementById('date').value = getTodayDate(); // Reset form date for next entry
         document.getElementById('comment').value = '';
 
       } catch (e) {
-        console.error("CRITICAL Firebase Add Error on submission:", e); // Log the actual error to console
-        showToast('FATAL ERROR: Could not add entry. Check console for details.'); // Urgent toast
+        console.error("CRITICAL Firebase Add Error on submission:", e);
+        showToast('FATAL ERROR: Could not add entry. Check console for details.');
       } finally {
-        hideSpinner(); // Always hide spinner, even on error
-        console.log("addPending function finished."); // DEBUG: End of function
+        hideSpinner();
+        console.log("addPending function finished (Date Fix)."); // DEBUG
       }
     }
 
@@ -806,7 +822,7 @@
 
           const tr = document.createElement('tr');
           tr.className = 'hover:bg-gray-50 transition-colors duration-200 table-row-enter';
-          tr.style.animationDelay = `${idx * 0.05}s`; /* Staggered animation for rows */
+          tr.style.animationDelay = `${idx * 0.05}s`; // Staggered animation for rows
           tr.innerHTML = `
             <td class="px-4 py-2">${d.stock}</td>
             <td class="px-4 py-2">${d.make}</td>
@@ -1067,7 +1083,8 @@
       pendingData = snapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
       renderPending();
       // After pendingData updates, re-check current stock input for real-time validation
-      document.getElementById('stock').dispatchEvent(new Event('input')); // Trigger check after data loads/updates
+      // This is important because a new entry might now be a duplicate for a *new* input attempt
+      document.getElementById('stock').dispatchEvent(new Event('input')); 
     }, err => {
       console.error(err);
       showToast('Error loading pending vehicles.');
@@ -1120,7 +1137,7 @@
         stockErrorSpan.classList.add('hidden');
         stockErrorSpan.textContent = '';
 
-        // Only check if the input has a value
+        // Only perform duplicate check if the input has a value
         if (stockValue.length > 0) {
             // Check if any item in the currently RENDERED pending table matches the typed stockValue
             // This is more robust against internal pendingData inconsistencies for real-time feedback
@@ -1148,4 +1165,3 @@
   </script>
 </body>
 </html>
-```
