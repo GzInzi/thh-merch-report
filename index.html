@@ -78,6 +78,16 @@
         50% { transform: scale(1.05); }
         100% { transform: scale(1); }
     }
+    /* New CSS for highlighting duplicate rows */
+    @keyframes highlightFlash {
+        0% { background-color: transparent; }
+        50% { background-color: #ffeb3b; } /* Yellow 500 */
+        100% { background-color: transparent; }
+    }
+
+    .highlight-flash {
+        animation: highlightFlash 1.5s ease-out; /* Apply the flash animation */
+    }
 
     .toast-enter {
       animation: fadeIn 0.3s forwards;
@@ -456,11 +466,12 @@
     // ADD PENDING ENTRY (stock-only duplicate check)
     // ==========================
     async function addPending() {
-      document.getElementById('stock').classList.remove('border-red-500');
+      document.getElementById('stock').classList.remove('border-red-500'); // Remove previous error highlight
+
       const vin = document.getElementById('vin').value.trim().toUpperCase();
       const stock = document.getElementById('stock').value.trim().toUpperCase();
-      const make = document.getElementById('make').value.trim();
-      const model = document.getElementById('model').value.trim();
+      const make = document.getElementById('make').trim();
+      const model = document.getElementById('model').trim();
       const year = document.getElementById('year').value;
       const date = document.getElementById('date').value;
       const comment = document.getElementById('comment').value.trim();
@@ -471,13 +482,32 @@
         return;
       }
 
-      // Duplicate check on stock only
-      const duplicate = pendingData.find(item => item.data.stock.toUpperCase() === stock);
-      if (duplicate) {
+      // --- DUPLICATE CHECK AND HIGHLIGHT START ---
+      const duplicateEntry = pendingData.find(item => item.data.stock.toUpperCase() === stock);
+      if (duplicateEntry) {
         document.getElementById('stock').classList.add('border-red-500');
-        showToast('Duplicate Stock number.');
-        return;
+        showToast('Duplicate Stock number found in Pending List. Highlighting entry.');
+
+        // Find the corresponding row in the DOM and apply highlight
+        const tbody = document.getElementById('pendingTable');
+        // Ensure the row has a data-id matching the doc.id for robust selection
+        const duplicateRow = tbody.querySelector(`tr[data-id="${duplicateEntry.id}"]`);
+
+        if (duplicateRow) {
+            // Remove any existing highlight-flash class first to ensure re-animation on repeated attempts
+            duplicateRow.classList.remove('highlight-flash');
+            duplicateRow.classList.add('highlight-flash');
+            // Scroll to the element if it's not in view
+            duplicateRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // Remove the highlight after the animation duration
+            setTimeout(() => {
+              duplicateRow.classList.remove('highlight-flash');
+            }, 1500); // Matches animation duration
+        }
+        return; // Prevent adding duplicate
       }
+      // --- DUPLICATE CHECK AND HIGHLIGHT END ---
 
       showSpinner();
       try {
@@ -594,7 +624,8 @@
           const days = Math.floor((new Date() - new Date(d.date)) / (1000 * 60 * 60 * 24));
           const badgeColor = days > 3 ? 'bg-red-500 text-white badge-pulse' : 'bg-blue-100 text-blue-800'; /* Added badge-pulse */
           const tr = document.createElement('tr');
-          tr.className = 'hover:bg-gray-50 transition-colors duration-200 table-row-enter'; /* Added table-row-enter */
+          tr.className = 'hover:bg-gray-50 transition-colors duration-200 table-row-enter';
+          tr.dataset.id = doc.id; // <--- THIS IS THE CRUCIAL LINE FOR HIGHLIGHTING
           tr.style.animationDelay = `${idx * 0.05}s`; /* Staggered animation delay */
           tr.innerHTML = `
             <td class="px-4 py-2">${d.vin}</td>
@@ -1060,3 +1091,4 @@
   </script>
 </body>
 </html>
+```
