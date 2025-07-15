@@ -21,7 +21,7 @@
     }
 
     html, body {
-      width: 100vw;
+      width: 100%;
       margin: 0;
       padding: 0;
       scroll-behavior: smooth;
@@ -46,14 +46,14 @@
     th.sorted-asc::after {
       content: " ▲";
       font-size: 0.7em;
-      transition: transform 0.3s ease-out; /* Add transition */
-      transform: translateY(-2px); /* Initial transform */
+      transition: transform 0.3s ease-out;
+      transform: translateY(-2px);
     }
     th.sorted-desc::after {
       content: " ▼";
       font-size: 0.7em;
-      transition: transform 0.3s ease-out; /* Add transition */
-      transform: translateY(2px); /* Initial transform */
+      transition: transform 0.3s ease-out;
+      transform: translateY(2px);
     }
 
     /* Animations */
@@ -86,28 +86,18 @@
     }
 
     .highlight-flash {
-        animation: highlightFlash 1.5s ease-out; /* Apply the flash animation */
+        animation: highlightFlash 1.5s ease-out;
     }
 
-    .toast-enter {
-      animation: fadeIn 0.3s forwards;
-    }
-    .toast-exit {
-      animation: fadeOut 0.3s forwards;
-    }
+    .toast-enter { animation: fadeIn 0.3s forwards; }
+    .toast-exit { animation: fadeOut 0.3s forwards; }
     .spinner {
       animation: spin 1s linear infinite;
-      border-color: var(--border-color); /* Use custom property */
-      border-top-color: var(--primary-color); /* Use custom property */
+      border-color: var(--border-color);
+      border-top-color: var(--primary-color);
     }
-    .modal-enter {
-      animation: fadeIn 0.3s forwards;
-    }
-    .modal-exit {
-      animation: fadeOut 0.3s forwards;
-    }
-
-    /* New custom styles */
+    .modal-enter { animation: fadeIn 0.3s forwards; }
+    .modal-exit { animation: fadeOut 0.3s forwards; }
     .section-card-animate {
         transition: all 0.3s ease-in-out;
     }
@@ -115,24 +105,18 @@
         transform: translateY(-5px);
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     }
-
-    /* Input/Select focus animation */
     input:focus, select:focus, textarea:focus {
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3); /* Uses primary-color with transparency */
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
         border-color: var(--primary-color);
     }
-
     .table-row-enter {
         animation: slideInFromLeft 0.4s ease-out forwards;
     }
-
-    /* Button Hover Glow */
     .button-glow-hover {
         position: relative;
         overflow: hidden;
         z-index: 1;
     }
-
     .button-glow-hover::before {
         content: '';
         position: absolute;
@@ -140,45 +124,49 @@
         left: 50%;
         width: 0;
         height: 0;
-        background: rgba(255, 255, 255, 0.2); /* Light glow */
+        background: rgba(255, 255, 255, 0.2);
         border-radius: 50%;
         opacity: 0;
         transform: translate(-50%, -50%);
         transition: width 0.3s ease-out, height 0.3s ease-out, opacity 0.3s ease-out;
         z-index: -1;
     }
-
     .button-glow-hover:hover::before {
         width: 200%;
         height: 200%;
         opacity: 1;
     }
-
     .badge-pulse {
         animation: pulse 1.5s infinite ease-in-out;
     }
 
-    /* Override some Tailwind defaults with custom properties */
+    /* Override Tailwind */
     .bg-blue-600 { background-color: var(--primary-color); }
-    .hover\:bg-blue-700:hover { background-color: #4f46e5; } /* Darker indigo */
-
-    .bg-green-500 { background-color: #22c55e; } /* Emerald 500 */
-    .hover\:bg-green-600:hover { background-color: #16a34a; } /* Darker emerald */
-    .bg-green-600 { background-color: #22c55e; } /* Emerald 500 */
-    .hover\:bg-green-700:hover { background-color: #16a34a; } /* Darker emerald */
-
-    .bg-yellow-500 { background-color: #f59e0b; } /* Amber 500 */
-    .hover\:bg-yellow-600:hover { background-color: #d97706; } /* Darker amber */
-
-    .bg-red-500 { background-color: #ef4444; } /* Red 500 */
-    .hover\:bg-red-600:hover { background-color: #dc2626; } /* Darker red */
-
+    .hover\:bg-blue-700:hover { background-color: #4f46e5; }
+    .bg-green-500 { background-color: #22c55e; }
+    .hover\:bg-green-600:hover { background-color: #16a34a; }
+    .bg-green-600 { background-color: #22c55e; }
+    .hover\:bg-green-700:hover { background-color: #16a34a; }
+    .bg-yellow-500 { background-color: #f59e0b; }
+    .hover\:bg-yellow-600:hover { background-color: #d97706; }
+    .bg-red-500 { background-color: #ef4444; }
+    .hover\:bg-red-600:hover { background-color: #dc2626; }
     .bg-purple-600 { background-color: var(--secondary-color); }
-    .hover\:bg-purple-700:hover { background-color: #7c3aed; } /* Darker violet */
+    .hover\:bg-purple-700:hover { background-color: #7c3aed; }
+    #toast { background-color: var(--text-dark); }
 
-    #toast {
-        background-color: var(--text-dark);
+    /* START: New Styles for Phone View Simulation */
+    #view-wrapper.phone-view {
+        max-width: 390px; /* iPhone 12/13/14 width */
+        height: 80vh; /* Simulate a viewport height */
+        margin: 2rem auto; /* Center the container on the page */
+        border: 8px solid var(--text-dark);
+        border-radius: 40px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        overflow-y: auto; /* Allow the content inside to scroll */
+        transition: all 0.3s ease-in-out;
     }
+    /* END: New Styles for Phone View Simulation */
 
   </style>
 </head>
@@ -189,140 +177,144 @@
     <div class="border-8 border-gray-200 border-t-8 border-t-blue-600 rounded-full w-16 h-16 spinner"></div>
   </div>
 
-  <header class="bg-white shadow-md">
-    <div class="container mx-auto px-4 py-6">
-      <h1 class="text-3xl font-bold text-center text-gray-800">THH Merchandising Report</h1>
-    </div>
-  </header>
+  <div id="view-wrapper">
+    <header class="bg-white shadow-md sticky top-0 z-10">
+      <div class="container mx-auto px-4 py-6 flex justify-center items-center relative">
+        <h1 class="text-3xl font-bold text-center text-gray-800">THH Merchandising Report</h1>
+        <button id="viewToggleBtn" onclick="toggleDeviceView()" class="absolute right-4 bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-lg text-xs sm:text-sm shadow-sm">
+          Phone View
+        </button>
+      </div>
+    </header>
 
-  <main class="container mx-auto px-4 py-8 space-y-8">
-    <section class="bg-white p-6 rounded-lg shadow-md section-card-animate">
-      <h2 class="text-2xl font-semibold mb-4 text-gray-700">Data Entry</h2>
-      <form class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        <input id="vin" placeholder="VIN Number (Optional)"
-               class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300" />
-        <input id="stock" placeholder="Stock Number"
-               class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300" />
-        <span id="stockError" class="text-red-500 text-sm mt-1 hidden col-span-full"></span> <input id="make" placeholder="Make"
-               class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300" />
-        <input id="model" placeholder="Model"
-               class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300" />
-        <select id="year" class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300">
-          <option value="">Year</option>
-        </select>
-        <input id="date" type="date"
-               class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300" />
-        <input id="comment" placeholder="Comment (Optional)"
-               class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300" />
-        <div class="sm:col-span-2 md:col-span-4 text-right mt-4">
-          <button type="button" onclick="addPending()"
-                  class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-md transform hover:scale-105 transition-transform duration-300 button-glow-hover">
-            Add to Pending
+    <main class="container mx-auto px-4 py-8 space-y-8">
+      <section class="bg-white p-6 rounded-lg shadow-md section-card-animate">
+        <h2 class="text-2xl font-semibold mb-4 text-gray-700">Data Entry</h2>
+        <form class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <input id="vin" placeholder="VIN Number (Optional)"
+                 class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300" />
+          <input id="stock" placeholder="Stock Number"
+                 class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300" />
+          <span id="stockError" class="text-red-500 text-sm mt-1 hidden col-span-full"></span> <input id="make" placeholder="Make"
+                 class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300" />
+          <input id="model" placeholder="Model"
+                 class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300" />
+          <select id="year" class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300">
+            <option value="">Year</option>
+          </select>
+          <input id="date" type="date"
+                 class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300" />
+          <input id="comment" placeholder="Comment (Optional)"
+                 class="border p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300" />
+          <div class="sm:col-span-2 md:col-span-4 text-right mt-4">
+            <button type="button" onclick="addPending()"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-md transform hover:scale-105 transition-transform duration-300 button-glow-hover">
+              Add to Pending
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section class="bg-white p-6 rounded-lg shadow-md section-card-animate">
+        <h2 class="text-2xl font-semibold mb-4 text-gray-700">Pending Vehicles</h2>
+        <div class="overflow-x-auto">
+          <table class="min-w-full bg-white table-auto text-sm border border-gray-300">
+            <thead class="bg-gray-200">
+              <tr class="text-left text-gray-600 uppercase text-sm">
+                <th data-col="vin" class="px-4 py-2 sortable">VIN</th>
+                <th data-col="stock" class="px-4 py-2 sortable">Stock</th>
+                <th data-col="make" class="px-4 py-2 sortable">Make</th>
+                <th data-col="model" class="px-4 py-2 sortable">Model</th>
+                <th data-col="year" class="px-4 py-2 sortable">Year</th>
+                <th data-col="date" class="px-4 py-2 sortable">Date</th>
+                <th data-col="days" class="px-4 py-2 sortable text-center">Days</th>
+                <th class="px-4 py-2">Comment</th>
+                <th class="px-4 py-2 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="pendingTable"></tbody>
+          </table>
+        </div>
+        <div class="mt-4 flex justify-center space-x-2">
+          <button id="pendingPrevBtn" onclick="changePendingPage(-1)"
+                  class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg disabled:opacity-50 transition-colors duration-300 button-glow-hover">
+            Previous
+          </button>
+          <span id="pendingPageInfo" class="text-sm text-gray-700 self-center"></span>
+          <button id="pendingNextBtn" onclick="changePendingPage(1)"
+                  class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg disabled:opacity-50 transition-colors duration-300 button-glow-hover">
+            Next
           </button>
         </div>
-      </form>
-    </section>
+      </section>
 
-    <section class="bg-white p-6 rounded-lg shadow-md section-card-animate">
-      <h2 class="text-2xl font-semibold mb-4 text-gray-700">Pending Vehicles</h2>
-      <div class="overflow-x-auto">
-        <table class="min-w-full bg-white table-auto text-sm border border-gray-300">
-          <thead class="bg-gray-200">
-            <tr class="text-left text-gray-600 uppercase text-sm">
-              <th data-col="vin" class="px-4 py-2 sortable">VIN</th>
-              <th data-col="stock" class="px-4 py-2 sortable">Stock</th>
-              <th data-col="make" class="px-4 py-2 sortable">Make</th>
-              <th data-col="model" class="px-4 py-2 sortable">Model</th>
-              <th data-col="year" class="px-4 py-2 sortable">Year</th>
-              <th data-col="date" class="px-4 py-2 sortable">Date</th>
-              <th data-col="days" class="px-4 py-2 sortable text-center">Days</th>
-              <th class="px-4 py-2">Comment</th>
-              <th class="px-4 py-2 text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="pendingTable"></tbody>
-        </table>
-      </div>
-      <div class="mt-4 flex justify-center space-x-2">
-        <button id="pendingPrevBtn" onclick="changePendingPage(-1)"
-                 class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg disabled:opacity-50 transition-colors duration-300 button-glow-hover">
-          Previous
-        </button>
-        <span id="pendingPageInfo" class="text-sm text-gray-700 self-center"></span>
-        <button id="pendingNextBtn" onclick="changePendingPage(1)"
-                 class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg disabled:opacity-50 transition-colors duration-300 button-glow-hover">
-          Next
-        </button>
-      </div>
-    </section>
+      <section class="bg-white p-6 rounded-lg shadow-md section-card-animate">
+        <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-4">
+          <h2 class="text-2xl font-semibold text-gray-700">Completed Vehicles</h2>
+          <input id="searchCompleted" type="text" placeholder="Search VIN, Stock, Make…"
+                 class="border p-3 rounded-lg w-full md:w-1/3 mt-2 md:mt-0 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300" />
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full bg-white table-auto text-sm border border-gray-300">
+            <thead class="bg-gray-200">
+              <tr class="text-left text-gray-600 uppercase text-sm">
+                <th data-col="vin" class="px-4 py-2 sortable">VIN</th>
+                <th data-col="stock" class="px-4 py-2 sortable">Stock</th>
+                <th data-col="make" class="px-4 py-2 sortable">Make</th>
+                <th data-col="model" class="px-4 py-2 sortable">Model</th>
+                <th data-col="year" class="px-4 py-2 sortable">Year</th>
+                <th data-col="date" class="px-4 py-2 sortable">Date</th>
+                <th data-col="detailed" class="px-4 py-2 sortable">Detailed</th>
+                <th data-col="photoType" class="px-4 py-2 sortable">Photos</th>
+                <th data-col="halfReason" class="px-4 py-2 sortable">Half Reason</th>
+                <th data-col="days" class="px-4 py-2 sortable text-center">Days</th>
+                <th class="px-4 py-2">Comment</th>
+                <th class="px-4 py-2 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="completedTable"></tbody>
+          </table>
+        </div>
+        <div class="mt-4 flex justify-center space-x-2">
+          <button id="completedPrevBtn" onclick="changeCompletedPage(-1)"
+                  class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg disabled:opacity-50 transition-colors duration-300 button-glow-hover">
+            Previous
+          </button>
+          <span id="completedPageInfo" class="text-sm text-gray-700 self-center"></span>
+          <button id="completedNextBtn" onclick="changeCompletedPage(1)"
+                  class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg disabled:opacity-50 transition-colors duration-300 button-glow-hover">
+            Next
+          </button>
+        </div>
+      </section>
 
-    <section class="bg-white p-6 rounded-lg shadow-md section-card-animate">
-      <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-4">
-        <h2 class="text-2xl font-semibold text-gray-700">Completed Vehicles</h2>
-        <input id="searchCompleted" type="text" placeholder="Search VIN, Stock, Make…"
-               class="border p-3 rounded-lg w-full md:w-1/3 mt-2 md:mt-0 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300" />
-      </div>
-      <div class="overflow-x-auto">
-        <table class="min-w-full bg-white table-auto text-sm border border-gray-300">
-          <thead class="bg-gray-200">
-            <tr class="text-left text-gray-600 uppercase text-sm">
-              <th data-col="vin" class="px-4 py-2 sortable">VIN</th>
-              <th data-col="stock" class="px-4 py-2 sortable">Stock</th>
-              <th data-col="make" class="px-4 py-2 sortable">Make</th>
-              <th data-col="model" class="px-4 py-2 sortable">Model</th>
-              <th data-col="year" class="px-4 py-2 sortable">Year</th>
-              <th data-col="date" class="px-4 py-2 sortable">Date</th>
-              <th data-col="detailed" class="px-4 py-2 sortable">Detailed</th>
-              <th data-col="photoType" class="px-4 py-2 sortable">Photos</th>
-              <th data-col="halfReason" class="px-4 py-2 sortable">Half Reason</th>
-              <th data-col="days" class="px-4 py-2 sortable text-center">Days</th>
-              <th class="px-4 py-2">Comment</th>
-              <th class="px-4 py-2 text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="completedTable"></tbody>
-        </table>
-      </div>
-      <div class="mt-4 flex justify-center space-x-2">
-        <button id="completedPrevBtn" onclick="changeCompletedPage(-1)"
-                 class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg disabled:opacity-50 transition-colors duration-300 button-glow-hover">
-          Previous
-        </button>
-        <span id="completedPageInfo" class="text-sm text-gray-700 self-center"></span>
-        <button id="completedNextBtn" onclick="changeCompletedPage(1)"
-                 class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg disabled:opacity-50 transition-colors duration-300 button-glow-hover">
-          Next
-        </button>
-      </div>
-    </section>
-
-    <section class="bg-white p-6 rounded-lg shadow-md section-card-animate">
-      <h2 class="text-2xl font-semibold mb-4 text-gray-700">Daily Summary Report for <span id="reportDate" class="text-primary-color"></span></h2>
-      <div class="overflow-x-auto">
-        <table class="min-w-full bg-white table-auto text-sm border border-gray-300">
-          <thead class="bg-gray-200">
-            <tr class="text-left text-gray-600 uppercase text-sm">
-              <th class="px-4 py-2">Stock</th>
-              <th class="px-4 py-2">Make</th>
-              <th class="px-4 py-2">Model</th>
-              <th class="px-4 py-2">Year</th>
-              <th class="px-4 py-2">Detailed</th>
-              <th class="px-4 py-2 text-center">Description</th>
-              <th class="px-4 py-2 text-center">Glovebox</th>
-              <th class="px-4 py-2 text-center">Recaptured</th>
-              <th class="px-4 py-2">Photos</th>
-              <th class="px-4 py-2">Comment</th>
-              <th class="px-4 py-2 text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="dailySummaryTable">
-            </tbody>
-        </table>
-      </div>
-      <div id="noDailyEntries" class="p-4 text-center text-gray-500 hidden">No completed tasks for today. Keep up the great work!</div>
-    </section>
+      <section class="bg-white p-6 rounded-lg shadow-md section-card-animate">
+        <h2 class="text-2xl font-semibold mb-4 text-gray-700">Daily Summary Report for <span id="reportDate" class="text-primary-color"></span></h2>
+        <div class="overflow-x-auto">
+          <table class="min-w-full bg-white table-auto text-sm border border-gray-300">
+            <thead class="bg-gray-200">
+              <tr class="text-left text-gray-600 uppercase text-sm">
+                <th class="px-4 py-2">Stock</th>
+                <th class="px-4 py-2">Make</th>
+                <th class="px-4 py-2">Model</th>
+                <th class="px-4 py-2">Year</th>
+                <th class="px-4 py-2">Detailed</th>
+                <th class="px-4 py-2 text-center">Description</th>
+                <th class="px-4 py-2 text-center">Glovebox</th>
+                <th class="px-4 py-2 text-center">Recaptured</th>
+                <th class="px-4 py-2">Photos</th>
+                <th class="px-4 py-2">Comment</th>
+                <th class="px-4 py-2 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="dailySummaryTable">
+              </tbody>
+          </table>
+        </div>
+        <div id="noDailyEntries" class="p-4 text-center text-gray-500 hidden">No completed tasks for today. Keep up the great work!</div>
+      </section>
     </main>
-
+  </div>
   <div id="completeModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-40">
     <div class="bg-white p-6 rounded-lg w-11/12 max-w-md shadow-2xl modal-enter">
       <button onclick="closeCompleteModal()"
@@ -347,7 +339,7 @@
       </div>
       <div class="text-right mt-6">
         <button onclick="confirmComplete()"
-                 class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg shadow-md transform hover:scale-105 transition-transform duration-300 button-glow-hover">
+                class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg shadow-md transform hover:scale-105 transition-transform duration-300 button-glow-hover">
           Submit
         </button>
       </div>
@@ -377,10 +369,10 @@
         </select>
       </div>
       <textarea id="editComment" rows="3" placeholder="Comment"
-                 class="border p-3 rounded-lg w-full mb-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300"></textarea>
+                class="border p-3 rounded-lg w-full mb-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-300"></textarea>
       <div class="text-right">
         <button id="saveEditBtn"
-                 class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-md transform hover:scale-105 transition-transform duration-300 button-glow-hover">
+                class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-md transform hover:scale-105 transition-transform duration-300 button-glow-hover">
           Save Changes
         </button>
       </div>
@@ -423,38 +415,51 @@
       }, 3000);
     }
 
-    // Function to get today's date in YYYY-MM-DD format
     function getTodayDate() {
       const today = new Date();
       const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+      const month = String(today.getMonth() + 1).padStart(2, '0');
       const day = String(today.getDate()).padStart(2, '0');
       return `${year}-${month}-${day}`;
     }
 
-    // Function to get display-friendly date format
     function getDisplayDate(dateString) {
       const options = { year: 'numeric', month: 'long', day: 'numeric' };
       return new Date(dateString).toLocaleDateString(undefined, options);
     }
 
-    // Populate Year dropdowns from 2000 to current year
     document.querySelectorAll('#year,#editYear').forEach(sel => {
       const currentYear = new Date().getFullYear();
       for (let y = currentYear; y >= 2000; y--) {
         sel.append(new Option(y, y));
       }
     });
-
-    // Set default date for the data entry form on page load
+    
     document.getElementById('date').value = getTodayDate();
+
+    // ==========================
+    // START: New View Toggle Function
+    // ==========================
+    function toggleDeviceView() {
+        const wrapper = document.getElementById('view-wrapper');
+        const button = document.getElementById('viewToggleBtn');
+        wrapper.classList.toggle('phone-view');
+
+        // Update button text to reflect the current state
+        if (wrapper.classList.contains('phone-view')) {
+            button.textContent = 'Desktop View';
+        } else {
+            button.textContent = 'Phone View';
+        }
+    }
+    // END: New View Toggle Function
 
     // ==========================
     // DATA ARRAYS & SORT / PAGINATION STATE
     // ==========================
     let pendingData = [];
     let completedData = [];
-    let filteredCompletedData = []; // for search filter
+    let filteredCompletedData = [];
     let currentPendingPage = 0;
     let currentCompletedPage = 0;
     const pendingPageSize = 15;
@@ -465,112 +470,78 @@
     };
 
     // ==========================
-    // ADD PENDING ENTRY (Fixed to preserve original date for re-added completed vehicles)
+    // ADD PENDING ENTRY
     // ==========================
     async function addPending() {
-      console.log("addPending function started - FULL VERSION (Date Fix)."); // DEBUG: Start of function
+        document.getElementById('stock').classList.remove('border-red-500');
+        document.getElementById('stockError').classList.add('hidden');
+        document.getElementById('stockError').textContent = '';
 
-      // Clear previous error states from stock input (from real-time listener)
-      document.getElementById('stock').classList.remove('border-red-500');
-      document.getElementById('stockError').classList.add('hidden');
-      document.getElementById('stockError').textContent = '';
+        const vin = document.getElementById('vin').value.trim().toUpperCase();
+        const stock = document.getElementById('stock').value.trim().toUpperCase();
+        const make = document.getElementById('make').value.trim();
+        const model = document.getElementById('model').value.trim();
+        const year = document.getElementById('year').value;
+        let date = document.getElementById('date').value;
+        const comment = document.getElementById('comment').value.trim();
 
-      const vin = document.getElementById('vin').value.trim().toUpperCase();
-      const stock = document.getElementById('stock').value.trim().toUpperCase();
-      const make = document.getElementById('make').value.trim();
-      const model = document.getElementById('model').value.trim();
-      const year = document.getElementById('year').value;
-      let date = document.getElementById('date').value; // 'date' can now be modified
-      const comment = document.getElementById('comment').value.trim();
-
-      // 1. Basic Field Validation
-      console.log("Checking basic fields for submission..."); // DEBUG
-      if (!stock || !make || !model || !year || !date) {
-        showToast('Please fill in Stock, Make, Model, Year & Date.');
-        console.log("Basic fields missing on submit. Returning."); // DEBUG
-        return; // Stop if essential fields are missing
-      }
-      console.log("Basic fields are filled for submission."); // DEBUG
-
-      // 2. Duplicate Check for Submission in PENDING LIST (Prevents adding if already pending)
-      console.log("Checking for duplicates in PENDING list on submission..."); // DEBUG
-      const duplicateInPending = pendingData.find(item => item.data.stock.toUpperCase() === stock);
-      if (duplicateInPending) {
-        console.log("Duplicate found in PENDING list on submission:", duplicateInPending); // DEBUG
-        document.getElementById('stock').classList.add('border-red-500');
-        document.getElementById('stockError').textContent = 'Duplicate Stock number already in Pending list!';
-        document.getElementById('stockError').classList.remove('hidden');
-
-        const tbody = document.getElementById('pendingTable');
-        const duplicateRow = tbody.querySelector(`tr[data-id="${duplicateInPending.id}"]`);
-
-        if (duplicateRow) {
-            duplicateRow.classList.remove('highlight-flash');
-            duplicateRow.classList.add('highlight-flash');
-            duplicateRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            setTimeout(() => {
-              duplicateRow.classList.remove('highlight-flash');
-            }, 1500);
+        if (!stock || !make || !model || !year || !date) {
+            showToast('Please fill in Stock, Make, Model, Year & Date.');
+            return;
         }
-        showToast('Stock number already exists in Pending list. Not added again.');
-        console.log("Prevented duplicate submission to Pending. Returning."); // DEBUG
-        return;
-      }
-      console.log("No duplicate found in PENDING list."); // DEBUG
 
-      // --- NEW LOGIC: Check for existence in COMPLETED list to retrieve original date ---
-      console.log("Checking for existence in COMPLETED list to retrieve original date..."); // DEBUG
-      const existingInCompleted = completedData.find(item => item.data.stock.toUpperCase() === stock);
-      if (existingInCompleted) {
-          // If found in completed, use its original 'date' field
-          // It's crucial that your completed entries accurately store their original date.
-          date = existingInCompleted.data.date;
-          console.log(`Stock ${stock} found in Completed list. Using its original date: ${date}`); // DEBUG
-          showToast(`Stock ${stock} re-added. Preserving original date.`);
-      } else {
-          // If not found in completed, use the date entered in the form (which defaults to today)
-          date = document.getElementById('date').value;
-          console.log(`Stock ${stock} not found in Completed. Using form date: ${date}`); // DEBUG
-      }
-      // --- END NEW LOGIC ---
+        const duplicateInPending = pendingData.find(item => item.data.stock.toUpperCase() === stock);
+        if (duplicateInPending) {
+            document.getElementById('stock').classList.add('border-red-500');
+            document.getElementById('stockError').textContent = 'Duplicate Stock number already in Pending list!';
+            document.getElementById('stockError').classList.remove('hidden');
 
-      // Proceed to add to Firebase
-      showSpinner();
-      console.log("Attempting Firebase add for new entry to PENDING list..."); // DEBUG
-      try {
-        await db.collection('pending_vehicles').add({ vin, stock, make, model, year, date, comment });
-        console.log("Firebase add to PENDING successful!"); // DEBUG
-        showToast('Vehicle added to pending successfully!');
+            const tbody = document.getElementById('pendingTable');
+            const duplicateRow = tbody.querySelector(`tr[data-id="${duplicateInPending.id}"]`);
+            if (duplicateRow) {
+                duplicateRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                duplicateRow.classList.add('highlight-flash');
+                setTimeout(() => duplicateRow.classList.remove('highlight-flash'), 1500);
+            }
+            showToast('Stock number already exists in Pending list.');
+            return;
+        }
 
-        // Clear form fields after successful addition
-        document.getElementById('vin').value = '';
-        document.getElementById('stock').value = '';
-        document.getElementById('make').value = '';
-        document.getElementById('model').value = '';
-        document.getElementById('date').value = getTodayDate(); // Reset form date for next entry
-        document.getElementById('comment').value = '';
+        const existingInCompleted = completedData.find(item => item.data.stock.toUpperCase() === stock);
+        if (existingInCompleted) {
+            date = existingInCompleted.data.originalEntryDate || existingInCompleted.data.date;
+            showToast(`Stock ${stock} re-added. Preserving original date: ${date}`);
+        } else {
+            date = document.getElementById('date').value;
+        }
 
-      } catch (e) {
-        console.error("CRITICAL Firebase Add Error on submission:", e);
-        showToast('FATAL ERROR: Could not add entry. Check console for details.');
-      } finally {
-        hideSpinner();
-        console.log("addPending function finished (Date Fix)."); // DEBUG
-      }
+        showSpinner();
+        try {
+            await db.collection('pending_vehicles').add({ vin, stock, make, model, year, date, comment });
+            showToast('Vehicle added to pending successfully!');
+            document.getElementById('vin').value = '';
+            document.getElementById('stock').value = '';
+            document.getElementById('make').value = '';
+            document.getElementById('model').value = '';
+            document.getElementById('date').value = getTodayDate();
+            document.getElementById('comment').value = '';
+        } catch (e) {
+            console.error("CRITICAL Firebase Add Error on submission:", e);
+            showToast('FATAL ERROR: Could not add entry. Check console for details.');
+        } finally {
+            hideSpinner();
+        }
     }
 
     // ==========================
     // SORT FUNCTIONALITY
-    //    * By default (no column selected) we show latest date first
     // ==========================
     function applySort(table, dataArray) {
       const { col, dir } = sortState[table];
-      const src = [...dataArray]; // Create a shallow copy
-      // If no explicit sort column, default sort by date descending
+      const src = [...dataArray]; 
       if (!col) {
         return src.sort((a, b) => new Date(b.data.date) - new Date(a.data.date));
       }
-      // Otherwise, sort by chosen column
       return src.sort((a, b) => {
         let va, vb;
         if (col === 'days') {
@@ -599,26 +570,18 @@
           const parentTable = th.closest('table');
           const tblKey = parentTable.querySelector('tbody').id === 'pendingTable' ? 'pending' : 'completed';
           const state = sortState[tblKey];
-
-          // Remove sorting classes from all headers in the same table
           parentTable.querySelectorAll('th.sortable').forEach(x => x.classList.remove('sorted-asc','sorted-desc'));
-
           if (state.col === column) {
             state.dir = state.dir === 'asc' ? 'desc' : 'asc';
           } else {
             state.col = column;
             state.dir = 'asc';
           }
-
           th.classList.add(state.dir === 'asc' ? 'sorted-asc' : 'sorted-desc');
-
           if (tblKey === 'pending') {
-            currentPendingPage = 0; // reset to first page
+            currentPendingPage = 0;
             renderPending();
           }
-          // Only re-render completed if the search filter is cleared
-          // Otherwise, the search filter will be applied first
-          // and then sort will be applied to the filtered data.
           else {
             currentCompletedPage = 0;
             renderCompleted();
@@ -628,35 +591,29 @@
     }
 
     // ==========================
-    // RENDER PENDING VEHICLES (with pagination)
+    // RENDER PENDING VEHICLES
     // ==========================
     function renderPending() {
       const sorted = applySort('pending', pendingData);
       const totalItems = sorted.length;
       const totalPages = Math.ceil(totalItems / pendingPageSize) || 1;
       if (currentPendingPage >= totalPages) currentPendingPage = totalPages - 1;
-
       const start = currentPendingPage * pendingPageSize;
       const end = start + pendingPageSize;
       const pageSlice = sorted.slice(start, end);
-
       const tbody = document.getElementById('pendingTable');
       tbody.innerHTML = '';
       if (pageSlice.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="9" class="p-4 text-center text-gray-500 border-0">No pending vehicles</td>
-          </tr>
-        `;
+        tbody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-gray-500 border-0">No pending vehicles</td></tr>`;
       } else {
-        pageSlice.forEach((doc, idx) => { /* Added idx for staggered animation */
+        pageSlice.forEach((doc, idx) => {
           const d = doc.data;
           const days = Math.floor((new Date() - new Date(d.date)) / (1000 * 60 * 60 * 24));
-          const badgeColor = days > 3 ? 'bg-red-500 text-white badge-pulse' : 'bg-blue-100 text-blue-800'; /* Added badge-pulse */
+          const badgeColor = days > 3 ? 'bg-red-500 text-white badge-pulse' : 'bg-blue-100 text-blue-800';
           const tr = document.createElement('tr');
           tr.className = 'hover:bg-gray-50 transition-colors duration-200 table-row-enter';
-          tr.dataset.id = doc.id; // <--- THIS IS THE CRUCIAL LINE FOR HIGHLIGHTING
-          tr.style.animationDelay = `${idx * 0.05}s`; /* Staggered animation delay */
+          tr.dataset.id = doc.id;
+          tr.style.animationDelay = `${idx * 0.05}s`;
           tr.innerHTML = `
             <td class="px-4 py-2">${d.vin}</td>
             <td class="px-4 py-2">${d.stock}</td>
@@ -664,9 +621,7 @@
             <td class="px-4 py-2">${d.model}</td>
             <td class="px-4 py-2">${d.year}</td>
             <td class="px-4 py-2">${d.date}</td>
-            <td class="px-4 py-2 text-center">
-              <span class="inline-block ${badgeColor} text-xs font-semibold px-2 py-1 rounded-full">${days}</span>
-            </td>
+            <td class="px-4 py-2 text-center"><span class="inline-block ${badgeColor} text-xs font-semibold px-2 py-1 rounded-full">${days}</span></td>
             <td class="px-4 py-2">${d.comment || '-'}</td>
             <td class="px-4 py-2 flex space-x-2 justify-center">
               <button onclick="openCompleteModal('${doc.id}')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover">Complete</button>
@@ -677,7 +632,6 @@
           tbody.appendChild(tr);
         });
       }
-      // Update pagination controls
       document.getElementById('pendingPageInfo').textContent = `Page ${currentPendingPage + 1} of ${totalPages}`;
       document.getElementById('pendingPrevBtn').disabled = (currentPendingPage === 0);
       document.getElementById('pendingNextBtn').disabled = (currentPendingPage >= totalPages - 1);
@@ -693,11 +647,10 @@
     }
 
     // ==========================
-    // RENDER COMPLETED VEHICLES (with pagination)
+    // RENDER COMPLETED VEHICLES
     // ==========================
     function renderCompleted() {
       const searchVal = document.getElementById('searchCompleted').value.toLowerCase();
-      // Assign the filtered data to the global filteredCompletedData
       filteredCompletedData = searchVal ? completedData.filter(item => {
         const d = item.data;
         return (d.vin || '').toLowerCase().includes(searchVal)
@@ -705,26 +658,19 @@
              || (d.make || '').toLowerCase().includes(searchVal)
              || (d.model || '').toLowerCase().includes(searchVal);
       }) : completedData;
-
       const sorted = applySort('completed', filteredCompletedData);
       const totalItems = sorted.length;
       const totalPages = Math.ceil(totalItems / completedPageSize) || 1;
       if (currentCompletedPage >= totalPages) currentCompletedPage = totalPages - 1;
-
       const start = currentCompletedPage * completedPageSize;
       const end = start + completedPageSize;
       const pageSlice = sorted.slice(start, end);
-
       const tbody = document.getElementById('completedTable');
       tbody.innerHTML = '';
       if (pageSlice.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="12" class="p-4 text-center text-gray-500 border-0">${searchVal ? 'No matches found' : 'No completed vehicles'}</td>
-          </tr>
-        `;
+        tbody.innerHTML = `<tr><td colspan="12" class="p-4 text-center text-gray-500 border-0">${searchVal ? 'No matches found' : 'No completed vehicles'}</td></tr>`;
       } else {
-        pageSlice.forEach((doc, idx) => { /* Added idx for staggered animation */
+        pageSlice.forEach((doc, idx) => {
           const d = doc.data;
           const days = Math.floor((new Date() - new Date(d.date)) / (1000 * 60 * 60 * 24));
           let stockCellClass = '';
@@ -732,16 +678,13 @@
             if (days > 14) stockCellClass = 'bg-red-200 text-red-800';
             else if (days > 7) stockCellClass = 'bg-yellow-200 text-yellow-800';
           }
-
-          // Determine if comment is a URL and create appropriate content
           let commentContent = d.comment || '-';
           if (commentContent.startsWith('http://') || commentContent.startsWith('https://')) {
             commentContent = `<a href="${commentContent}" target="_blank" class="text-blue-600 hover:underline">${commentContent}</a>`;
           }
-
           const tr = document.createElement('tr');
-          tr.className = `${d.isSold ? 'opacity-50 line-through' : ''} hover:bg-gray-50 transition-all duration-200 table-row-enter`; /* Added table-row-enter */
-          tr.style.animationDelay = `${idx * 0.05}s`; /* Staggered animation delay */
+          tr.className = `${d.isSold ? 'opacity-50 line-through' : ''} hover:bg-gray-50 transition-all duration-200 table-row-enter`;
+          tr.style.animationDelay = `${idx * 0.05}s`;
           tr.innerHTML = `
             <td class="px-4 py-2">${d.vin}</td>
             <td class="px-4 py-2 ${stockCellClass}">${d.stock}</td>
@@ -752,9 +695,7 @@
             <td class="px-4 py-2">${d.detailed || '-'}</td>
             <td class="px-4 py-2">${d.photoType || '-'}</td>
             <td class="px-4 py-2">${d.halfReason || '-'}</td>
-            <td class="px-4 py-2 text-center">
-              <span class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded-full badge-pulse">${days}</span>
-            </td>
+            <td class="px-4 py-2 text-center"><span class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded-full badge-pulse">${days}</span></td>
             <td class="px-4 py-2">${commentContent}</td>
             <td class="px-4 py-2 flex space-x-2 justify-center">
               <button onclick="openEditModal('${doc.id}','vehicles')" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover">Edit</button>
@@ -771,7 +712,6 @@
 
     function changeCompletedPage(delta) {
       const newPage = currentCompletedPage + delta;
-      // NOW filteredCompletedData.length will accurately reflect the currently filtered data
       const totalPages = Math.ceil(filteredCompletedData.length / completedPageSize) || 1;
       if (newPage >= 0 && newPage < totalPages) {
         currentCompletedPage = newPage;
@@ -785,69 +725,44 @@
     function renderDailySummary() {
       const today = getTodayDate();
       document.getElementById('reportDate').textContent = getDisplayDate(today);
-
-      // Filter completed vehicles for today's date
       const dailyEntries = completedData.filter(doc => doc.data.date === today);
       const tbody = document.getElementById('dailySummaryTable');
-      tbody.innerHTML = ''; // Clear existing entries
+      tbody.innerHTML = '';
       const noEntriesMessage = document.getElementById('noDailyEntries');
-
       if (dailyEntries.length === 0) {
-        noEntriesMessage.classList.remove('hidden'); // Show "no entries" message
+        noEntriesMessage.classList.remove('hidden');
       } else {
-        noEntriesMessage.classList.add('hidden'); // Hide "no entries" message
+        noEntriesMessage.classList.add('hidden');
         dailyEntries.forEach((doc, idx) => {
           const d = doc.data;
-          // Check if the comment is a URL and format it as a clickable link
           let commentContent = d.comment || '-';
           if (commentContent.startsWith('http://') || commentContent.startsWith('https://')) {
             commentContent = `<a href="${commentContent}" target="_blank" class="text-blue-600 hover:underline">${commentContent}</a>`;
           }
-
-          // Determine initial button state and color for Recaptured
-          const isRecaptured = d.recaptured === true; // Check if explicitly true
+          const isRecaptured = d.recaptured === true;
           const recapturedButtonClass = isRecaptured ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-300 hover:bg-gray-400 text-gray-700';
           const recapturedButtonText = isRecaptured ? 'Yes' : 'No';
-
-          // Determine initial button state and color for Description Uploaded
           const isDescriptionUploaded = d.descriptionUploaded === true;
           const descUploadButtonClass = isDescriptionUploaded ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-300 hover:bg-gray-400 text-gray-700';
           const descUploadButtonText = isDescriptionUploaded ? 'Yes' : 'No';
-
-          // Determine initial button state and color for Glovebox Documents
           const isGloveboxDocuments = d.gloveboxDocuments === true;
           const gloveboxButtonClass = isGloveboxDocuments ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-300 hover:bg-gray-400 text-gray-700';
           const gloveboxButtonText = isGloveboxDocuments ? 'Yes' : 'No';
-
-
           const tr = document.createElement('tr');
           tr.className = 'hover:bg-gray-50 transition-colors duration-200 table-row-enter';
-          tr.style.animationDelay = `${idx * 0.05}s`; // Staggered animation for rows
+          tr.style.animationDelay = `${idx * 0.05}s`;
           tr.innerHTML = `
             <td class="px-4 py-2">${d.stock}</td>
             <td class="px-4 py-2">${d.make}</td>
             <td class="px-4 py-2">${d.model}</td>
             <td class="px-4 py-2">${d.year}</td>
             <td class="px-4 py-2">${d.detailed || '-'}</td>
-            <td class="px-4 py-2 text-center"> <button onclick="toggleDailySummaryStatus('${doc.id}', 'descriptionUploaded', ${isDescriptionUploaded})"
-                      class="px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover ${descUploadButtonClass} text-white">
-                ${descUploadButtonText}
-              </button>
-            </td>
-            <td class="px-4 py-2 text-center"> <button onclick="toggleDailySummaryStatus('${doc.id}', 'gloveboxDocuments', ${isGloveboxDocuments})"
-                      class="px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover ${gloveboxButtonClass} text-white">
-                ${gloveboxButtonText}
-              </button>
-            </td>
-            <td class="px-4 py-2 text-center"> <button onclick="toggleDailySummaryStatus('${doc.id}', 'recaptured', ${isRecaptured})"
-                      class="px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover ${recapturedButtonClass} text-white">
-                ${recapturedButtonText}
-              </button>
-            </td>
-            <td class="px-4 py-2">${d.photoType || '-'}</td> <td class="px-4 py-2">${commentContent}</td>
-            <td class="px-4 py-2 flex space-x-2 justify-center">
-              <button onclick="openEditModal('${doc.id}','vehicles')" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover">Edit</button>
-            </td>
+            <td class="px-4 py-2 text-center"> <button onclick="toggleDailySummaryStatus('${doc.id}', 'descriptionUploaded', ${isDescriptionUploaded})" class="px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover ${descUploadButtonClass} text-white">${descUploadButtonText}</button></td>
+            <td class="px-4 py-2 text-center"> <button onclick="toggleDailySummaryStatus('${doc.id}', 'gloveboxDocuments', ${isGloveboxDocuments})" class="px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover ${gloveboxButtonClass} text-white">${gloveboxButtonText}</button></td>
+            <td class="px-4 py-2 text-center"> <button onclick="toggleDailySummaryStatus('${doc.id}', 'recaptured', ${isRecaptured})" class="px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover ${recapturedButtonClass} text-white">${recapturedButtonText}</button></td>
+            <td class="px-4 py-2">${d.photoType || '-'}</td>
+            <td class="px-4 py-2">${commentContent}</td>
+            <td class="px-4 py-2 flex space-x-2 justify-center"><button onclick="openEditModal('${doc.id}','vehicles')" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-md text-xs shadow-sm transform hover:scale-105 transition-all duration-200 button-glow-hover">Edit</button></td>
           `;
           tbody.appendChild(tr);
         });
@@ -855,29 +770,21 @@
     }
 
     // ==========================
-    // GENERIC DAILY SUMMARY STATUS TOGGLE FUNCTION
+    // DAILY SUMMARY STATUS TOGGLE
     // ==========================
     async function toggleDailySummaryStatus(id, fieldName, currentStatus) {
       showSpinner();
       try {
-        const newStatus = !currentStatus; // Toggle status
+        const newStatus = !currentStatus;
         const updateData = {};
         updateData[fieldName] = newStatus;
-        updateData.updatedAt = firebase.firestore.FieldValue.serverTimestamp(); // Optional: record when status changed
-
+        updateData.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
         await db.collection('vehicles').doc(id).update(updateData);
-        // Format fieldName for toast message
         let displayFieldName = fieldName;
-        if (fieldName === 'descriptionUploaded') {
-          displayFieldName = 'Description';
-        } else if (fieldName === 'gloveboxDocuments') {
-          displayFieldName = 'Glovebox';
-        } else {
-          // Fallback for other fields (like 'recaptured')
-          displayFieldName = fieldName.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-        }
+        if (fieldName === 'descriptionUploaded') displayFieldName = 'Description';
+        else if (fieldName === 'gloveboxDocuments') displayFieldName = 'Glovebox';
+        else displayFieldName = fieldName.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
         showToast(`${displayFieldName} status updated to: ${newStatus ? 'Yes' : 'No'}`);
-        // The Firebase listener for 'vehicles' will automatically re-render the tables
       } catch (e) {
         console.error(`Error updating ${fieldName} status:`, e);
         showToast(`Error updating ${fieldName} status.`);
@@ -886,11 +793,10 @@
       }
     }
 
-
     // ==========================
     // MODAL FUNCTIONS
     // ==========================
-    let currentPendingId = null; // Store the ID of the pending vehicle being completed
+    let currentPendingId = null;
 
     function openCompleteModal(id) {
       currentPendingId = id;
@@ -910,74 +816,61 @@
         document.getElementById('halfReasonContainer').classList.remove('hidden');
       } else {
         document.getElementById('halfReasonContainer').classList.add('hidden');
-        document.getElementById('completeHalfReason').value = ''; // Clear reason if not half photos
+        document.getElementById('completeHalfReason').value = '';
       }
     });
 
     async function confirmComplete() {
-      const detailed = document.getElementById('completeDetailed').value;
-      const photoType = document.getElementById('completePhotoType').value;
-      const halfReason = document.getElementById('completeHalfReason').value;
-
-      if (!detailed || !photoType) {
-        showToast('Please select Detailed? and Photos? options.');
-        return;
-      }
-      if (photoType === 'Half Photos' && !halfReason.trim()) {
-        showToast('Please provide a reason for half photographs.');
-        return;
-      }
-
-      showSpinner();
-      try {
-        // Get the pending vehicle's data
-        const pendingDocRef = db.collection('pending_vehicles').doc(currentPendingId);
-        const pendingDoc = await pendingDocRef.get();
-
-        if (pendingDoc.exists) {
-          const data = pendingDoc.data();
-          const completionDate = getTodayDate(); // This will be today's date
-
-          // Add to completed_vehicles collection with today's date for completion
-          await db.collection('vehicles').add({
-            ...data, // Copy all existing data from pending
-            detailed: detailed,
-            photoType: photoType,
-            halfReason: halfReason,
-            date: completionDate, // Set the date to today's date for the completed entry
-            recaptured: false, // Initialize recaptured status
-            descriptionUploaded: false, // NEW: Initialize description uploaded status
-            gloveboxDocuments: false, // NEW: Initialize glovebox documents status
-            completedAt: firebase.firestore.FieldValue.serverTimestamp() // Optional: timestamp of actual completion
-          });
-
-          // Delete from pending_vehicles
-          await pendingDocRef.delete();
-
-          closeCompleteModal();
-          showToast('Vehicle marked as complete!');
-          // The Firebase listeners will automatically trigger renders for both tables
-          // including the daily summary, as 'completedData' will be re-fetched.
-        } else {
-          showToast('Pending vehicle not found.');
+        const detailed = document.getElementById('completeDetailed').value;
+        const photoType = document.getElementById('completePhotoType').value;
+        const halfReason = document.getElementById('completeHalfReason').value;
+        if (!detailed || !photoType) {
+            showToast('Please select Detailed? and Photos? options.');
+            return;
         }
-      } catch (e) {
-        console.error(e);
-        showToast('Error completing vehicle.');
-      } finally {
-        hideSpinner();
-      }
+        if (photoType === 'Half Photos' && !halfReason.trim()) {
+            showToast('Please provide a reason for half photographs.');
+            return;
+        }
+        showSpinner();
+        try {
+            const pendingDocRef = db.collection('pending_vehicles').doc(currentPendingId);
+            const pendingDoc = await pendingDocRef.get();
+            if (pendingDoc.exists) {
+                const data = pendingDoc.data();
+                const completionDate = getTodayDate();
+                await db.collection('vehicles').add({
+                    ...data,
+                    detailed: detailed,
+                    photoType: photoType,
+                    halfReason: halfReason,
+                    originalEntryDate: data.date,
+                    date: completionDate,
+                    recaptured: false,
+                    descriptionUploaded: false,
+                    gloveboxDocuments: false,
+                    completedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                await pendingDocRef.delete();
+                closeCompleteModal();
+                showToast('Vehicle marked as complete!');
+            } else {
+                showToast('Pending vehicle not found.');
+            }
+        } catch (e) {
+            console.error(e);
+            showToast('Error completing vehicle.');
+        } finally {
+            hideSpinner();
+        }
     }
 
-
-    // EDIT MODAL
-    let currentEditDocRef = null; // Store the document reference for the item being edited
+    let currentEditDocRef = null;
 
     function openEditModal(id, collectionName) {
       currentEditDocRef = db.collection(collectionName).doc(id);
       document.getElementById('editId').value = id;
       document.getElementById('editCollection').value = collectionName;
-
       showSpinner();
       currentEditDocRef.get().then(doc => {
         if (doc.exists) {
@@ -991,10 +884,6 @@
           document.getElementById('editDetailed').value = d.detailed || '';
           document.getElementById('editPhotoType').value = d.photoType || '';
           document.getElementById('editComment').value = d.comment || '';
-          // If you ever add these fields to the Edit Modal, you'd populate them here too
-          // document.getElementById('editDescriptionUploaded').checked = d.descriptionUploaded === true;
-          // document.getElementById('editGloveboxDocuments').checked = d.gloveboxDocuments === true;
-
           document.getElementById('editModal').classList.remove('hidden');
         } else {
           showToast('Document not found.');
@@ -1016,7 +905,6 @@
         showToast('No document selected for edit.');
         return;
       }
-
       const updatedData = {
         vin: document.getElementById('editVin').value.trim().toUpperCase(),
         stock: document.getElementById('editStock').value.trim().toUpperCase(),
@@ -1029,20 +917,13 @@
         comment: document.getElementById('editComment').value.trim(),
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       };
-
-      // Handle halfReason specifically for completed vehicles if photoType is "Half Photos"
       const collectionName = document.getElementById('editCollection').value;
       if (collectionName === 'vehicles' && updatedData.photoType === 'Half Photos') {
         const existingData = (await currentEditDocRef.get()).data();
-        updatedData.halfReason = existingData.halfReason || ''; // Keep existing reason if not provided in edit modal
+        updatedData.halfReason = existingData.halfReason || '';
       } else if (collectionName === 'vehicles' && updatedData.photoType !== 'Half Photos') {
-        updatedData.halfReason = ''; // Clear halfReason if photoType is not "Half Photos"
+        updatedData.halfReason = '';
       }
-      
-      // Note: If you want to edit descriptionUploaded or gloveboxDocuments via the edit modal,
-      // you would need to add inputs for them in the modal's HTML and update them here.
-      // For now, they are only toggleable in the daily summary.
-
       showSpinner();
       try {
         await currentEditDocRef.update(updatedData);
@@ -1060,9 +941,7 @@
     // DELETE FUNCTION
     // ==========================
     async function deleteEntry(id, collectionName) {
-      if (!confirm('Are you sure you want to delete this entry?')) {
-        return;
-      }
+      if (!confirm('Are you sure you want to delete this entry?')) return;
       showSpinner();
       try {
         await db.collection(collectionName).doc(id).delete();
@@ -1077,13 +956,11 @@
     }
 
     // ==========================
-    // FIREBASE LISTENERS (REAL-TIME UPDATES)
+    // FIREBASE LISTENERS
     // ==========================
     db.collection('pending_vehicles').onSnapshot(snapshot => {
       pendingData = snapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
       renderPending();
-      // After pendingData updates, re-check current stock input for real-time validation
-      // This is important because a new entry might now be a duplicate for a *new* input attempt
       document.getElementById('stock').dispatchEvent(new Event('input')); 
     }, err => {
       console.error(err);
@@ -1092,11 +969,9 @@
 
     db.collection('vehicles').onSnapshot(snapshot => {
       completedData = snapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
-      // The search input might affect which completed vehicles are shown,
-      // so re-filter and re-render completed.
-      document.getElementById('searchCompleted').dispatchEvent(new Event('input')); // Re-trigger search filter
+      document.getElementById('searchCompleted').dispatchEvent(new Event('input'));
       renderCompleted();
-      renderDailySummary(); // CALL NEW DAILY SUMMARY RENDER
+      renderDailySummary();
       hideSpinner();
     }, err => {
       console.error(err);
@@ -1104,64 +979,42 @@
       hideSpinner();
     });
 
-    // Initial setup
+    // ==========================
+    // INITIAL SETUP & EVENT LISTENERS
+    // ==========================
     document.addEventListener('DOMContentLoaded', () => {
       setupSorting();
-      // Set the initial value for the search bar from local storage if exists
       const savedSearch = localStorage.getItem('completedSearch');
       if (savedSearch) {
           document.getElementById('searchCompleted').value = savedSearch;
       }
-      // Trigger initial render for completed items after search value is set
       document.getElementById('searchCompleted').dispatchEvent(new Event('input'));
-
-      // Initial check for stock input on page load (if a value is pre-filled, etc.)
-      document.getElementById('stock').dispatchEvent(new Event('input')); // Trigger initial real-time stock validation
+      document.getElementById('stock').dispatchEvent(new Event('input'));
     });
 
-    // Add search functionality for completed vehicles
     document.getElementById('searchCompleted').addEventListener('input', function() {
-        localStorage.setItem('completedSearch', this.value); // Save search query
-        currentCompletedPage = 0; // Reset to first page on new search
+        localStorage.setItem('completedSearch', this.value);
+        currentCompletedPage = 0;
         renderCompleted();
     });
 
-    // Add real-time validation for stock number input
     document.getElementById('stock').addEventListener('input', function() {
         const stockInput = this;
         const stockErrorSpan = document.getElementById('stockError');
         const stockValue = stockInput.value.trim().toUpperCase();
-
-        // Always clear previous error states on every input change
         stockInput.classList.remove('border-red-500');
         stockErrorSpan.classList.add('hidden');
         stockErrorSpan.textContent = '';
-
-        // Only perform duplicate check if the input has a value
         if (stockValue.length > 0) {
-            // Check if any item in the currently RENDERED pending table matches the typed stockValue
-            // This is more robust against internal pendingData inconsistencies for real-time feedback
-            const pendingTableBody = document.getElementById('pendingTable');
-            const rows = pendingTableBody.querySelectorAll('tr');
-            let isDuplicateInVisibleList = false;
-
-            for (let i = 0; i < rows.length; i++) {
-                const row = rows[i];
-                // Assuming stock number is in the second <td> (index 1) of the row based on renderPending()
-                const stockCell = row.children[1];
-                if (stockCell && stockCell.textContent.trim().toUpperCase() === stockValue) {
-                    isDuplicateInVisibleList = true;
-                    break;
-                }
-            }
-
-            if (isDuplicateInVisibleList) {
-                stockInput.classList.add('border-red-500'); // Highlight the input field
-                stockErrorSpan.textContent = 'Stock number already in Pending list!'; // Display the error message
-                stockErrorSpan.classList.remove('hidden'); // Make the message visible
+            const isDuplicate = pendingData.some(item => item.data.stock.toUpperCase() === stockValue);
+            if (isDuplicate) {
+                stockInput.classList.add('border-red-500');
+                stockErrorSpan.textContent = 'Stock number already in Pending list!';
+                stockErrorSpan.classList.remove('hidden');
             }
         }
     });
   </script>
 </body>
 </html>
+```
