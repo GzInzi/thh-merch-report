@@ -1,616 +1,959 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>THH Merchandising Report</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media26 IPTV Dashboard</title>
     <style>
-        /* ======================================================================
-           "CLASSIC COMPACT" THEME
-        ====================================================================== */
         :root {
-            --c-bg: #f8fafc; /* slate-50 */
-            --c-surface: #ffffff;
-            --c-text-primary: #1e293b; /* slate-800 */
-            --c-text-secondary: #64748b; /* slate-500 */
-            --c-border: #e2e8f0; /* slate-200 */
-            --c-primary: #3b82f6; /* blue-500 */
-            --c-primary-hover: #2563eb; /* blue-600 */
-            --c-danger: #ef4444; /* red-500 */
-            --c-warning: #f59e0b; /* amber-500 */
-            --c-success: #22c55e; /* green-500 */
+            --bg-color: #f4f6f9;
+            --card-color: #ffffff;
+            --border-color: #e5e7eb;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --accent-color: #3b82f6;
+            --accent-hover: #2563eb;
+            --danger-color: #ef4444;
+            --danger-hover: #dc2626;
+            --success-color: #22c55e;
+            --warning-color: #f59e0b;
+            --info-color: #6366f1;
+            --font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
-        /* Base */
         body {
-            background-color: var(--c-bg);
-            font-family: 'Inter', sans-serif;
-            color: var(--c-text-primary);
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            line-height: 1.5;
         }
 
-        /* Layout & Cards */
-        .card {
-            background-color: var(--c-surface);
-            border-radius: 0.5rem;
-            border: 1px solid var(--c-border);
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-        }
-
-        /* Buttons (More Compact) */
-        .btn {
-            display: inline-flex;
+        .top-nav {
+            background-color: var(--card-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 40px;
+            display: flex;
             align-items: center;
-            justify-content: center;
-            padding: 0.375rem 0.75rem; /* Reduced padding */
+            justify-content: space-between;
+        }
+        
+        .nav-tabs {
+            display: flex;
+        }
+
+        .nav-tab {
+            padding: 18px 25px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease-in-out;
+        }
+        .nav-tab:hover {
+            color: var(--accent-color);
+        }
+        .nav-tab.active {
+            color: var(--accent-color);
+            border-bottom-color: var(--accent-color);
+        }
+
+        .main-content {
+            padding: 30px 40px;
+            height: calc(100vh - 65px);
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1, h2 {
+            margin: 0 0 25px 0;
+            font-weight: 700;
+        }
+        
+        .card {
+            background-color: var(--card-color);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 25px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+        
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .summary-card {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            color: #fff;
+        }
+        .summary-card .icon {
+            font-size: 1.5em; 
+        }
+        .summary-card .value {
+            font-size: 2em;
+            font-weight: 700;
+        }
+        .summary-card .label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        .full-width { grid-column: 1 / -1; }
+        label { font-weight: 500; font-size: 0.9em; color: var(--text-secondary); }
+        input, select, textarea {
+            background-color: #f9fafb;
+            border: 1px solid #d1d5db;
             border-radius: 0.375rem;
-            font-weight: 600;
-            font-size: 0.875rem;
-            transition: all 0.2s;
-            border: 1px solid transparent;
-        }
-
-        .btn-primary { background-color: var(--c-primary); color: white; }
-        .btn-primary:hover { background-color: var(--c-primary-hover); }
-        .btn-secondary { background-color: var(--c-surface); color: var(--c-text-primary); border-color: var(--c-border); }
-        .btn-secondary:hover { background-color: #f8fafc; } /* slate-50 */
-        
-        .btn-success { background-color: var(--c-success); color: white; }
-        .btn-warning { background-color: var(--c-warning); color: white; }
-        .btn-danger { background-color: var(--c-danger); color: white; }
-
-        /* Tables - BORDERED AND COMPACT */
-        .custom-table {
+            padding: 10px 12px;
+            font-size: 1em;
             width: 100%;
-            border-collapse: collapse; /* Essential for bordered look */
-            border: 1px solid var(--c-border); /* Outer border */
+            box-sizing: border-box;
         }
-        .custom-table th {
-            padding: 0.75rem 1rem; /* Reduced padding */
-            text-align: left;
-            font-size: 0.75rem;
+        .btn {
+            padding: 10px 15px;
+            border: 1px solid transparent;
+            border-radius: 0.375rem;
+            font-size: 1em;
             font-weight: 600;
-            color: var(--c-text-secondary);
-            text-transform: uppercase;
-            background-color: #f8fafc; /* slate-50 */
-            border: 1px solid var(--c-border);
+            cursor: pointer;
+            transition: all 0.2s;
         }
-        .custom-table td {
-            padding: 0.6rem 1rem; /* Reduced padding */
-            font-size: 0.875rem;
-            border: 1px solid var(--c-border);
-        }
-        /* Zebra-striping */
-        .custom-table tbody tr:nth-of-type(even) {
-            background-color: #f8fafc; /* slate-50 */
-        }
-        .custom-table tbody tr:hover {
-            background-color: #eff6ff; /* blue-50 */
-        }
-        
-        .sortable:hover { background-color: #f1f5f9; cursor: pointer; }
-        .sorted-asc::after { content: " ▲"; }
-        .sorted-desc::after { content: " ▼"; }
-
-        /* Forms */
-        .form-input {
-            display: block; width: 100%; border-radius: 0.375rem;
-            border: 1px solid var(--c-border); padding: 0.5rem 0.75rem;
-            font-size: 0.875rem;
-        }
-        .form-input:focus {
-            outline: none; border-color: var(--c-primary);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+        .btn-primary { background-color: var(--accent-color); color: #fff; }
+        .btn-primary:hover { background-color: var(--accent-hover); }
+        .btn-danger { background-color: var(--danger-color); color: #fff; }
+        .btn-edit { background-color: #e0e7ff; color: #4338ca; }
+        .btn-edit:hover { background-color: #c7d2fe; }
+        .btn-save { background-color: #dcfce7; color: #16a34a; }
+        .btn-save:hover { background-color: #bbf7d0; }
+        .btn-secondary { background-color: #e5e7eb; color: #4b5563; }
+        .btn-secondary:hover { background-color: #d1d5db; }
+        .btn-sold { background-color: var(--success-color); color: #fff; }
+        .btn-sold:hover { background-color: #16a34a; }
+        .btn:disabled {
+            background-color: #e5e7eb;
+            color: #9ca3af;
+            cursor: not-allowed;
         }
 
-        /* Modal */
-        .modal-card {
-            background-color: var(--c-surface); border-radius: 0.5rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        .table-container { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border-color); white-space: nowrap;}
+        thead th { background-color: #f9fafb; font-size: 0.8em; text-transform: uppercase; letter-spacing: 0.5px; }
+        .actions-cell { display: flex; gap: 8px; }
+        .row-expired { background-color: #fee2e2; }
+        .row-expires-soon { background-color: #fef2f2; }
+
+        .customer-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        #customerSearch {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            width: 300px;
+            font-size: 0.9em;
+        }
+        thead th[data-sort] {
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+            padding-right: 25px;
+        }
+        thead th[data-sort]::after {
+            content: ' ';
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: 4px solid transparent;
+            opacity: 0.3;
+        }
+        thead th[data-sort].sort-asc::after {
+            border-bottom-color: var(--text-primary);
+            opacity: 1;
+        }
+        thead th[data-sort].sort-desc::after {
+            border-top-color: var(--text-primary);
+            opacity: 1;
         }
         
-        /* Spinner */
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .spinner {
-            animation: spin 1s linear infinite; border-width: 4px;
-            border-style: solid; border-color: var(--c-border);
-            border-top-color: var(--c-primary); border-radius: 50%;
-            width: 3rem; height: 3rem;
+        hr.page-breaker {
+            border: none;
+            border-top: 1px solid var(--border-color);
+            margin: 40px 0;
+        }
+        
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        
+        #reportMonth {
+            font-size: 1em;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .renew-select {
+            padding: 6px 8px;
+            font-size: 0.9em;
         }
     </style>
 </head>
 <body>
-    <div id="spinnerOverlay" class="fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center hidden z-50">
-        <div class="spinner"></div>
-    </div>
 
-    <div id="toast" class="fixed bottom-5 right-5 hidden bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium"></div>
-
-    <header class="bg-white sticky top-0 z-20 border-b border-gray-200">
-        <div class="px-4 sm:px-6 lg:px-8 py-4">
-            <h1 class="text-xl font-bold text-gray-900">THH Merchandising Report</h1>
+    <nav class="top-nav">
+        <div class="nav-tabs">
+            <button class="nav-tab active" data-tab="dashboard">Dashboard</button>
+            <button class="nav-tab" data-tab="customers">Customers</button>
+            <button class="nav-tab" data-tab="expenses">Expenses</button>
+            <button class="nav-tab" data-tab="inventory">Inventory</button>
         </div>
-    </header>
+        <button id="undo-button" class="btn btn-secondary" disabled>Undo Last Action</button>
+    </nav>
 
-    <main class="px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-
-        <section class="card p-6">
-            <h2 class="text-lg font-semibold mb-4">Data Entry</h2>
-            <form class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                <input id="vin" placeholder="VIN Number (Optional)" class="form-input" />
-                <input id="stock" placeholder="Stock Number" class="form-input" />
-                <span id="stockError" class="text-red-600 text-sm mt-1 hidden col-span-full"></span>
-                <input id="make" placeholder="Make" class="form-input" />
-                <input id="model" placeholder="Model" class="form-input" />
-                <select id="year" class="form-input"><option value="">Year</option></select>
-                <input id="date" type="date" class="form-input" />
-                <input id="comment" placeholder="Comment (Optional)" class="form-input" />
-                <div class="sm:col-span-2 md:col-span-4 text-right mt-2">
-                    <button type="button" onclick="addPending()" class="btn btn-primary">Add to Pending</button>
+    <main class="main-content">
+        <div id="dashboard-tab-content" class="tab-content active">
+            <h1>Dashboard</h1>
+            <div class="grid-container">
+                <div class="summary-card" style="background: var(--success-color);">
+                    <div class="icon">👥</div>
+                    <div>
+                        <div class="value" id="activeUsers">0</div>
+                        <div class="label">Active Users</div>
+                    </div>
                 </div>
-            </form>
-        </section>
+                <div class="summary-card" style="background: var(--danger-color);">
+                    <div class="icon">🚫</div>
+                    <div>
+                        <div class="value" id="expiredUsers">0</div>
+                        <div class="label">Expired Users</div>
+                    </div>
+                </div>
+            </div>
 
-        <section class="card overflow-hidden">
-            <div class="p-6">
-                <h2 class="text-lg font-semibold">Pending Vehicles</h2>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="custom-table">
-                    <thead>
-                        <tr>
-                            <th data-col="vin" class="sortable">VIN</th>
-                            <th data-col="stock" class="sortable">Stock</th>
-                            <th data-col="make" class="sortable">Make</th>
-                            <th data-col="model" class="sortable">Model</th>
-                            <th data-col="year" class="sortable">Year</th>
-                            <th data-col="date" class="sortable">Date</th>
-                            <th data-col="days" class="sortable text-center">Days</th>
-                            <th>Comment</th>
-                            <th class="text-center">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="pendingTable"></tbody>
-                </table>
-            </div>
-            <div class="p-4 flex justify-center items-center space-x-4 bg-slate-50 border-t border-slate-200">
-                <button id="pendingPrevBtn" class="btn btn-secondary">Previous</button>
-                <span id="pendingPageInfo" class="text-sm text-gray-600"></span>
-                <button id="pendingNextBtn" class="btn btn-secondary">Next</button>
-            </div>
-        </section>
+            <hr class="page-breaker">
 
-        <section class="card overflow-hidden">
-             <div class="p-6 flex flex-col md:flex-row justify-between items-center gap-4">
-                <h2 class="text-lg font-semibold">Completed Vehicles</h2>
-                <input id="searchCompleted" type="text" placeholder="Search..." class="form-input w-full md:w-1/3" />
+            <div class="report-header">
+                <h2>Monthly Report</h2>
+                <input type="month" id="reportMonth">
             </div>
-            <div class="overflow-x-auto">
-                <table class="custom-table">
-                     <thead>
-                        <tr>
-                            <th data-col="vin" class="sortable">VIN</th>
-                            <th data-col="stock" class="sortable">Stock</th>
-                            <th data-col="make" class="sortable">Make</th>
-                            <th data-col="model" class="sortable">Model</th>
-                            <th data-col="year" class="sortable">Year</th>
-                            <th data-col="date" class="sortable">Date</th>
-                            <th data-col="detailed" class="sortable">Detailed</th>
-                            <th data-col="photoType" class="sortable">Photos</th>
-                            <th data-col="halfReason" class="sortable">Half Reason</th>
-                            <th data-col="days" class="sortable text-center">Days</th>
-                            <th>Comment</th>
-                            <th class="text-center">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="completedTable"></tbody>
-                </table>
+            <div class="grid-container">
+                <div class="summary-card" style="background: var(--accent-color);">
+                    <div class="icon">💰</div>
+                    <div>
+                        <div class="value" id="reportIncome">$0.00</div>
+                        <div class="label">Income</div>
+                    </div>
+                </div>
+                 <div class="summary-card" style="background: var(--warning-color);">
+                    <div class="icon">💸</div>
+                    <div>
+                        <div class="value" id="reportExpenses">-$0.00</div>
+                        <div class="label">Expenses</div>
+                    </div>
+                </div>
+                 <div class="summary-card" style="background: var(--info-color);">
+                    <div class="icon">📊</div>
+                    <div>
+                        <div class="value" id="reportProfit">$0.00</div>
+                        <div class="label">Profit</div>
+                    </div>
+                </div>
             </div>
-             <div class="p-4 flex justify-center items-center space-x-4 bg-slate-50 border-t border-slate-200">
-                <button id="completedPrevBtn" class="btn btn-secondary">Previous</button>
-                <span id="completedPageInfo" class="text-sm text-gray-600"></span>
-                <button id="completedNextBtn" class="btn btn-secondary">Next</button>
-            </div>
-        </section>
+        </div>
 
-        <section class="card overflow-hidden">
-            <div class="p-6">
-                <h2 class="text-lg font-semibold">Daily Summary for <span id="reportDate" class="text-blue-600"></span></h2>
+        <div id="customers-tab-content" class="tab-content">
+            <h1>Customer Management</h1>
+            <div class="card">
+                <h2>Create New Customer</h2>
+                <form id="newCustomerForm">
+                     <div class="grid-container">
+                        <div class="form-group"><label for="customerName">Customer Name</label><input type="text" id="customerName" name="customerName" required></div>
+                        <div class="form-group"><label for="phone">Phone Number</label><input type="tel" id="phone" name="phone"></div>
+                        <div class="form-group"><label for="login">Login</label><input type="text" id="login" name="login" readonly></div>
+                        <div class="form-group"><label for="password">Password</label><input type="text" id="password" name="password" readonly></div>
+                        <div class="form-group"><label for="macAddress">MAC Address (Optional)</label><input type="text" id="macAddress" name="macAddress"></div>
+                        <div class="form-group">
+                            <label for="subscriptionType">Subscription</label>
+                            <select id="subscriptionType" name="subscriptionType" required>
+                                <option value="1">1 Month</option><option value="2">2 Months</option><option value="3">3 Months</option><option value="4">4 Months</option><option value="5">5 Months</option>
+                                <option value="6" selected>6 Months</option><option value="7">7 Months</option><option value="8">8 Months</option><option value="9">9 Months</option><option value="10">10 Months</option>
+                                <option value="11">11 Months</option><option value="12">12 Months</option><option value="trial">Trial (2 days)</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label for="subscriptionDate">Subscription Date</label><input type="date" id="subscriptionDate" name="subscriptionDate" required></div>
+                        <div class="form-group"><label for="subscriptionEndingDate">Subscription Ending Date</label><input type="text" id="subscriptionEndingDate" name="subscriptionEndingDate" readonly></div>
+                        <div class="form-group"><label for="paymentStatus">Payment Status</label><select id="paymentStatus" name="paymentStatus" required><option>Paid</option><option>Unpaid</option></select></div>
+                        <div class="form-group"><label for="paymentAmount">Payment Amount ($)</label><input type="number" id="paymentAmount" name="paymentAmount" min="0" step="0.01" required></div>
+                        <div class="form-group full-width"><label for="specialNote">Special Note</label><textarea id="specialNote" name="specialNote"></textarea></div>
+                        <div class="form-group full-width"><button type="submit" class="btn btn-primary">Add New Customer</button></div>
+                    </div>
+                </form>
             </div>
-            <div id="dailySummaryContent">
-                <div class="overflow-x-auto">
-                    <table class="custom-table">
+            <div class="card">
+                <div class="customer-list-header">
+                    <h2>Customer List</h2>
+                    <input type="search" id="customerSearch" placeholder="Search by name, phone, login...">
+                </div>
+                <div class="table-container">
+                    <table id="customer-table">
                         <thead>
                             <tr>
-                                <th>Stock</th>
-                                <th>Make</th>
-                                <th>Model</th>
-                                <th>Year</th>
-                                <th>Detailed</th>
-                                <th class="text-center">Description</th>
-                                <th class="text-center">Glovebox</th>
-                                <th class="text-center">Recaptured</th>
-                                <th>Photos</th>
-                                <th>Comment</th>
-                                <th class="text-center">Actions</th>
+                                <th data-sort="name">Name</th>
+                                <th data-sort="phone">Phone</th>
+                                <th data-sort="login">Login</th>
+                                <th data-sort="subDate">Started On</th>
+                                <th data-sort="endDate">Ends On</th>
+                                <th data-sort="daysLeft">Days Left</th>
+                                <th>Renew</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="dailySummaryTable"></tbody>
+                        <tbody id="customerTableBody"></tbody>
                     </table>
                 </div>
             </div>
-            <div id="noDailyEntries" class="p-6 text-center text-gray-500 hidden">No vehicles completed today.</div>
-        </section>
+        </div>
+
+        <div id="expenses-tab-content" class="tab-content">
+            <h1>Expense Management</h1>
+            <div class="card">
+                <h2>Add Expense</h2>
+                <form id="expenseForm" class="grid-container">
+                    <div class="form-group"><label for="expenseType">Description</label><input type="text" id="expenseType" name="expenseType" required></div>
+                    <div class="form-group"><label for="expenseAmount">Amount ($)</label><input type="number" id="expenseAmount" name="expenseAmount" min="0" step="0.01" required></div>
+                    <div class="form-group"><label for="expenseDate">Date</label><input type="date" id="expenseDate" name="expenseDate" required></div>
+                    <div class="form-group" style="align-self: flex-end;"><button type="submit" class="btn btn-primary">Add Expense</button></div>
+                </form>
+            </div>
+            <div class="card">
+                <h2>Expense List</h2>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>Description</th><th>Amount</th><th>Date</th><th>Actions</th></tr></thead>
+                        <tbody id="expenseTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="inventory-tab-content" class="tab-content">
+             <h1>Inventory Management</h1>
+              <div class="summary-card" style="background: var(--info-color);">
+                <div class="icon">📦</div>
+                <div>
+                    <div class="value" id="inventoryTotalValue">$0.00</div>
+                    <div class="label">Total Inventory Value</div>
+                </div>
+            </div>
+            <div class="card">
+                <h2>Add Inventory Item</h2>
+                <form id="inventoryForm" class="grid-container" style="grid-template-columns: 1fr 1fr 1fr 1fr 1fr; align-items: flex-end;">
+                    <div class="form-group"><label for="itemName">Item Name</label><input type="text" id="itemName" name="itemName" placeholder="e.g., IPTV Box" required></div>
+                    <div class="form-group"><label for="itemCategory">Category</label>
+                        <select id="itemCategory" name="itemCategory">
+                            <option>Box</option><option>Remote</option><option>Accessory</option><option>Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label for="itemQuantity">Quantity</label><input type="number" id="itemQuantity" name="itemQuantity" min="1" required></div>
+                    <div class="form-group"><label for="purchaseMethod">Purchase Method</label>
+                        <select id="purchaseMethod" name="purchaseMethod">
+                            <option>Own Purchase</option><option>Loan</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label for="itemCost">Purchase Cost/Item ($)</label><input type="number" id="itemCost" name="itemCost" min="0" step="0.01" required></div>
+                    <div class="form-group"><label for="itemSaleValue">Sale Value/Item ($)</label><input type="number" id="itemSaleValue" name="itemSaleValue" min="0" step="0.01" required></div>
+                    <div class="form-group" style="grid-column: 5 / -1;"><button type="submit" class="btn btn-primary">Add to Inventory</button></div>
+                </form>
+            </div>
+            <div class="card">
+                <h2>Inventory List</h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item Name</th>
+                                <th>Category</th>
+                                <th>Quantity</th>
+                                <th>Sale Value</th>
+                                <th>Total Value</th>
+                                <th>Profit/Item</th>
+                                <th>Total Profit</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </main>
 
-    <div id="completeModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center hidden z-40 p-4">
-        <div class="modal-card w-full max-w-md p-6">
-            <h3 class="text-lg font-semibold mb-4">Complete Vehicle</h3>
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Detailed?</label>
-                    <select id="completeDetailed" class="form-input mt-1"><option value="">Select…</option><option>Yes</option><option>No</option></select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Photos?</label>
-                    <select id="completePhotoType" class="form-input mt-1"><option value="">Select…</option><option>Full Photos</option><option>Half Photos</option></select>
-                </div>
-                <div id="halfReasonContainer" class="hidden">
-                    <label class="block text-sm font-medium text-gray-700">Reason for half photos</label>
-                    <textarea id="completeHalfReason" class="form-input mt-1" rows="2"></textarea>
-                </div>
-                <hr/>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Photos Need Recapture?</label>
-                    <select id="recaptureNeeded" class="form-input mt-1"><option value="">Select…</option><option value="Yes">Yes</option><option value="No">No</option></select>
-                </div>
-                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Recapture Comment</label>
-                    <textarea id="recaptureComment" class="form-input mt-1" rows="2"></textarea>
-                </div>
-            </div>
-            <div class="mt-6 flex justify-end space-x-3">
-                <button type="button" onclick="closeCompleteModal()" class="btn btn-secondary">Cancel</button>
-                <button type="button" onclick="confirmComplete()" class="btn btn-success">Submit</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="editModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center hidden z-40 p-4">
-        <div class="modal-card w-full max-w-lg p-6">
-             <h3 class="text-lg font-semibold mb-4">Edit Vehicle Entry</h3>
-             <input type="hidden" id="editId" /><input type="hidden" id="editCollection" />
-             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                <input id="editVin" placeholder="VIN" class="form-input" />
-                <input id="editStock" placeholder="Stock" class="form-input" />
-                <input id="editMake" placeholder="Make" class="form-input" />
-                <input id="editModel" placeholder="Model" class="form-input" />
-                <select id="editYear" class="form-input"><option value="">Year</option></select>
-                <input id="editDate" type="date" class="form-input" />
-                <select id="editDetailed" class="form-input"><option value="">Detailed?</option><option>Yes</option><option>No</option></select>
-                <select id="editPhotoType" class="form-input"><option value="">Photos?</option><option>Full Photos</option><option>Half Photos</option></select>
-             </div>
-             <textarea id="editComment" rows="3" placeholder="Comment" class="form-input w-full"></textarea>
-             <div class="mt-6 flex justify-end space-x-3">
-                <button type="button" onclick="closeModal()" class="btn btn-secondary">Cancel</button>
-                <button type="button" id="saveEditBtn" class="btn btn-primary">Save Changes</button>
-             </div>
-        </div>
-    </div>
-
-<script>
-    // ==========================
-    // FIREBASE CONFIGURATION
-    // ==========================
-    const firebaseConfig = {
-        apiKey: "AIzaSyC-hy3eteka35c3ZkLl7exTQ0nnFz9xhFU",
-        authDomain: "thh-merch-report.firebaseapp.com",
-        projectId: "thh-merch-report",
-        storageBucket: "thh-merch-report.appspot.com",
-        messagingSenderId: "214148544505",
-        appId: "1:214148544505:web:ef4889d43b8189f5146f28"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    // ==========================
-    // STATE & CONSTANTS
-    // ==========================
-    let pendingData = [], completedData = [], filteredCompletedData = [];
-    let currentPendingPage = 0, currentCompletedPage = 0;
-    const PAGE_SIZE = 15;
-    const sortState = {
-        pending: { col: 'date', dir: 'desc' },
-        completed: { col: 'date', dir: 'desc' }
-    };
-    let currentEdit = { id: null, collection: '' };
-
-    // ==========================
-    // UI & UTILITY FUNCTIONS
-    // ==========================
-    const showSpinner = () => document.getElementById('spinnerOverlay').classList.remove('hidden');
-    const hideSpinner = () => document.getElementById('spinnerOverlay').classList.add('hidden');
-    const closeModal = () => document.getElementById('editModal').classList.add('hidden');
-    const closeCompleteModal = () => document.getElementById('completeModal').classList.add('hidden');
-    const showToast = msg => {
-        const t = document.getElementById('toast');
-        t.textContent = msg;
-        t.classList.remove('hidden');
-        setTimeout(() => t.classList.add('hidden'), 3000);
-    };
-    const getTodayDate = () => new Date().toISOString().split('T')[0];
-    const getDisplayDate = dateStr => new Date(dateStr + 'T00:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
-    const calculateDays = dateStr => Math.floor((new Date() - new Date(dateStr + 'T00:00:00')) / 86400000);
-
-    // ==========================
-    // RENDERING LOGIC
-    // ==========================
-    function applySort(tableKey, dataArray) {
-        const { col, dir } = sortState[tableKey];
-        return [...dataArray].sort((a, b) => {
-            const valA = col === 'days' ? calculateDays(a.data.date) : (a.data[col] || '');
-            const valB = col === 'days' ? calculateDays(b.data.date) : (b.data[col] || '');
-            const comparison = String(valA).localeCompare(String(valB), undefined, { numeric: true });
-            return dir === 'asc' ? comparison : -comparison;
-        });
-    }
-
-    function renderTable(key, tbodyId, data, page, size, rowFunc, emptyMsg) {
-        const tbody = document.getElementById(tbodyId);
-        const sorted = applySort(key, data);
-        const totalItems = sorted.length, totalPages = Math.ceil(totalItems / size) || 1;
-        page = Math.max(0, Math.min(page, totalPages - 1));
-        if (key === 'pending') currentPendingPage = page; else currentCompletedPage = page;
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, updateDoc, setDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         
-        const pageSlice = sorted.slice(page * size, (page * size) + size);
-        tbody.innerHTML = pageSlice.length ? pageSlice.map(rowFunc).join('') : `<tr><td colspan="12" class="text-center py-10 text-gray-500">${emptyMsg}</td></tr>`;
+        // --- DOM ELEMENTS ---
+        const navTabsContainer = document.querySelector('.nav-tabs');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const customerForm = document.getElementById('newCustomerForm');
+        const expenseForm = document.getElementById('expenseForm');
+        const inventoryForm = document.getElementById('inventoryForm');
+        const customerTableBody = document.getElementById('customerTableBody');
+        const customerTableHeader = document.querySelector('#customer-table thead');
+        const customerSearchInput = document.getElementById('customerSearch');
+        const expenseTableBody = document.getElementById('expenseTableBody');
+        const inventoryTableBody = document.getElementById('inventoryTableBody');
+        const activeUsersEl = document.getElementById('activeUsers');
+        const expiredUsersEl = document.getElementById('expiredUsers');
         
-        document.getElementById(`${key}PageInfo`).textContent = `Page ${page + 1} of ${totalPages}`;
-        document.getElementById(`${key}PrevBtn`).disabled = page === 0;
-        document.getElementById(`${key}NextBtn`).disabled = page >= totalPages - 1;
-    }
+        const reportMonthEl = document.getElementById('reportMonth');
+        const reportIncomeEl = document.getElementById('reportIncome');
+        const reportExpensesEl = document.getElementById('reportExpenses');
+        const reportProfitEl = document.getElementById('reportProfit');
 
-    const createPendingRow = doc => {
-        const d = doc.data, days = calculateDays(d.date);
-        const badgeStyle = days > 3 ? 'text-red-700 bg-red-100' : 'text-gray-700 bg-gray-100';
-        return `<tr>
-            <td>${d.vin || ''}</td><td class="font-semibold text-gray-900">${d.stock}</td><td>${d.make}</td><td>${d.model}</td>
-            <td>${d.year}</td><td>${d.date}</td><td class="text-center"><span class="px-2 py-0.5 text-xs rounded-full font-medium ${badgeStyle}">${days}</span></td>
-            <td class="text-gray-500 truncate" style="max-width: 200px;">${d.comment || ''}</td>
-            <td><div class="flex items-center justify-center space-x-2">
-                <button onclick="openCompleteModal('${doc.id}')" class="btn btn-success">Complete</button>
-                <button onclick="openEditModal('${doc.id}', 'pending_vehicles')" class="btn btn-warning">Edit</button>
-                <button onclick="deleteEntry('${doc.id}', 'pending_vehicles')" class="btn btn-danger">Delete</button>
-            </div></td></tr>`;
-    };
-    
-    const createCompletedRow = doc => {
-        const d = doc.data;
-        const stockClass = (d.photoType === 'Half Photos' && calculateDays(d.date) > 7) ? (calculateDays(d.date) > 14 ? 'bg-red-100' : 'bg-amber-100') : '';
-        return `<tr class="${d.isSold ? 'opacity-50' : ''}">
-            <td>${d.vin || ''}</td><td class="font-semibold text-gray-900 ${stockClass}">${d.stock}</td><td>${d.make}</td><td>${d.model}</td><td>${d.year}</td><td>${d.date}</td>
-            <td>${d.detailed || ''}</td><td>${d.photoType || ''}</td>
-            <td class="text-gray-500 truncate" style="max-width: 150px;">${d.halfReason || ''}</td>
-            <td class="text-center">${calculateDays(d.originalEntryDate || d.date)}</td>
-            <td class="text-gray-500 truncate" style="max-width: 150px;">${d.comment || ''}</td>
-            <td><div class="flex items-center justify-center space-x-2">
-                <button onclick="openEditModal('${doc.id}', 'vehicles')" class="btn btn-warning">Edit</button>
-                <button onclick="deleteEntry('${doc.id}', 'vehicles')" class="btn btn-danger">Delete</button>
-            </div></td></tr>`;
-    };
+        const inventoryTotalValueEl = document.getElementById('inventoryTotalValue');
+        const undoButton = document.getElementById('undo-button');
 
-    function renderDailySummary() {
-        const today = getTodayDate();
-        document.getElementById('reportDate').textContent = getDisplayDate(today);
-        const dailyEntries = completedData.filter(doc => doc.data.date === today);
-        document.getElementById('dailySummaryContent').classList.toggle('hidden', dailyEntries.length === 0);
-        document.getElementById('noDailyEntries').classList.toggle('hidden', dailyEntries.length > 0);
-        const tbody = document.getElementById('dailySummaryTable');
-        tbody.innerHTML = dailyEntries.map(doc => {
-            const d = doc.data;
-            const toggleButton = (field, value) => `<button onclick="toggleSummaryStatus('${doc.id}', '${field}', ${!!value})" class="btn ${value ? 'btn-success' : 'btn-secondary'}">${value ? 'Yes' : 'No'}</button>`;
-            return `<tr>
-                <td class="font-semibold text-gray-900">${d.stock}</td>
-                <td>${d.make}</td>
-                <td>${d.model}</td>
-                <td>${d.year}</td>
-                <td>${d.detailed}</td>
-                <td class="text-center">${toggleButton('descriptionUploaded', d.descriptionUploaded)}</td>
-                <td class="text-center">${toggleButton('gloveboxDocuments', d.gloveboxDocuments)}</td>
-                <td class="text-center">${toggleButton('recaptured', d.recaptured)}</td>
-                <td>${d.photoType}</td>
-                <td class="text-gray-500 truncate" style="max-width: 150px;">${d.comment || ''}</td>
-                <td class="text-center"><button onclick="openEditModal('${doc.id}', 'vehicles')" class="btn btn-warning">Edit</button></td>
-            </tr>`;
-        }).join('');
-    }
+        const subscriptionType = document.getElementById('subscriptionType');
+        const subscriptionDate = document.getElementById('subscriptionDate');
+        const subscriptionEndingDate = document.getElementById('subscriptionEndingDate');
+        const paymentAmountInput = document.getElementById('paymentAmount');
+        
+        // --- GLOBAL & STATE VARIABLES ---
+        let localCustomers = [];
+        let allCustomers = [];
+        let localExpenses = [];
+        let localInventory = [];
+        let localIncome = [];
+        let alertedCustomers = new Set();
+        let userId = "gL1KLYx6NqdokNaHoY3zhUvoRPo1";
+        let db;
+        let sortColumn = 'subDate';
+        let sortDirection = 'desc';
+        let searchQuery = '';
+        let lastAction = null;
 
-    // ==========================
-    // ACTIONS
-    // ==========================
-    async function addPending() {
-        const formData = {
-            vin: document.getElementById('vin').value.trim().toUpperCase(),
-            stock: document.getElementById('stock').value.trim().toUpperCase(),
-            make: document.getElementById('make').value.trim(),
-            model: document.getElementById('model').value.trim(),
-            year: document.getElementById('year').value,
-            date: document.getElementById('date').value,
-            comment: document.getElementById('comment').value.trim()
+        // --- UNDO FUNCTIONALITY ---
+        const setUndoAction = (undoCallback) => {
+            lastAction = undoCallback;
+            undoButton.disabled = false;
         };
-        if (!formData.stock || !formData.make || !formData.model || !formData.year || !formData.date) return showToast('Please fill all required fields.');
-        if (pendingData.some(item => item.data.stock === formData.stock)) return showToast('Duplicate Stock number in Pending list.');
-        
-        showSpinner();
-        try {
-            await db.collection('pending_vehicles').add(formData);
-            showToast('Vehicle added successfully!');
-            document.querySelector('form').reset();
-            document.getElementById('date').value = getTodayDate();
-        } catch (e) { console.error(e); showToast('Error adding entry.'); } finally { hideSpinner(); }
-    }
-    
-    async function confirmComplete() {
-        const completeData = {
-            detailed: document.getElementById('completeDetailed').value,
-            photoType: document.getElementById('completePhotoType').value,
-            halfReason: document.getElementById('completeHalfReason').value,
-            recaptureNeeded: document.getElementById('recaptureNeeded').value,
-            recaptureComment: document.getElementById('recaptureComment').value.trim()
+
+        undoButton.addEventListener('click', () => {
+            if (typeof lastAction === 'function') {
+                lastAction();
+                lastAction = null;
+                undoButton.disabled = true;
+            }
+        });
+
+        // --- UTILITY FUNCTIONS ---
+        const formatCurrency = (amount) => (amount || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+        const formatDisplayDate = (dateString) => {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            return date.toLocaleDateString('en-US', options);
         };
-        if (!completeData.detailed || !completeData.photoType || !completeData.recaptureNeeded) return showToast('Please fill out all fields.');
-        if (completeData.photoType === 'Half Photos' && !completeData.halfReason.trim()) return showToast('Reason for half photos is required.');
-
-        showSpinner();
-        try {
-            const docRef = db.collection('pending_vehicles').doc(currentEdit.id);
-            const doc = await docRef.get();
-            if (doc.exists) {
-                await db.collection('vehicles').add({
-                    ...doc.data(), ...completeData, originalEntryDate: doc.data().date, date: getTodayDate(),
-                    completedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    recaptured: false, descriptionUploaded: false, gloveboxDocuments: false
-                });
-                await docRef.delete();
-                showToast('Vehicle marked as complete!');
-                closeCompleteModal();
+        const formatDate = (date) => {
+            if (!date) return '';
+            const d = new Date(date);
+            d.setMinutes(d.getMinutes() + d.getTimezoneOffset());
+            return d.toISOString().split('T')[0];
+        };
+        const generateCredentials = (fullName) => {
+            if (!fullName) { return { login: '', password: '' }; }
+            const names = fullName.trim().split(' ').filter(n => n);
+            const firstName = (names[0] || '').toUpperCase();
+            const generatedString = 'M26' + firstName.substring(0, 3);
+            return { login: generatedString, password: generatedString };
+        };
+        const calculateEndDate = () => {
+            const startDate = new Date(subscriptionDate.value);
+            const type = subscriptionType.value;
+            if (!startDate.getTime() || !subscriptionDate.value) return;
+            if (type === 'trial') {
+                startDate.setDate(startDate.getDate() + 2);
+            } else {
+                startDate.setMonth(startDate.getMonth() + parseInt(type, 10));
             }
-        } catch (e) { console.error(e); showToast('Error completing vehicle.'); } finally { hideSpinner(); }
-    }
+            subscriptionEndingDate.value = formatDate(startDate);
+        };
+        const updatePaymentAmount = () => {
+            const subscriptionValue = subscriptionType.value;
+            let amount = 0;
+            if (subscriptionValue === 'trial') { amount = 0; } 
+            else { const months = parseInt(subscriptionValue, 10); amount = months * 10; }
+            paymentAmountInput.value = amount.toFixed(2);
+        };
 
-    function openCompleteModal(id) {
-        currentEdit.id = id;
-        // Reset fields
-        document.getElementById('completeDetailed').value = '';
-        document.getElementById('completePhotoType').value = '';
-        document.getElementById('completeHalfReason').value = '';
-        document.getElementById('recaptureNeeded').value = '';
-        document.getElementById('recaptureComment').value = '';
-        document.getElementById('halfReasonContainer').classList.add('hidden');
-        // Show modal
-        document.getElementById('completeModal').classList.remove('hidden');
-    }
-    
-    function openEditModal(id, collection) {
-        currentEdit = { id, collection };
-        showSpinner();
-        db.collection(collection).doc(id).get().then(doc => {
-            if(doc.exists) {
-                const d = doc.data();
-                Object.keys(d).forEach(key => {
-                    const el = document.getElementById(`edit${key.charAt(0).toUpperCase() + key.slice(1)}`);
-                    if(el) el.value = d[key];
-                });
-                document.getElementById('editModal').classList.remove('hidden');
+        // --- RENDER FUNCTIONS ---
+        const renderRow_ViewMode = (customer) => {
+            const status = customer.daysLeft < 0 ? 'Expired' : `${customer.daysLeft} days`;
+            let renewOptions = '<option value="">Add Sub...</option>';
+            for (let i = 1; i <= 12; i++) {
+                renewOptions += `<option value="${i}">${i} Month${i > 1 ? 's' : ''}</option>`;
             }
-        }).catch(e => { console.error(e); showToast('Error fetching document.'); }).finally(hideSpinner);
-    }
-    
-    async function deleteEntry(id, collection) {
-        if (!confirm('Are you sure you want to permanently delete this entry?')) return;
-        showSpinner();
-        try {
-            await db.collection(collection).doc(id).delete();
-            showToast('Entry deleted!');
-        } catch(e) { console.error(e); showToast('Error deleting entry.'); } finally { hideSpinner(); }
-    }
 
-    async function toggleSummaryStatus(id, field, currentValue) {
-        showSpinner();
-        try {
-            await db.collection('vehicles').doc(id).update({ [field]: !currentValue });
-            showToast('Status updated.');
-        } catch (e) { console.error(e); showToast('Error updating status.'); } finally { hideSpinner(); }
-    }
-
-    // ==========================
-    // INITIALIZATION & LISTENERS
-    // ==========================
-    document.addEventListener('DOMContentLoaded', () => {
-        // Populate year dropdowns
-        const currentYear = new Date().getFullYear();
-        document.querySelectorAll('#year, #editYear').forEach(sel => {
-            for (let y = currentYear + 1; y >= 2000; y--) sel.append(new Option(y, y));
-        });
-        document.getElementById('date').value = getTodayDate();
-        setupSorting();
-
-        // Firebase Listeners
-        db.collection('pending_vehicles').onSnapshot(snapshot => {
-            pendingData = snapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
-            renderTable('pending', 'pendingTable', pendingData, currentPendingPage, PAGE_SIZE, createPendingRow, 'No pending vehicles.');
-        }, err => { console.error(err); showToast('Error loading pending vehicles.'); });
-
-        db.collection('vehicles').onSnapshot(snapshot => {
-            completedData = snapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
-            document.getElementById('searchCompleted').dispatchEvent(new Event('input'));
-            renderDailySummary();
-        }, err => { console.error(err); showToast('Error loading completed vehicles.'); });
+            return `
+                <td>${customer.name}</td><td>${customer.phone || '-'}</td><td>${customer.login}</td>
+                <td>${formatDisplayDate(customer.subDate)}</td><td>${formatDisplayDate(customer.endDate)}</td>
+                <td>${status}</td>
+                <td><select class="renew-select" data-id="${customer.id}">${renewOptions}</select></td>
+                <td class="actions-cell">
+                    <button class="btn btn-edit" data-id="${customer.id}">Edit</button>
+                    <button class="btn btn-danger btn-delete-customer" data-id="${customer.id}">Delete</button>
+                </td>`;
+        };
+        const renderRow_EditMode = (customer) => {
+            return `
+                <td><input type="text" data-prop="name" value="${customer.name || ''}"></td>
+                <td><input type="tel" data-prop="phone" value="${customer.phone || ''}"></td>
+                <td><input type="text" data-prop="login" value="${customer.login || ''}" readonly></td>
+                <td><input type="date" data-prop="subDate" value="${formatDate(customer.subDate)}"></td>
+                <td><input type="date" data-prop="endDate" value="${formatDate(customer.endDate)}"></td>
+                <td>...</td>
+                <td>-</td>
+                <td class="actions-cell">
+                    <button class="btn btn-save btn-save-customer" data-id="${customer.id}">Save</button>
+                    <button class="btn btn-secondary btn-cancel-customer" data-id="${customer.id}">Cancel</button>
+                </td>`;
+        };
         
-        // Event Listeners
-        document.getElementById('searchCompleted').addEventListener('input', e => {
-            const term = e.target.value.toLowerCase();
-            filteredCompletedData = completedData.filter(item => Object.values(item.data).some(val => String(val).toLowerCase().includes(term)));
-            renderTable('completed', 'completedTable', filteredCompletedData, 0, PAGE_SIZE, createCompletedRow, 'No results found.');
-        });
-        
-        document.getElementById('saveEditBtn').addEventListener('click', async () => {
-            const data = {
-                vin: document.getElementById('editVin').value, stock: document.getElementById('editStock').value,
-                make: document.getElementById('editMake').value, model: document.getElementById('editModel').value,
-                year: document.getElementById('editYear').value, date: document.getElementById('editDate').value,
-                detailed: document.getElementById('editDetailed').value, photoType: document.getElementById('editPhotoType').value,
-                comment: document.getElementById('editComment').value, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            };
-            showSpinner();
-            try {
-                await db.collection(currentEdit.collection).doc(currentEdit.id).update(data);
-                showToast('Changes saved!');
-                closeModal();
-            } catch (e) { console.error(e); showToast('Error saving changes.'); } finally { hideSpinner(); }
-        });
-        
-        document.getElementById('completePhotoType').addEventListener('change', e => {
-            document.getElementById('halfReasonContainer').classList.toggle('hidden', e.target.value !== 'Half Photos');
-        });
+        const renderInventoryRow_View = (item) => {
+            const totalValue = (Number(item.quantity) || 0) * (Number(item.purchaseCost) || 0);
+            const profitPerItem = (Number(item.saleValue) || 0) - (Number(item.purchaseCost) || 0);
+            const totalProfit = profitPerItem * (Number(item.quantity) || 0);
 
-        document.getElementById('pendingPrevBtn').onclick = () => renderTable('pending', 'pendingTable', pendingData, currentPendingPage - 1, PAGE_SIZE, createPendingRow, 'No pending vehicles.');
-        document.getElementById('pendingNextBtn').onclick = () => renderTable('pending', 'pendingTable', pendingData, currentPendingPage + 1, PAGE_SIZE, createPendingRow, 'No pending vehicles.');
-        document.getElementById('completedPrevBtn').onclick = () => renderTable('completed', 'completedTable', filteredCompletedData, currentCompletedPage - 1, PAGE_SIZE, createCompletedRow, 'No completed vehicles.');
-        document.getElementById('completedNextBtn').onclick = () => renderTable('completed', 'completedTable', filteredCompletedData, currentCompletedPage + 1, PAGE_SIZE, createCompletedRow, 'No completed vehicles.');
-    });
+            return `
+                <td>${item.name}</td>
+                <td>${item.category}</td>
+                <td>${item.quantity}</td>
+                <td>${formatCurrency(item.saleValue)}</td>
+                <td>${formatCurrency(totalValue)}</td>
+                <td>${formatCurrency(profitPerItem)}</td>
+                <td>${formatCurrency(totalProfit)}</td>
+                <td class="actions-cell">
+                    <button class="btn btn-sold" data-id="${item.id}">Sold</button>
+                    <button class="btn btn-edit btn-edit-inventory" data-id="${item.id}">Edit</button>
+                    <button class="btn btn-danger btn-delete-inventory" data-id="${item.id}">Delete</button>
+                </td>
+            `;
+        }
 
-    function setupSorting() {
-        document.querySelectorAll('th.sortable').forEach(th => {
-            th.addEventListener('click', () => {
-                const column = th.dataset.col;
-                const tableKey = th.closest('table').querySelector('tbody').id.includes('pending') ? 'pending' : 'completed';
-                
-                if (sortState[tableKey].col === column) {
-                    sortState[tableKey].dir = sortState[tableKey].dir === 'asc' ? 'desc' : 'asc';
-                } else {
-                    sortState[tableKey].col = column;
-                    sortState[tableKey].dir = 'asc';
+        const renderInventoryRow_Edit = (item) => `
+            <td><input type="text" data-prop="name" value="${item.name}"></td>
+            <td>
+                <select data-prop="category">
+                    <option ${item.category === 'Box' ? 'selected' : ''}>Box</option>
+                    <option ${item.category === 'Remote' ? 'selected' : ''}>Remote</option>
+                    <option ${item.category === 'Accessory' ? 'selected' : ''}>Accessory</option>
+                    <option ${item.category === 'Other' ? 'selected' : ''}>Other</option>
+                </select>
+            </td>
+            <td><input type="number" data-prop="quantity" value="${item.quantity}"></td>
+            <td><input type="number" data-prop="saleValue" value="${item.saleValue}"></td>
+            <td>...</td>
+            <td>...</td>
+            <td>...</td>
+            <td class="actions-cell">
+                <button class="btn btn-save btn-save-inventory" data-id="${item.id}">Save</button>
+                <button class="btn btn-secondary btn-cancel-inventory" data-id="${item.id}">Cancel</button>
+            </td>
+        `;
+
+        const displayCustomers = () => {
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            const processedCustomers = localCustomers.map(c => {
+                const endDate = new Date(c.endDate);
+                const daysLeft = Math.ceil((endDate - today) / (1000 * 3600 * 24));
+                return { ...c, daysLeft };
+            });
+            const lowerCaseQuery = searchQuery.toLowerCase();
+            const filteredCustomers = !searchQuery ? processedCustomers : processedCustomers.filter(c =>
+                c.name?.toLowerCase().includes(lowerCaseQuery) ||
+                c.phone?.includes(lowerCaseQuery) ||
+                c.login?.toLowerCase().includes(lowerCaseQuery)
+            );
+            filteredCustomers.sort((a, b) => {
+                const valA = a[sortColumn]; const valB = b[sortColumn];
+                let comparison = 0;
+                if (valA > valB) { comparison = 1; } else if (valA < valB) { comparison = -1; }
+                return sortDirection === 'desc' ? -comparison : comparison;
+            });
+            customerTableBody.innerHTML = '';
+            filteredCustomers.forEach(customer => {
+                const row = document.createElement('tr'); row.dataset.id = customer.id;
+                if (customer.daysLeft < 0) { row.classList.add('row-expired'); } 
+                else if (customer.daysLeft < 5) { row.classList.add('row-expires-soon'); }
+                row.innerHTML = renderRow_ViewMode(customer);
+                customerTableBody.appendChild(row);
+            });
+            customerTableHeader.querySelectorAll('th[data-sort]').forEach(th => {
+                th.classList.remove('sort-asc', 'sort-desc');
+                if (th.dataset.sort === sortColumn) { th.classList.add(`sort-${sortDirection}`); }
+            });
+        };
+
+        const renderExpensesTable = () => {
+            expenseTableBody.innerHTML = '';
+            [...localExpenses].sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(expense => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${expense.description}</td><td>${formatCurrency(expense.amount)}</td>
+                    <td>${formatDisplayDate(expense.date)}</td>
+                    <td><button class="btn btn-danger btn-delete-expense" data-id="${expense.id}">Delete</button></td>`;
+                expenseTableBody.appendChild(row);
+            });
+        };
+        
+        const renderInventoryTable = () => {
+            inventoryTableBody.innerHTML = '';
+            localInventory.forEach(item => {
+                const row = document.createElement('tr');
+                row.dataset.id = item.id;
+                row.innerHTML = renderInventoryRow_View(item);
+                inventoryTableBody.appendChild(row);
+            });
+        };
+
+        const updateMonthlyReport = () => {
+            if(!reportMonthEl.value) return;
+            const [year, month] = reportMonthEl.value.split('-').map(Number);
+            const selectedMonth = month - 1;
+
+            const subscriptionIncome = allCustomers.reduce((sum, c) => {
+                const subDate = new Date(c.subDate);
+                if (c.status === 'Paid' && subDate.getFullYear() === year && subDate.getMonth() === selectedMonth) {
+                    return sum + (c.amount || 0);
                 }
+                return sum;
+            }, 0);
+            
+            const salesIncome = localIncome.reduce((sum, i) => {
+                const saleDate = new Date(i.date);
+                if(saleDate.getFullYear() === year && saleDate.getMonth() === selectedMonth) {
+                    return sum + (i.totalIncome || 0);
+                }
+                return sum;
+            }, 0);
+            
+            const totalIncome = subscriptionIncome + salesIncome;
 
-                document.querySelectorAll(`th.sortable`).forEach(h => h.classList.remove('sorted-asc', 'sorted-desc'));
-                th.classList.add(sortState[tableKey].dir === 'asc' ? 'sorted-asc' : 'sorted-desc');
-                
-                if (tableKey === 'pending') {
-                    renderTable('pending', 'pendingTable', pendingData, currentPendingPage, PAGE_SIZE, createPendingRow, 'No pending vehicles.');
-                } else {
-                    renderTable('completed', 'completedTable', filteredCompletedData, currentCompletedPage, PAGE_SIZE, createCompletedRow, 'No completed vehicles.');
+            const monthlyExpenses = localExpenses.reduce((sum, e) => {
+                const expenseDate = new Date(e.date);
+                if (expenseDate.getFullYear() === year && expenseDate.getMonth() === selectedMonth) {
+                    return sum + (e.amount || 0);
+                }
+                return sum;
+            }, 0);
+
+            const monthlyProfit = totalIncome - monthlyExpenses;
+
+            reportIncomeEl.textContent = formatCurrency(totalIncome);
+            reportExpensesEl.textContent = `-${formatCurrency(monthlyExpenses)}`;
+            reportProfitEl.textContent = formatCurrency(monthlyProfit);
+        };
+
+        const updateSummary = () => {
+            let activeCount = 0; let expiredCount = 0;
+            const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+            localCustomers.forEach(c => {
+                new Date(c.endDate) < todayStart ? expiredCount++ : activeCount++;
+            });
+            activeUsersEl.textContent = activeCount;
+            expiredUsersEl.textContent = expiredCount;
+        };
+
+        const updateInventorySummary = () => {
+            const totalValue = localInventory.reduce((sum, item) => {
+                const quantity = Number(item.quantity) || 0;
+                const cost = Number(item.purchaseCost) || 0;
+                return sum + (quantity * cost);
+            }, 0);
+            inventoryTotalValueEl.textContent = formatCurrency(totalValue);
+        };
+        
+        const checkOverduePayments = (customers) => {
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            customers.forEach(customer => {
+                if (customer.status === 'Unpaid' && !alertedCustomers.has(customer.id)) {
+                    const subDate = new Date(customer.subDate);
+                    const daysSinceSub = Math.floor((today - subDate) / (1000 * 3600 * 24));
+                    if (daysSinceSub >= 2) {
+                        alert(`Payment Alert: Payment for customer '${customer.name}' has been pending for 2 or more days.`);
+                        alertedCustomers.add(customer.id);
+                    }
                 }
             });
-        });
-    }
-</script>
+        };
+
+        function setupEventListeners() {
+            navTabsContainer.addEventListener('click', (e) => {
+                if (e.target.matches('.nav-tab')) {
+                    navTabsContainer.querySelector('.active').classList.remove('active');
+                    e.target.classList.add('active');
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    document.getElementById(`${e.target.dataset.tab}-tab-content`).classList.add('active');
+                }
+            });
+            
+            customerForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const formData = new FormData(customerForm);
+                addDoc(collection(db, `users/${userId}/customers`), {
+                    name: formData.get('customerName'), phone: formData.get('phone'), login: formData.get('login'),
+                    password: formData.get('password'), macAddress: formData.get('macAddress'), subDate: formData.get('subscriptionDate'),
+                    endDate: formData.get('subscriptionEndingDate'), status: formData.get('paymentStatus'),
+                    amount: parseFloat(formData.get('paymentAmount')), archived: false
+                });
+                customerForm.reset();
+                document.getElementById('subscriptionDate').value = new Date().toISOString().split('T')[0];
+                updatePaymentAmount();
+                calculateEndDate();
+            });
+            customerForm.addEventListener('input', (e) => {
+                if(e.target.id === 'customerName') {
+                    const { login, password } = generateCredentials(e.target.value);
+                    document.getElementById('login').value = login;
+                    document.getElementById('password').value = password;
+                }
+            });
+
+            expenseForm.addEventListener('submit', e => {
+                e.preventDefault();
+                addDoc(collection(db, `users/${userId}/expenses`), {
+                    description: e.target.expenseType.value,
+                    amount: parseFloat(e.target.expenseAmount.value),
+                    date: e.target.expenseDate.value
+                });
+                expenseForm.reset();
+                document.getElementById('expenseDate').value = new Date().toISOString().split('T')[0];
+            });
+            
+            inventoryForm.addEventListener('submit', e => {
+                e.preventDefault();
+                const newItem = {
+                    name: e.target.itemName.value, category: e.target.itemCategory.value,
+                    quantity: parseInt(e.target.itemQuantity.value, 10), purchaseMethod: e.target.purchaseMethod.value,
+                    purchaseCost: parseFloat(e.target.itemCost.value), saleValue: parseFloat(e.target.itemSaleValue.value)
+                };
+                if (isNaN(newItem.quantity) || isNaN(newItem.purchaseCost) || isNaN(newItem.saleValue)) {
+                    alert("Please enter valid numbers for quantity, cost, and sale value.");
+                    return;
+                }
+                addDoc(collection(db, `users/${userId}/inventory`), newItem);
+                inventoryForm.reset();
+            });
+            
+            customerTableBody.addEventListener('click', e => {
+                const target = e.target; const docId = target.dataset.id; if(!docId) return;
+                
+                if (target.classList.contains('btn-edit')) {
+                    target.closest('tr').innerHTML = renderRow_EditMode(localCustomers.find(c => c.id === docId));
+                } else if (target.classList.contains('btn-save-customer')) {
+                    const row = target.closest('tr');
+                    updateDoc(doc(db, `users/${userId}/customers`, docId), {
+                        name: row.querySelector('[data-prop="name"]').value, phone: row.querySelector('[data-prop="phone"]').value,
+                        subDate: row.querySelector('[data-prop="subDate"]').value, endDate: row.querySelector('[data-prop="endDate"]').value
+                    });
+                } else if (target.classList.contains('btn-cancel-customer')) {
+                    displayCustomers();
+                } else if (target.classList.contains('btn-delete-customer')) {
+                    const customer = allCustomers.find(c => c.id === docId);
+                    const isExpired = new Date(customer.endDate) < new Date();
+                    if (isExpired) {
+                        updateDoc(doc(db, `users/${userId}/customers`, docId), { archived: true });
+                        setUndoAction(() => { updateDoc(doc(db, `users/${userId}/customers`, docId), { archived: false }); });
+                    } else {
+                        if (confirm("PERMANENTLY DELETE this active user? This action cannot be undone.")) {
+                            deleteDoc(doc(db, `users/${userId}/customers`, docId));
+                            setUndoAction(() => { setDoc(doc(db, `users/${userId}/customers`, docId), customer); });
+                        }
+                    }
+                }
+            });
+
+            customerTableBody.addEventListener('change', e => {
+                const target = e.target;
+                if (target.classList.contains('renew-select')) {
+                    const docId = target.dataset.id;
+                    const months = parseInt(target.value, 10);
+                    target.value = "";
+                    if (!docId || isNaN(months)) return;
+
+                    const customer = allCustomers.find(c => c.id === docId);
+                    const originalData = { ...customer };
+                    const amount = months * 10;
+                    const newSubDate = new Date();
+                    const newEndDate = new Date(newSubDate); newEndDate.setMonth(newEndDate.getMonth() + months);
+
+                    updateDoc(doc(db, `users/${userId}/customers`, docId), {
+                        subDate: formatDate(newSubDate), endDate: formatDate(newEndDate),
+                        amount: amount, status: 'Paid', archived: false
+                    });
+                    setUndoAction(() => { updateDoc(doc(db, `users/${userId}/customers`, docId), originalData); });
+                }
+            });
+            
+            inventoryTableBody.addEventListener('click', e => {
+                const target = e.target; const docId = target.dataset.id; if(!docId) return;
+                
+                if(target.classList.contains('btn-edit-inventory')) {
+                     target.closest('tr').innerHTML = renderInventoryRow_Edit(localInventory.find(i => i.id === docId));
+                } else if (target.classList.contains('btn-save-inventory')) {
+                    const row = target.closest('tr');
+                    updateDoc(doc(db, `users/${userId}/inventory`, docId), {
+                        name: row.querySelector('[data-prop="name"]').value, category: row.querySelector('[data-prop="category"]').value,
+                        quantity: parseInt(row.querySelector('[data-prop="quantity"]').value, 10),
+                        purchaseCost: parseFloat(row.querySelector('[data-prop="purchaseCost"]').value),
+                        saleValue: parseFloat(row.querySelector('[data-prop="saleValue"]').value),
+                        purchaseMethod: row.querySelector('[data-prop="purchaseMethod"]').value
+                    });
+                } else if (target.classList.contains('btn-cancel-inventory')) {
+                    renderInventoryTable();
+                } else if (target.classList.contains('btn-sold')) {
+                    const item = localInventory.find(i => i.id === docId);
+                    const quantitySold = parseInt(prompt(`How many "${item.name}" units were sold? (Available: ${item.quantity})`), 10);
+                    if(isNaN(quantitySold) || quantitySold <= 0 || quantitySold > item.quantity) {
+                        alert("Invalid quantity."); return;
+                    }
+                    const finalSalePrice = parseFloat(prompt(`Confirm sale price per item:`, item.saleValue));
+                     if(isNaN(finalSalePrice) || finalSalePrice < 0) {
+                        alert("Invalid sale price."); return;
+                    }
+
+                    const batch = writeBatch(db);
+                    const newQuantity = item.quantity - quantitySold;
+                    batch.update(doc(db, `users/${userId}/inventory`, docId), { quantity: newQuantity });
+                    const incomeDocRef = doc(collection(db, `users/${userId}/income`));
+                    batch.set(incomeDocRef, {
+                        date: new Date().toISOString(), source: 'inventory',
+                        itemId: docId, itemName: item.name, quantitySold,
+                        salePrice: finalSalePrice, totalIncome: finalSalePrice * quantitySold,
+                        profit: (finalSalePrice - item.purchaseCost) * quantitySold
+                    });
+                    batch.commit();
+                    
+                    setUndoAction(() => {
+                        const undoBatch = writeBatch(db);
+                        undoBatch.update(doc(db, `users/${userId}/inventory`, docId), { quantity: item.quantity });
+                        undoBatch.delete(incomeDocRef);
+                        undoBatch.commit();
+                    });
+                }
+            });
+
+            customerSearchInput.addEventListener('input', e => { searchQuery = e.target.value; displayCustomers(); });
+            customerTableHeader.addEventListener('click', e => {
+                const newSortColumn = e.target.dataset.sort; if (!newSortColumn) return;
+                if (sortColumn === newSortColumn) { sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'; } 
+                else { sortColumn = newSortColumn; sortDirection = 'desc'; }
+                displayCustomers();
+            });
+            reportMonthEl.addEventListener('change', updateMonthlyReport);
+            
+            const createDeleteListener = (container, collectionName) => {
+                container.addEventListener('click', e => {
+                    const button = e.target.closest(`.btn-delete-${collectionName}`);
+                    if (button) {
+                        const docId = button.dataset.id;
+                        const collectionRef = collection(db, `users/${userId}/${collectionName}`);
+                        let itemToDelete;
+                        if(collectionName === 'expense'){ itemToDelete = localExpenses.find(item => item.id === docId); }
+                        else if (collectionName === 'inventory'){ itemToDelete = localInventory.find(item => item.id === docId); }
+                        
+                        if(itemToDelete) {
+                             deleteDoc(doc(collectionRef, docId));
+                             setUndoAction(() => { setDoc(doc(collectionRef, docId), itemToDelete) });
+                        }
+                    }
+                });
+            };
+            createDeleteListener(expenseTableBody, 'expense');
+            createDeleteListener(inventoryTableBody, 'inventory');
+
+            subscriptionType.addEventListener('change', () => { calculateEndDate(); updatePaymentAmount(); });
+            subscriptionDate.addEventListener('change', calculateEndDate);
+        }
+
+        function startApp() {
+            const firebaseConfig = {
+                apiKey: "AIzaSyD2rTmmE1S7r3HWEBfPyCy4z3bm0laf_zY",
+                authDomain: "media-26-iptv-web-app.firebaseapp.com",
+                projectId: "media-26-iptv-web-app",
+                storageBucket: "media-26-iptv-web-app.appspot.com",
+                messagingSenderId: "275790205517",
+                appId: "1:275790205517:web:c93d045a9c3a5ce0ef0204"
+            };
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            setupEventListeners();
+            
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = (today.getMonth() + 1).toString().padStart(2, '0');
+            reportMonthEl.value = `${year}-${month}`;
+
+            onSnapshot(collection(db, `users/${userId}/customers`), (snapshot) => {
+                allCustomers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                localCustomers = allCustomers.filter(c => !c.archived);
+                checkOverduePayments(localCustomers);
+                displayCustomers(); updateSummary(); updateMonthlyReport();
+            });
+            onSnapshot(collection(db, `users/${userId}/expenses`), (snapshot) => {
+                localExpenses = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderExpensesTable(); updateMonthlyReport();
+            });
+            onSnapshot(collection(db, `users/${userId}/inventory`), (snapshot) => {
+                localInventory = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderInventoryTable(); updateInventorySummary();
+            });
+             onSnapshot(collection(db, `users/${userId}/income`), (snapshot) => {
+                localIncome = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                updateMonthlyReport();
+            });
+
+            document.getElementById('subscriptionDate').value = today.toISOString().split('T')[0];
+            document.getElementById('expenseDate').value = today.toISOString().split('T')[0];
+            calculateEndDate();
+            updatePaymentAmount();
+        }
+        
+        startApp();
+    </script>
 </body>
 </html>
