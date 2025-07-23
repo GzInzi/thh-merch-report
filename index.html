@@ -74,7 +74,7 @@
             border: 1px solid var(--c-border); /* Outer border */
         }
         .custom-table th {
-            padding: 0.75rem 1rem; /* Reduced padding */
+            padding: 0.6rem 0.75rem;
             text-align: left;
             font-size: 0.75rem;
             font-weight: 600;
@@ -84,8 +84,8 @@
             border: 1px solid var(--c-border);
         }
         .custom-table td {
-            padding: 0.6rem 1rem; /* Reduced padding */
-            font-size: 0.875rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.8125rem; /* 13px */
             border: 1px solid var(--c-border);
         }
         /* Zebra-striping */
@@ -99,6 +99,12 @@
         .sortable:hover { background-color: #f1f5f9; cursor: pointer; }
         .sorted-asc::after { content: " ▲"; }
         .sorted-desc::after { content: " ▼"; }
+        
+        .comment-cell {
+            white-space: pre-wrap;
+            word-break: break-word;
+            max-width: 250px;
+        }
 
         /* Forms */
         .form-input {
@@ -176,6 +182,7 @@
                             <th data-col="vinOrStock" class="sortable">Stock No.</th>
                             <th data-col="make" class="sortable">Make</th>
                             <th data-col="model" class="sortable">Model</th>
+                            <th data-col="trim" class="sortable">Trim</th>
                             <th data-col="year" class="sortable">Year</th>
                             <th data-col="date" class="sortable">Date</th>
                             <th data-col="days" class="sortable text-center">Days</th>
@@ -206,12 +213,14 @@
                             <th data-col="vinOrStock" class="sortable">Stock No.</th>
                             <th data-col="make" class="sortable">Make</th>
                             <th data-col="model" class="sortable">Model</th>
+                            <th data-col="trim" class="sortable">Trim</th>
                             <th data-col="year" class="sortable">Year</th>
                             <th data-col="date" class="sortable">Date</th>
-                            <th data-col="detailed" class="sortable">Detailed</th>
+                            <th data-col="detailed" class="sortable text-center">Detailed</th>
                             <th data-col="photoType" class="sortable">Photos</th>
                             <th data-col="halfReason" class="sortable">Half Reason</th>
                             <th data-col="days" class="sortable text-center">Days</th>
+                            <th>Description</th>
                             <th>Comment</th>
                             <th class="text-center">Actions</th>
                         </tr>
@@ -238,9 +247,10 @@
                                 <th>Stock</th>
                                 <th>Make</th>
                                 <th>Model</th>
+                                <th>Trim</th>
                                 <th>Year</th>
-                                <th>Detailed</th>
-                                <th class="text-center">Description</th>
+                                <th class="text-center">Detailed</th>
+                                <th>Description</th>
                                 <th class="text-center">Glovebox</th>
                                 <th class="text-center">Recaptured</th>
                                 <th>Photos</th>
@@ -253,6 +263,11 @@
                 </div>
             </div>
             <div id="noDailyEntries" class="p-6 text-center text-gray-500 hidden">No vehicles completed today.</div>
+            <div id="dailySummaryPagination" class="p-4 flex justify-center items-center space-x-4 bg-slate-50 border-t border-slate-200 hidden">
+                <button id="dailySummaryPrevBtn" class="btn btn-secondary">Previous</button>
+                <span id="dailySummaryPageInfo" class="text-sm text-gray-600"></span>
+                <button id="dailySummaryNextBtn" class="btn btn-secondary">Next</button>
+            </div>
         </section>
     </main>
     
@@ -362,10 +377,9 @@
     </div>
 
     <!-- Edit Modal -->
-    <div id="editModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center hidden z-40 p-4">
-        <div class="modal-card w-full max-w-lg p-6">
+    <div id="editModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center hidden z-40 p-4 overflow-y-auto">
+        <div class="modal-card w-full max-w-lg p-6 my-8">
              <h3 class="text-lg font-semibold mb-4">Edit Vehicle Entry</h3>
-             <input type="hidden" id="editId" /><input type="hidden" id="editCollection" />
              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <input id="editVinOrStock" placeholder="VIN or Stock No." class="form-input" />
                 <input id="editMake" placeholder="Make" class="form-input" />
@@ -376,7 +390,10 @@
                 <select id="editDetailed" class="form-input hidden"><option value="">Detailed?</option><option>Yes</option><option>No</option></select>
                 <select id="editPhotoType" class="form-input hidden"><option value="">Photos?</option><option value="FP">FP</option><option value="HP">HP</option></select>
              </div>
-             <textarea id="editComment" rows="3" placeholder="Comment" class="form-input w-full"></textarea>
+             <div class="space-y-4">
+                <textarea id="editComment" rows="3" placeholder="Comment" class="form-input w-full"></textarea>
+                <textarea id="editGeneratedDescription" rows="6" placeholder="AI Generated Description" class="form-input w-full"></textarea>
+             </div>
              <div class="mt-6 flex justify-end space-x-3">
                 <button type="button" onclick="closeModal()" class="btn btn-secondary">Cancel</button>
                 <button type="button" id="saveEditBtn" class="btn btn-primary">Save Changes</button>
@@ -415,8 +432,10 @@
     // STATE & CONSTANTS
     // ==========================
     let pendingData = [], completedData = [], filteredCompletedData = [];
-    let currentPendingPage = 0, currentCompletedPage = 0;
-    const PAGE_SIZE = 15;
+    let currentPendingPage = 0, currentCompletedPage = 0, currentDailySummaryPage = 0;
+    const PENDING_PAGE_SIZE = 15;
+    const COMPLETED_PAGE_SIZE = 10;
+    const DAILY_SUMMARY_PAGE_SIZE = 10;
     const sortState = {
         pending: { col: 'date', dir: 'desc' },
         completed: { col: 'completedAt', dir: 'desc' }
@@ -454,8 +473,9 @@
         document.getElementById('confirmModal').classList.remove('hidden');
     }
 
-    function openViewDescriptionModal(text) {
-        document.getElementById('fullDescriptionText').textContent = text || "No description available.";
+    function openViewDescriptionModal(title, text) {
+        document.getElementById('fullDescriptionText').textContent = text || "No content available.";
+        document.getElementById('viewDescriptionModal').querySelector('h3').textContent = title;
         document.getElementById('viewDescriptionModal').classList.remove('hidden');
     }
 
@@ -507,7 +527,7 @@
         if (key === 'pending') currentPendingPage = page; else currentCompletedPage = page;
         
         const pageSlice = sorted.slice(page * size, (page * size) + size);
-        tbody.innerHTML = pageSlice.length ? pageSlice.map(rowFunc).join('') : `<tr><td colspan="12" class="text-center py-10 text-gray-500">${emptyMsg}</td></tr>`;
+        tbody.innerHTML = pageSlice.length ? pageSlice.map(rowFunc).join('') : `<tr><td colspan="13" class="text-center py-10 text-gray-500">${emptyMsg}</td></tr>`;
         
         document.getElementById(`${key}PageInfo`).textContent = `Page ${page + 1} of ${totalPages}`;
         document.getElementById(`${key}PrevBtn`).disabled = page === 0;
@@ -531,16 +551,18 @@
         }
         
         const escapedDescriptionText = (descriptionText || '').replace(/`/g, '\\`');
+        const escapedComment = (d.comment || '').replace(/`/g, '\\`');
 
         return `<tr>
             <td class="font-semibold text-gray-900">${d.vinOrStock || d.stock || ''}</td>
             <td>${d.make}</td>
             <td>${d.model}</td>
+            <td>${d.trim || ''}</td>
             <td>${d.year}</td>
             <td>${d.date}</td>
             <td class="text-center"><span class="px-2 py-0.5 text-xs rounded-full font-medium ${badgeStyle}">${days}</span></td>
-            <td class="text-gray-500 truncate cursor-pointer" style="max-width: 250px;" ondblclick="openViewDescriptionModal(\`${escapedDescriptionText}\`)" title="Double-click to view full description">${descriptionText.split('\n')[0]}</td>
-            <td class="text-gray-500 truncate" style="max-width: 150px;">${d.comment || ''}</td>
+            <td class="text-gray-500 truncate cursor-pointer" ondblclick="openViewDescriptionModal('Description', \`${escapedDescriptionText}\`)" title="Double-click to view full text">${descriptionText.split('\n')[0]}</td>
+            <td class="comment-cell truncate cursor-pointer" ondblclick="openViewDescriptionModal('Comment', \`${escapedComment}\`)" title="Double-click to view full text">${d.comment || ''}</td>
             <td><div class="flex items-center justify-center space-x-1">
                 <button onclick="openDescriptionModal('${doc.id}')" class="btn btn-secondary text-xs">Features</button>
                 <button onclick="openAIDescriptionModal('${doc.id}')" class="btn btn-primary text-xs">AI Desc</button>
@@ -553,42 +575,98 @@
     const createCompletedRow = doc => {
         const d = doc.data;
         const stockClass = (d.photoType === 'HP' && calculateDays(d.date) > 7) ? (calculateDays(d.date) > 14 ? 'bg-red-100' : 'bg-amber-100') : '';
+        const detailedIcon = d.detailed === 'Yes' 
+            ? `<span class="text-green-500 font-bold text-lg">✓</span>` 
+            : `<span class="text-red-500 font-bold text-lg">✗</span>`;
+        const descriptionText = d.generatedDescription || '';
+        const escapedDescriptionText = (descriptionText || '').replace(/`/g, '\\`');
+        const escapedComment = (d.comment || '').replace(/`/g, '\\`');
+        const escapedHalfReason = (d.halfReason || '').replace(/`/g, '\\`');
+
         return `<tr class="${d.isSold ? 'opacity-50' : ''}">
-            <td class="font-semibold text-gray-900 ${stockClass}">${d.vinOrStock || d.stock || ''}</td><td>${d.make}</td><td>${d.model}</td><td>${d.year}</td><td>${d.date}</td>
-            <td>${d.detailed || ''}</td><td>${d.photoType || ''}</td>
-            <td class="text-gray-500 truncate" style="max-width: 150px;">${d.halfReason || ''}</td>
+            <td class="font-semibold text-gray-900 ${stockClass}">${d.vinOrStock || d.stock || ''}</td>
+            <td>${d.make}</td>
+            <td>${d.model}</td>
+            <td>${d.trim || ''}</td>
+            <td>${d.year}</td>
+            <td>${d.date}</td>
+            <td class="text-center">${detailedIcon}</td>
+            <td>${d.photoType || ''}</td>
+            <td class="text-gray-500 truncate cursor-pointer" ondblclick="openViewDescriptionModal('Half Photo Reason', \`${escapedHalfReason}\`)" title="Double-click to view full text">${d.halfReason || ''}</td>
             <td class="text-center">${calculateDays(d.originalEntryDate || d.date)}</td>
-            <td class="text-gray-500 truncate" style="max-width: 150px;">${d.comment || ''}</td>
-            <td><div class="flex items-center justify-center space-x-2">
-                <button onclick="openEditModal('${doc.id}', 'vehicles')" class="btn btn-warning">Edit</button>
-                <button onclick="deleteEntry('${doc.id}', 'vehicles')" class="btn btn-danger">Delete</button>
+            <td class="text-gray-500 truncate cursor-pointer" ondblclick="openViewDescriptionModal('Description', \`${escapedDescriptionText}\`)" title="Double-click to view full text">${descriptionText.split('\n')[0]}</td>
+            <td class="comment-cell truncate cursor-pointer" ondblclick="openViewDescriptionModal('Comment', \`${escapedComment}\`)" title="Double-click to view full text">${d.comment || ''}</td>
+            <td><div class="flex items-center justify-center space-x-1">
+                <button onclick="toggleSoldStatus('${doc.id}', ${!!d.isSold})" class="btn ${d.isSold ? 'btn-secondary' : 'btn-success'} text-xs">Sold</button>
+                <button onclick="openEditModal('${doc.id}', 'vehicles')" class="btn btn-warning text-xs">Edit</button>
+                <button onclick="deleteEntry('${doc.id}', 'vehicles')" class="btn btn-danger text-xs">Del</button>
             </div></td></tr>`;
     };
 
-    function renderDailySummary() {
+    function renderDailySummary(page = 0) {
         const today = getTodayDate();
         document.getElementById('reportDate').textContent = getDisplayDate(today);
-        const dailyEntries = completedData.filter(doc => doc.data.date === today);
-        document.getElementById('dailySummaryContent').classList.toggle('hidden', dailyEntries.length === 0);
-        document.getElementById('noDailyEntries').classList.toggle('hidden', dailyEntries.length > 0);
+        
+        let dailyEntries = completedData.filter(doc => doc.data.date === today);
+        dailyEntries.sort((a,b) => (b.data.completedAt?.toMillis() || 0) - (a.data.completedAt?.toMillis() || 0));
+
+        const paginationContainer = document.getElementById('dailySummaryPagination');
+        const noEntriesMsg = document.getElementById('noDailyEntries');
+        const contentContainer = document.getElementById('dailySummaryContent');
+        
+        if (dailyEntries.length === 0) {
+            contentContainer.classList.add('hidden');
+            noEntriesMsg.classList.remove('hidden');
+            paginationContainer.classList.add('hidden');
+            return;
+        }
+
+        contentContainer.classList.remove('hidden');
+        noEntriesMsg.classList.add('hidden');
+
+        const totalItems = dailyEntries.length;
+        const totalPages = Math.ceil(totalItems / DAILY_SUMMARY_PAGE_SIZE) || 1;
+        page = Math.max(0, Math.min(page, totalPages - 1));
+        currentDailySummaryPage = page;
+        
+        const pageSlice = dailyEntries.slice(page * DAILY_SUMMARY_PAGE_SIZE, (page * DAILY_SUMMARY_PAGE_SIZE) + DAILY_SUMMARY_PAGE_SIZE);
+        
         const tbody = document.getElementById('dailySummaryTable');
-        tbody.innerHTML = dailyEntries.map(doc => {
+        tbody.innerHTML = pageSlice.map(doc => {
             const d = doc.data;
-            const toggleButton = (field, value) => `<button onclick="toggleSummaryStatus('${doc.id}', '${field}', ${!!value})" class="btn ${value ? 'btn-success' : 'btn-secondary'}">${value ? 'Yes' : 'No'}</button>`;
+            const toggleButton = (field, value) => `<button onclick="toggleSummaryStatus('${doc.id}', '${field}', ${!!value})" class="btn ${value ? 'btn-success' : 'btn-secondary'} text-xs">${value ? 'Yes' : 'No'}</button>`;
+            const detailedIcon = d.detailed === 'Yes' 
+                ? `<span class="text-green-500 font-bold text-lg">✓</span>` 
+                : `<span class="text-red-500 font-bold text-lg">✗</span>`;
+            
+            const descriptionText = d.generatedDescription || '';
+            const escapedDescriptionText = (descriptionText || '').replace(/`/g, '\\`');
+            const escapedComment = (d.comment || '').replace(/`/g, '\\`');
+
             return `<tr>
                 <td class="font-semibold text-gray-900">${d.vinOrStock || d.stock || ''}</td>
                 <td>${d.make}</td>
                 <td>${d.model}</td>
+                <td>${d.trim || ''}</td>
                 <td>${d.year}</td>
-                <td>${d.detailed}</td>
-                <td class="text-center">${toggleButton('descriptionUploaded', d.descriptionUploaded)}</td>
+                <td class="text-center">${detailedIcon}</td>
+                <td class="text-gray-500 truncate cursor-pointer" ondblclick="openViewDescriptionModal('Description', \`${escapedDescriptionText}\`)">${descriptionText.split('\n')[0]}</td>
                 <td class="text-center">${toggleButton('gloveboxDocuments', d.gloveboxDocuments)}</td>
                 <td class="text-center">${toggleButton('recaptured', d.recaptured)}</td>
                 <td>${d.photoType}</td>
-                <td class="text-gray-500 truncate" style="max-width: 150px;">${d.comment || ''}</td>
-                <td class="text-center"><button onclick="openEditModal('${doc.id}', 'vehicles')" class="btn btn-warning">Edit</button></td>
+                <td class="comment-cell truncate cursor-pointer" ondblclick="openViewDescriptionModal('Comment', \`${escapedComment}\`)">${d.comment || ''}</td>
+                <td class="text-center"><button onclick="openEditModal('${doc.id}', 'vehicles')" class="btn btn-warning text-xs">Edit</button></td>
             </tr>`;
         }).join('');
+
+        if (totalPages > 1) {
+            paginationContainer.classList.remove('hidden');
+            document.getElementById(`dailySummaryPageInfo`).textContent = `Page ${page + 1} of ${totalPages}`;
+            document.getElementById(`dailySummaryPrevBtn`).disabled = page === 0;
+            document.getElementById(`dailySummaryNextBtn`).disabled = page >= totalPages - 1;
+        } else {
+            paginationContainer.classList.add('hidden');
+        }
     }
 
     // ==========================
@@ -635,7 +713,7 @@
                 await db.collection('vehicles').add({
                     ...doc.data(), ...completeData, originalEntryDate: doc.data().date, date: getTodayDate(),
                     completedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    recaptured: false, descriptionUploaded: false, gloveboxDocuments: false
+                    recaptured: false, descriptionUploaded: false, gloveboxDocuments: false, isSold: false
                 });
                 await docRef.delete();
                 showToast('Vehicle marked as complete!');
@@ -696,8 +774,7 @@
             if(doc.exists) {
                 const d = doc.data();
                 currentEdit.data = d;
-                document.getElementById('editId').value = id;
-                document.getElementById('editCollection').value = collection;
+                
                 document.getElementById('editVinOrStock').value = d.vinOrStock || d.stock || '';
                 document.getElementById('editMake').value = d.make || '';
                 document.getElementById('editModel').value = d.model || '';
@@ -705,6 +782,7 @@
                 document.getElementById('editYear').value = d.year || '';
                 document.getElementById('editDate').value = d.date || '';
                 document.getElementById('editComment').value = d.comment || '';
+                document.getElementById('editGeneratedDescription').value = d.generatedDescription || '';
 
                 const detailedEl = document.getElementById('editDetailed');
                 const photoTypeEl = document.getElementById('editPhotoType');
@@ -739,6 +817,15 @@
             showToast('Status updated.');
         } catch (e) { console.error(e); showToast('Error updating status.'); } finally { hideSpinner(); }
     }
+
+    async function toggleSoldStatus(id, currentValue) {
+        showSpinner();
+        try {
+            await db.collection('vehicles').doc(id).update({ isSold: !currentValue });
+            showToast(`Vehicle marked as ${!currentValue ? 'Sold' : 'Available'}.`);
+        } catch (e) { console.error(e); showToast('Error updating sold status.'); } finally { hideSpinner(); }
+    }
+
 
     // =================================
     // AI DESCRIPTION FUNCTIONS
@@ -944,7 +1031,7 @@ HST and licensing fees are not included in the listing price. Prices and promoti
         // Firebase Listeners
         db.collection('pending_vehicles').onSnapshot(snapshot => {
             pendingData = snapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
-            renderTable('pending', 'pendingTable', pendingData, currentPendingPage, PAGE_SIZE, createPendingRow, 'No pending vehicles.');
+            renderTable('pending', 'pendingTable', pendingData, currentPendingPage, PENDING_PAGE_SIZE, createPendingRow, 'No pending vehicles.');
         }, err => { console.error(err); showToast('Error loading pending vehicles.'); });
 
         db.collection('vehicles').onSnapshot(snapshot => {
@@ -962,12 +1049,12 @@ HST and licensing fees are not included in the listing price. Prices and promoti
                 const stockOrVin = (d.vinOrStock || d.stock || '').toLowerCase();
                 return searchableString.includes(term) || stockOrVin.includes(term);
             });
-            renderTable('completed', 'completedTable', filteredCompletedData, 0, PAGE_SIZE, createCompletedRow, 'No results found.');
+            renderTable('completed', 'completedTable', filteredCompletedData, 0, COMPLETED_PAGE_SIZE, createCompletedRow, 'No results found.');
         });
         
         document.getElementById('saveEditBtn').addEventListener('click', async () => {
-            const id = document.getElementById('editId').value;
-            const collection = document.getElementById('editCollection').value;
+            const id = currentEdit.id;
+            const collection = currentEdit.collection;
             const data = {
                 vinOrStock: document.getElementById('editVinOrStock').value.trim().toUpperCase(),
                 make: capitalizeFirst(document.getElementById('editMake').value.trim()),
@@ -976,6 +1063,7 @@ HST and licensing fees are not included in the listing price. Prices and promoti
                 year: document.getElementById('editYear').value,
                 date: document.getElementById('editDate').value,
                 comment: document.getElementById('editComment').value,
+                generatedDescription: document.getElementById('editGeneratedDescription').value,
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
             if (collection === 'vehicles') {
@@ -999,10 +1087,12 @@ HST and licensing fees are not included in the listing price. Prices and promoti
             document.getElementById('recaptureCommentContainer').classList.toggle('hidden', e.target.value !== 'Yes');
         });
 
-        document.getElementById('pendingPrevBtn').onclick = () => renderTable('pending', 'pendingTable', pendingData, currentPendingPage - 1, PAGE_SIZE, createPendingRow, 'No pending vehicles.');
-        document.getElementById('pendingNextBtn').onclick = () => renderTable('pending', 'pendingTable', pendingData, currentPendingPage + 1, PAGE_SIZE, createPendingRow, 'No pending vehicles.');
-        document.getElementById('completedPrevBtn').onclick = () => renderTable('completed', 'completedTable', filteredCompletedData, currentCompletedPage - 1, PAGE_SIZE, createCompletedRow, 'No completed vehicles.');
-        document.getElementById('completedNextBtn').onclick = () => renderTable('completed', 'completedTable', filteredCompletedData, currentCompletedPage + 1, PAGE_SIZE, createCompletedRow, 'No completed vehicles.');
+        document.getElementById('pendingPrevBtn').onclick = () => renderTable('pending', 'pendingTable', pendingData, currentPendingPage - 1, PENDING_PAGE_SIZE, createPendingRow, 'No pending vehicles.');
+        document.getElementById('pendingNextBtn').onclick = () => renderTable('pending', 'pendingTable', pendingData, currentPendingPage + 1, PENDING_PAGE_SIZE, createPendingRow, 'No pending vehicles.');
+        document.getElementById('completedPrevBtn').onclick = () => renderTable('completed', 'completedTable', filteredCompletedData, currentCompletedPage - 1, COMPLETED_PAGE_SIZE, createCompletedRow, 'No completed vehicles.');
+        document.getElementById('completedNextBtn').onclick = () => renderTable('completed', 'completedTable', filteredCompletedData, currentCompletedPage + 1, COMPLETED_PAGE_SIZE, createCompletedRow, 'No completed vehicles.');
+        document.getElementById('dailySummaryPrevBtn').onclick = () => renderDailySummary(currentDailySummaryPage - 1);
+        document.getElementById('dailySummaryNextBtn').onclick = () => renderDailySummary(currentDailySummaryPage + 1);
         
         document.getElementById('confirmCancelBtn').addEventListener('click', closeConfirmModal);
         document.getElementById('confirmOkBtn').addEventListener('click', () => {
@@ -1026,13 +1116,13 @@ HST and licensing fees are not included in the listing price. Prices and promoti
                     sortState[tableKey].dir = 'asc';
                 }
 
-                document.querySelectorAll(`th.sortable`).forEach(h => h.classList.remove('sorted-asc', 'sorted-desc'));
+                document.querySelectorAll(`#${tableKey}Table th.sortable`).forEach(h => h.classList.remove('sorted-asc', 'sorted-desc'));
                 th.classList.add(sortState[tableKey].dir === 'asc' ? 'sorted-asc' : 'sorted-desc');
                 
                 if (tableKey === 'pending') {
-                    renderTable('pending', 'pendingTable', pendingData, currentPendingPage, PAGE_SIZE, createPendingRow, 'No pending vehicles.');
+                    renderTable('pending', 'pendingTable', pendingData, currentPendingPage, PENDING_PAGE_SIZE, createPendingRow, 'No pending vehicles.');
                 } else {
-                    renderTable('completed', 'completedTable', filteredCompletedData, currentCompletedPage, PAGE_SIZE, createCompletedRow, 'No completed vehicles.');
+                    renderTable('completed', 'completedTable', filteredCompletedData, currentCompletedPage, COMPLETED_PAGE_SIZE, createCompletedRow, 'No completed vehicles.');
                 }
             });
         });
