@@ -322,12 +322,15 @@
     <div id="descriptionModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center hidden z-40 p-4">
         <div class="modal-card w-full max-w-md p-6">
             <h3 class="text-lg font-semibold mb-4">Vehicle Description Features</h3>
-            <div class="space-y-3">
+            <div class="grid grid-cols-2 gap-3">
                 <div class="flex items-center"><input id="descLeatherSeats" type="checkbox" class="form-checkbox mr-3"><label for="descLeatherSeats">Leather Seats</label></div>
                 <div class="flex items-center"><input id="descSunroof" type="checkbox" class="form-checkbox mr-3"><label for="descSunroof">Sunroof</label></div>
                 <div class="flex items-center"><input id="descHeatedSteering" type="checkbox" class="form-checkbox mr-3"><label for="descHeatedSteering">Heated Steering</label></div>
                 <div class="flex items-center"><input id="descHeatedSeats" type="checkbox" class="form-checkbox mr-3"><label for="descHeatedSeats">Heated Seats</label></div>
-                <div class="flex items-center"><input id="descCarplay" type="checkbox" class="form-checkbox mr-3"><label for="descCarplay">Android Auto & Apple CarPlay</label></div>
+                <div class="flex items-center"><input id="descVentilatedSeats" type="checkbox" class="form-checkbox mr-3"><label for="descVentilatedSeats">Ventilated Seats</label></div>
+                <div class="flex items-center"><input id="descPremiumSound" type="checkbox" class="form-checkbox mr-3"><label for="descPremiumSound">Premium Sound</label></div>
+                <div class="flex items-center"><input id="descAndroidAuto" type="checkbox" class="form-checkbox mr-3"><label for="descAndroidAuto">Android Auto</label></div>
+                <div class="flex items-center"><input id="descAppleCarPlay" type="checkbox" class="form-checkbox mr-3"><label for="descAppleCarPlay">Apple CarPlay</label></div>
             </div>
             <div class="mt-6 flex justify-end space-x-3">
                 <button type="button" onclick="closeDescriptionModal()" class="btn btn-secondary">Cancel</button>
@@ -405,7 +408,10 @@
                         <div class="flex items-center"><input id="editSunroof" type="checkbox" class="form-checkbox mr-2"><label for="editSunroof" class="text-sm">Sunroof</label></div>
                         <div class="flex items-center"><input id="editHeatedSteering" type="checkbox" class="form-checkbox mr-2"><label for="editHeatedSteering" class="text-sm">Heated Steering</label></div>
                         <div class="flex items-center"><input id="editHeatedSeats" type="checkbox" class="form-checkbox mr-2"><label for="editHeatedSeats" class="text-sm">Heated Seats</label></div>
-                        <div class="flex items-center"><input id="editCarplay" type="checkbox" class="form-checkbox mr-2"><label for="editCarplay" class="text-sm">CarPlay</label></div>
+                        <div class="flex items-center"><input id="editVentilatedSeats" type="checkbox" class="form-checkbox mr-2"><label for="editVentilatedSeats" class="text-sm">Ventilated Seats</label></div>
+                        <div class="flex items-center"><input id="editPremiumSound" type="checkbox" class="form-checkbox mr-2"><label for="editPremiumSound" class="text-sm">Premium Sound</label></div>
+                        <div class="flex items-center"><input id="editAndroidAuto" type="checkbox" class="form-checkbox mr-2"><label for="editAndroidAuto" class="text-sm">Android Auto</label></div>
+                        <div class="flex items-center"><input id="editAppleCarPlay" type="checkbox" class="form-checkbox mr-2"><label for="editAppleCarPlay" class="text-sm">Apple CarPlay</label></div>
                     </div>
                     <textarea id="editOtherFeatures" rows="2" placeholder="Other Features (one per line)" class="form-input w-full mt-3"></textarea>
                 </div>
@@ -564,7 +570,10 @@
             if (features.sunroof) descriptionItems.push('Sunroof');
             if (features.heatedSteering) descriptionItems.push('Heated Steering');
             if (features.heatedSeats) descriptionItems.push('Heated Seats');
-            if (features.carplay) descriptionItems.push('Android Auto & Apple CarPlay');
+            if (features.ventilatedSeats) descriptionItems.push('Ventilated Seats');
+            if (features.premiumSound) descriptionItems.push('Premium Sound');
+            if (features.androidAuto) descriptionItems.push('Android Auto');
+            if (features.appleCarPlay) descriptionItems.push('Apple CarPlay');
             if (features.other) {
                 features.other.split('\n').forEach(f => {
                     if (f.trim()) descriptionItems.push(f.trim());
@@ -610,7 +619,10 @@
             if (features.sunroof) descriptionItems.push('Sunroof');
             if (features.heatedSteering) descriptionItems.push('Heated Steering');
             if (features.heatedSeats) descriptionItems.push('Heated Seats');
-            if (features.carplay) descriptionItems.push('Android Auto & Apple CarPlay');
+            if (features.ventilatedSeats) descriptionItems.push('Ventilated Seats');
+            if (features.premiumSound) descriptionItems.push('Premium Sound');
+            if (features.androidAuto) descriptionItems.push('Android Auto');
+            if (features.appleCarPlay) descriptionItems.push('Apple CarPlay');
             if (features.other) {
                 features.other.split('\n').forEach(f => {
                     if (f.trim()) descriptionItems.push(f.trim());
@@ -688,7 +700,10 @@
                 if (features.sunroof) descriptionItems.push('Sunroof');
                 if (features.heatedSteering) descriptionItems.push('Heated Steering');
                 if (features.heatedSeats) descriptionItems.push('Heated Seats');
-                if (features.carplay) descriptionItems.push('Android Auto & Apple CarPlay');
+                if (features.ventilatedSeats) descriptionItems.push('Ventilated Seats');
+                if (features.premiumSound) descriptionItems.push('Premium Sound');
+                if (features.androidAuto) descriptionItems.push('Android Auto');
+                if (features.appleCarPlay) descriptionItems.push('Apple CarPlay');
                 if (features.other) {
                     features.other.split('\n').forEach(f => {
                         if (f.trim()) descriptionItems.push(f.trim());
@@ -778,7 +793,7 @@
                 await db.collection('vehicles').add({
                     ...doc.data(), ...completeData, originalEntryDate: doc.data().date, date: getTodayDate(),
                     completedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    recaptured: false, description: false, gloveboxDocuments: false, isSold: false
+                    recaptured: false, descriptionUploaded: false, gloveboxDocuments: false, isSold: false
                 });
                 await docRef.delete();
                 showToast('Vehicle marked as complete!');
@@ -811,7 +826,10 @@
             document.getElementById('descSunroof').checked = !!features.sunroof;
             document.getElementById('descHeatedSteering').checked = !!features.heatedSteering;
             document.getElementById('descHeatedSeats').checked = !!features.heatedSeats;
-            document.getElementById('descCarplay').checked = !!features.carplay;
+            document.getElementById('descVentilatedSeats').checked = !!features.ventilatedSeats;
+            document.getElementById('descPremiumSound').checked = !!features.premiumSound;
+            document.getElementById('descAndroidAuto').checked = !!features.androidAuto;
+            document.getElementById('descAppleCarPlay').checked = !!features.appleCarPlay;
             document.getElementById('descriptionModal').classList.remove('hidden');
         } catch(e) { console.error(e); showToast('Error fetching description.'); } finally { hideSpinner(); }
     }
@@ -822,7 +840,10 @@
             sunroof: document.getElementById('descSunroof').checked,
             heatedSteering: document.getElementById('descHeatedSteering').checked,
             heatedSeats: document.getElementById('descHeatedSeats').checked,
-            carplay: document.getElementById('descCarplay').checked
+            ventilatedSeats: document.getElementById('descVentilatedSeats').checked,
+            premiumSound: document.getElementById('descPremiumSound').checked,
+            androidAuto: document.getElementById('descAndroidAuto').checked,
+            appleCarPlay: document.getElementById('descAppleCarPlay').checked,
         };
         showSpinner();
         try {
@@ -855,7 +876,10 @@
                 document.getElementById('editSunroof').checked = !!features.sunroof;
                 document.getElementById('editHeatedSteering').checked = !!features.heatedSteering;
                 document.getElementById('editHeatedSeats').checked = !!features.heatedSeats;
-                document.getElementById('editCarplay').checked = !!features.carplay;
+                document.getElementById('editVentilatedSeats').checked = !!features.ventilatedSeats;
+                document.getElementById('editPremiumSound').checked = !!features.premiumSound;
+                document.getElementById('editAndroidAuto').checked = !!features.androidAuto;
+                document.getElementById('editAppleCarPlay').checked = !!features.appleCarPlay;
                 document.getElementById('editOtherFeatures').value = features.other || '';
 
                 const detailedEl = document.getElementById('editDetailed');
@@ -925,7 +949,10 @@
             if (features.sunroof) descriptionItems.push('Sunroof');
             if (features.heatedSteering) descriptionItems.push('Heated Steering');
             if (features.heatedSeats) descriptionItems.push('Heated Seats');
-            if (features.carplay) descriptionItems.push('Android Auto & Apple CarPlay');
+            if (features.ventilatedSeats) descriptionItems.push('Ventilated Seats');
+            if (features.premiumSound) descriptionItems.push('Premium Sound');
+            if (features.androidAuto) descriptionItems.push('Android Auto');
+            if (features.appleCarPlay) descriptionItems.push('Apple CarPlay');
             if (features.other) {
                 features.other.split('\n').forEach(f => {
                     if (f.trim()) descriptionItems.push(f.trim());
@@ -964,7 +991,10 @@
                 if (key === 'sunroof') return 'Sunroof';
                 if (key === 'heatedSteering') return 'Heated Steering';
                 if (key === 'heatedSeats') return 'Heated Seats';
-                if (key === 'carplay') return 'Android Auto & Apple CarPlay';
+                if (key === 'ventilatedSeats') return 'Ventilated Seats';
+                if (key === 'premiumSound') return 'Premium Sound System';
+                if (key === 'androidAuto') return 'Android Auto';
+                if (key === 'appleCarPlay') return 'Apple CarPlay';
                 return '';
             });
         
@@ -1147,7 +1177,10 @@ HST and licensing fees are not included in the listing price. Prices and promoti
                 sunroof: document.getElementById('editSunroof').checked,
                 heatedSteering: document.getElementById('editHeatedSteering').checked,
                 heatedSeats: document.getElementById('editHeatedSeats').checked,
-                carplay: document.getElementById('editCarplay').checked,
+                ventilatedSeats: document.getElementById('editVentilatedSeats').checked,
+                premiumSound: document.getElementById('editPremiumSound').checked,
+                androidAuto: document.getElementById('editAndroidAuto').checked,
+                appleCarPlay: document.getElementById('editAppleCarPlay').checked,
                 other: document.getElementById('editOtherFeatures').value.trim(),
             };
 
