@@ -564,6 +564,11 @@
             if (features.heatedSteering) descriptionItems.push('Heated Steering');
             if (features.heatedSeats) descriptionItems.push('Heated Seats');
             if (features.carplay) descriptionItems.push('Android Auto & Apple CarPlay');
+            if (features.other) {
+                features.other.split('\n').forEach(f => {
+                    if (f.trim()) descriptionItems.push(f.trim());
+                });
+            }
             descriptionText = descriptionItems.join(' | ');
         }
         
@@ -595,7 +600,24 @@
         const detailedIcon = d.detailed === 'Yes' 
             ? `<span class="text-green-500 font-bold text-lg">✓</span>` 
             : `<span class="text-red-500 font-bold text-lg">✗</span>`;
-        const descriptionText = d.generatedDescription || '';
+        
+        let descriptionText = d.generatedDescription || '';
+        if (!descriptionText) {
+            const features = d.descriptionFeatures || {};
+            const descriptionItems = [];
+            if (features.leatherSeats) descriptionItems.push('Leather Seats');
+            if (features.sunroof) descriptionItems.push('Sunroof');
+            if (features.heatedSteering) descriptionItems.push('Heated Steering');
+            if (features.heatedSeats) descriptionItems.push('Heated Seats');
+            if (features.carplay) descriptionItems.push('Android Auto & Apple CarPlay');
+            if (features.other) {
+                features.other.split('\n').forEach(f => {
+                    if (f.trim()) descriptionItems.push(f.trim());
+                });
+            }
+            descriptionText = descriptionItems.join(' | ');
+        }
+        
         const escapedDescriptionText = (descriptionText || '').replace(/`/g, '\\`');
         const escapedComment = (d.comment || '').replace(/`/g, '\\`');
         const escapedHalfReason = (d.halfReason || '').replace(/`/g, '\\`');
@@ -657,7 +679,23 @@
                 ? `<span class="text-green-500 font-bold text-lg">✓</span>` 
                 : `<span class="text-red-500 font-bold text-lg">✗</span>`;
             
-            const descriptionText = d.generatedDescription || '';
+            let descriptionText = d.generatedDescription || '';
+            if (!descriptionText) {
+                const features = d.descriptionFeatures || {};
+                const descriptionItems = [];
+                if (features.leatherSeats) descriptionItems.push('Leather Seats');
+                if (features.sunroof) descriptionItems.push('Sunroof');
+                if (features.heatedSteering) descriptionItems.push('Heated Steering');
+                if (features.heatedSeats) descriptionItems.push('Heated Seats');
+                if (features.carplay) descriptionItems.push('Android Auto & Apple CarPlay');
+                if (features.other) {
+                    features.other.split('\n').forEach(f => {
+                        if (f.trim()) descriptionItems.push(f.trim());
+                    });
+                }
+                descriptionText = descriptionItems.join(' | ');
+            }
+            
             const escapedDescriptionText = (descriptionText || '').replace(/`/g, '\\`');
             const escapedComment = (d.comment || '').replace(/`/g, '\\`');
 
@@ -886,7 +924,11 @@
             if (features.heatedSteering) descriptionItems.push('Heated Steering');
             if (features.heatedSeats) descriptionItems.push('Heated Seats');
             if (features.carplay) descriptionItems.push('Android Auto & Apple CarPlay');
-            if (features.other) descriptionItems.push(features.other);
+            if (features.other) {
+                features.other.split('\n').forEach(f => {
+                    if (f.trim()) descriptionItems.push(f.trim());
+                });
+            }
             document.getElementById('aiFeaturesList').innerText = descriptionItems.length ? descriptionItems.join(', ') : 'No special features selected.';
             
             document.getElementById('aiGeneratedText').value = d.generatedDescription || '';
@@ -925,7 +967,9 @@
             });
         
         if (features.other) {
-            features.other.split('\n').forEach(f => featureList.push(f.trim()));
+            features.other.split('\n').forEach(f => {
+                if(f.trim()) featureList.push(f.trim())
+            });
         }
 
         const customFormatInstructions = `
