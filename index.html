@@ -273,7 +273,11 @@
                 </div>
                 <div id="halfReasonContainer" class="hidden">
                     <label class="block text-sm font-medium text-gray-700">Reason for half photos</label>
-                    <textarea id="completeHalfReason" class="form-input mt-1" rows="2"></textarea>
+                    <select id="completeHalfReason" class="form-input mt-1">
+                        <option value="">Select...</option>
+                        <option value="Damage Exterior">Damage Exterior</option>
+                        <option value="Not Cleaned">Not Cleaned</option>
+                    </select>
                 </div>
                 <hr/>
                 <div>
@@ -415,7 +419,7 @@
     const PAGE_SIZE = 15;
     const sortState = {
         pending: { col: 'date', dir: 'desc' },
-        completed: { col: 'date', dir: 'desc' }
+        completed: { col: 'completedAt', dir: 'desc' }
     };
     let currentEdit = { id: null, collection: '', data: {} };
     let onConfirmCallback = null;
@@ -461,21 +465,36 @@
     function applySort(tableKey, dataArray) {
         const { col, dir } = sortState[tableKey];
         return [...dataArray].sort((a, b) => {
-            let valA = a.data[col];
-            let valB = b.data[col];
+            // Helper to get comparable values from a document
+            const getValue = (doc, column) => {
+                const data = doc.data;
+                switch (column) {
+                    case 'completedAt':
+                        // Convert Firestore Timestamp to milliseconds for accurate sorting.
+                        // Default to 0 if the timestamp doesn't exist (for older data).
+                        return data.completedAt?.toMillis() || 0;
+                    case 'days':
+                        return calculateDays(data.date);
+                    case 'vinOrStock':
+                        return data.vinOrStock || data.stock || '';
+                    default:
+                        // Default case for string-based sorting
+                        return data[column] || '';
+                }
+            };
 
-            if (col === 'days') {
-                valA = calculateDays(a.data.date);
-                valB = calculateDays(b.data.date);
-            } else if (col === 'vinOrStock') {
-                valA = a.data.vinOrStock || a.data.stock || '';
-                valB = b.data.vinOrStock || b.data.stock || '';
+            const valA = getValue(a, col);
+            const valB = getValue(b, col);
+
+            let comparison = 0;
+            // Use numeric comparison for numbers, and localeCompare for strings.
+            if (typeof valA === 'number' && typeof valB === 'number') {
+                comparison = valA - valB;
             } else {
-                valA = valA || '';
-                valB = valB || '';
+                comparison = String(valA).localeCompare(String(valB), undefined, { numeric: true });
             }
 
-            const comparison = String(valA).localeCompare(String(valB), undefined, { numeric: true });
+            // Apply sort direction
             return dir === 'asc' ? comparison : -comparison;
         });
     }
@@ -606,7 +625,7 @@
             recaptureComment: document.getElementById('recaptureComment').value.trim()
         };
         if (!completeData.detailed || !completeData.photoType || !completeData.recaptureNeeded) return showToast('Please fill out all fields.');
-        if (completeData.photoType === 'HP' && !completeData.halfReason.trim()) return showToast('Reason for half photos is required.');
+        if (completeData.photoType === 'HP' && !completeData.halfReason) return showToast('Reason for half photos is required.');
 
         showSpinner();
         try {
