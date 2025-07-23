@@ -218,6 +218,7 @@
                             <th data-col="date" class="sortable">Date</th>
                             <th data-col="detailed" class="sortable text-center">Detailed</th>
                             <th data-col="photoType" class="sortable">Photos</th>
+                            <th data-col="recaptureNeeded" class="sortable">Recapture?</th>
                             <th data-col="halfReason" class="sortable">Half Reason</th>
                             <th data-col="days" class="sortable text-center">Days</th>
                             <th>Description</th>
@@ -288,11 +289,16 @@
                 </div>
                 <div id="halfReasonContainer" class="hidden">
                     <label class="block text-sm font-medium text-gray-700">Reason for half photos</label>
-                    <select id="completeHalfReason" class="form-input mt-1">
-                        <option value="">Select...</option>
-                        <option value="Damage Exterior">Damage Exterior</option>
-                        <option value="Not Cleaned">Not Cleaned</option>
-                    </select>
+                    <div class="mt-2 space-y-2">
+                        <div class="flex items-center">
+                            <input id="halfReasonNotCleaned" type="checkbox" class="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                            <label for="halfReasonNotCleaned" class="ml-2 block text-sm text-gray-900">Awaiting Detailing</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input id="halfReasonDamage" type="checkbox" class="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                            <label for="halfReasonDamage" class="ml-2 block text-sm text-gray-900">Exterior Damage</label>
+                        </div>
+                    </div>
                 </div>
                 <hr/>
                 <div>
@@ -391,6 +397,17 @@
                 <select id="editPhotoType" class="form-input hidden"><option value="">Photos?</option><option value="FP">FP</option><option value="HP">HP</option></select>
              </div>
              <div class="space-y-4">
+                <div class="border rounded-md p-4">
+                    <h4 class="text-sm font-medium text-gray-800 mb-2">Features</h4>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="flex items-center"><input id="editLeatherSeats" type="checkbox" class="form-checkbox mr-2"><label for="editLeatherSeats" class="text-sm">Leather Seats</label></div>
+                        <div class="flex items-center"><input id="editSunroof" type="checkbox" class="form-checkbox mr-2"><label for="editSunroof" class="text-sm">Sunroof</label></div>
+                        <div class="flex items-center"><input id="editHeatedSteering" type="checkbox" class="form-checkbox mr-2"><label for="editHeatedSteering" class="text-sm">Heated Steering</label></div>
+                        <div class="flex items-center"><input id="editHeatedSeats" type="checkbox" class="form-checkbox mr-2"><label for="editHeatedSeats" class="text-sm">Heated Seats</label></div>
+                        <div class="flex items-center"><input id="editCarplay" type="checkbox" class="form-checkbox mr-2"><label for="editCarplay" class="text-sm">CarPlay</label></div>
+                    </div>
+                    <textarea id="editOtherFeatures" rows="2" placeholder="Other Features (one per line)" class="form-input w-full mt-3"></textarea>
+                </div>
                 <textarea id="editComment" rows="3" placeholder="Comment" class="form-input w-full"></textarea>
                 <textarea id="editGeneratedDescription" rows="6" placeholder="AI Generated Description" class="form-input w-full"></textarea>
              </div>
@@ -592,6 +609,7 @@
             <td>${d.date}</td>
             <td class="text-center">${detailedIcon}</td>
             <td>${d.photoType || ''}</td>
+            <td>${d.recaptureNeeded || 'No'}</td>
             <td class="text-gray-500 truncate cursor-pointer" ondblclick="openViewDescriptionModal('Half Photo Reason', \`${escapedHalfReason}\`)" title="Double-click to view full text">${d.halfReason || ''}</td>
             <td class="text-center">${calculateDays(d.originalEntryDate || d.date)}</td>
             <td class="text-gray-500 truncate cursor-pointer" ondblclick="openViewDescriptionModal('Description', \`${escapedDescriptionText}\`)" title="Double-click to view full text">${descriptionText.split('\n')[0]}</td>
@@ -695,15 +713,22 @@
     }
     
     async function confirmComplete() {
+        const isNotCleaned = document.getElementById('halfReasonNotCleaned').checked;
+        const isDamaged = document.getElementById('halfReasonDamage').checked;
+        let halfReasons = [];
+        if (isNotCleaned) halfReasons.push("Awaiting Detailing");
+        if (isDamaged) halfReasons.push("Exterior Damage");
+        const halfReasonText = halfReasons.join(', ');
+
         const completeData = {
             detailed: document.getElementById('completeDetailed').value,
             photoType: document.getElementById('completePhotoType').value,
-            halfReason: document.getElementById('completeHalfReason').value,
+            halfReason: halfReasonText,
             recaptureNeeded: document.getElementById('recaptureNeeded').value,
             recaptureComment: document.getElementById('recaptureComment').value.trim()
         };
         if (!completeData.detailed || !completeData.photoType || !completeData.recaptureNeeded) return showToast('Please fill out all fields.');
-        if (completeData.photoType === 'HP' && !completeData.halfReason) return showToast('Reason for half photos is required.');
+        if (completeData.photoType === 'HP' && !completeData.halfReason) return showToast('A reason for half photos is required.');
 
         showSpinner();
         try {
@@ -726,7 +751,8 @@
         currentEdit.id = id;
         document.getElementById('completeDetailed').value = '';
         document.getElementById('completePhotoType').value = '';
-        document.getElementById('completeHalfReason').value = '';
+        document.getElementById('halfReasonNotCleaned').checked = false;
+        document.getElementById('halfReasonDamage').checked = false;
         document.getElementById('recaptureNeeded').value = '';
         document.getElementById('recaptureComment').value = '';
         document.getElementById('halfReasonContainer').classList.add('hidden');
@@ -784,6 +810,14 @@
                 document.getElementById('editComment').value = d.comment || '';
                 document.getElementById('editGeneratedDescription').value = d.generatedDescription || '';
 
+                const features = d.descriptionFeatures || {};
+                document.getElementById('editLeatherSeats').checked = !!features.leatherSeats;
+                document.getElementById('editSunroof').checked = !!features.sunroof;
+                document.getElementById('editHeatedSteering').checked = !!features.heatedSteering;
+                document.getElementById('editHeatedSeats').checked = !!features.heatedSeats;
+                document.getElementById('editCarplay').checked = !!features.carplay;
+                document.getElementById('editOtherFeatures').value = features.other || '';
+
                 const detailedEl = document.getElementById('editDetailed');
                 const photoTypeEl = document.getElementById('editPhotoType');
                 if(collection === 'vehicles') {
@@ -840,6 +874,7 @@
             }
             currentEdit.id = id;
             currentEdit.data = doc.data();
+            currentEdit.collection = 'pending_vehicles';
 
             const d = currentEdit.data;
             document.getElementById('aiVehicleInfo').innerText = `${d.year} ${d.make} ${d.model} ${d.trim || ''}`;
@@ -851,6 +886,7 @@
             if (features.heatedSteering) descriptionItems.push('Heated Steering');
             if (features.heatedSeats) descriptionItems.push('Heated Seats');
             if (features.carplay) descriptionItems.push('Android Auto & Apple CarPlay');
+            if (features.other) descriptionItems.push(features.other);
             document.getElementById('aiFeaturesList').innerText = descriptionItems.length ? descriptionItems.join(', ') : 'No special features selected.';
             
             document.getElementById('aiGeneratedText').value = d.generatedDescription || '';
@@ -878,7 +914,7 @@
 
         const features = vehicle.descriptionFeatures || {};
         const featureList = Object.entries(features)
-            .filter(([key, value]) => value)
+            .filter(([key, value]) => value && key !== 'other')
             .map(([key]) => {
                 if (key === 'leatherSeats') return 'Leather Seats';
                 if (key === 'sunroof') return 'Sunroof';
@@ -886,7 +922,11 @@
                 if (key === 'heatedSeats') return 'Heated Seats';
                 if (key === 'carplay') return 'Android Auto & Apple CarPlay';
                 return '';
-            }).join(', ');
+            });
+        
+        if (features.other) {
+            features.other.split('\n').forEach(f => featureList.push(f.trim()));
+        }
 
         const customFormatInstructions = `
 You must generate the description using this exact multi-part format, including all headers and footers. Do not deviate.
@@ -929,7 +969,7 @@ HST and licensing fees are not included in the listing price. Prices and promoti
             - Make: ${vehicle.make}
             - Model: ${vehicle.model}
             - Full Trim / Details: "${vehicle.trim || 'Standard'}" (This contains the trim name and may also contain ownership info).
-            - Additional Features: ${featureList || 'Standard features'}
+            - Additional Features: ${featureList.join(', ') || 'Standard features'}
 
             **Context:**
             - The current date is ${new Date().toDateString()}.
@@ -1002,7 +1042,7 @@ HST and licensing fees are not included in the listing price. Prices and promoti
         }
         showSpinner();
         try {
-            await db.collection('pending_vehicles').doc(currentEdit.id).update({
+            await db.collection(currentEdit.collection).doc(currentEdit.id).update({
                 generatedDescription: newDescription
             });
             showToast("AI description saved successfully!");
@@ -1055,6 +1095,16 @@ HST and licensing fees are not included in the listing price. Prices and promoti
         document.getElementById('saveEditBtn').addEventListener('click', async () => {
             const id = currentEdit.id;
             const collection = currentEdit.collection;
+            
+            const descriptionFeatures = {
+                leatherSeats: document.getElementById('editLeatherSeats').checked,
+                sunroof: document.getElementById('editSunroof').checked,
+                heatedSteering: document.getElementById('editHeatedSteering').checked,
+                heatedSeats: document.getElementById('editHeatedSeats').checked,
+                carplay: document.getElementById('editCarplay').checked,
+                other: document.getElementById('editOtherFeatures').value.trim(),
+            };
+
             const data = {
                 vinOrStock: document.getElementById('editVinOrStock').value.trim().toUpperCase(),
                 make: capitalizeFirst(document.getElementById('editMake').value.trim()),
@@ -1064,6 +1114,7 @@ HST and licensing fees are not included in the listing price. Prices and promoti
                 date: document.getElementById('editDate').value,
                 comment: document.getElementById('editComment').value,
                 generatedDescription: document.getElementById('editGeneratedDescription').value,
+                descriptionFeatures: descriptionFeatures,
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
             if (collection === 'vehicles') {
