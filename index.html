@@ -252,6 +252,7 @@
                                 <th>Year</th>
                                 <th class="text-center">Detailed</th>
                                 <th>Description</th>
+                                <th class="text-center">Desc. Uploaded</th>
                                 <th class="text-center">Glovebox</th>
                                 <th class="text-center">Recaptured</th>
                                 <th>Photos</th>
@@ -544,7 +545,7 @@
         if (key === 'pending') currentPendingPage = page; else currentCompletedPage = page;
         
         const pageSlice = sorted.slice(page * size, (page * size) + size);
-        tbody.innerHTML = pageSlice.length ? pageSlice.map(rowFunc).join('') : `<tr><td colspan="13" class="text-center py-10 text-gray-500">${emptyMsg}</td></tr>`;
+        tbody.innerHTML = pageSlice.length ? pageSlice.map(rowFunc).join('') : `<tr><td colspan="14" class="text-center py-10 text-gray-500">${emptyMsg}</td></tr>`;
         
         document.getElementById(`${key}PageInfo`).textContent = `Page ${page + 1} of ${totalPages}`;
         document.getElementById(`${key}PrevBtn`).disabled = page === 0;
@@ -707,6 +708,7 @@
                 <td>${d.year}</td>
                 <td class="text-center">${detailedIcon}</td>
                 <td class="text-gray-500 truncate cursor-pointer" ondblclick="openViewDescriptionModal('Description', \`${escapedDescriptionText}\`)">${descriptionText.split('\n')[0]}</td>
+                <td class="text-center">${toggleButton('descriptionUploaded', d.descriptionUploaded)}</td>
                 <td class="text-center">${toggleButton('gloveboxDocuments', d.gloveboxDocuments)}</td>
                 <td class="text-center">${toggleButton('recaptured', d.recaptured)}</td>
                 <td>${d.photoType}</td>
@@ -776,7 +778,7 @@
                 await db.collection('vehicles').add({
                     ...doc.data(), ...completeData, originalEntryDate: doc.data().date, date: getTodayDate(),
                     completedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    recaptured: false, descriptionUploaded: false, gloveboxDocuments: false, isSold: false
+                    recaptured: false, description: false, gloveboxDocuments: false, isSold: false
                 });
                 await docRef.delete();
                 showToast('Vehicle marked as complete!');
