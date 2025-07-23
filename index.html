@@ -65,6 +65,7 @@
         .btn-success { background-color: var(--c-success); color: white; }
         .btn-warning { background-color: var(--c-warning); color: white; }
         .btn-danger { background-color: var(--c-danger); color: white; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
         /* Tables - BORDERED AND COMPACT */
         .custom-table {
@@ -109,6 +110,13 @@
             outline: none; border-color: var(--c-primary);
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
         }
+        .form-checkbox {
+            height: 1.25rem; width: 1.25rem; border-radius: 0.25rem;
+            border-color: var(--c-border); color: var(--c-primary);
+        }
+        .form-checkbox:focus {
+            ring: var(--c-primary);
+        }
 
         /* Modal */
         .modal-card {
@@ -131,7 +139,7 @@
         <div class="spinner"></div>
     </div>
 
-    <div id="toast" class="fixed bottom-5 right-5 hidden bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium"></div>
+    <div id="toast" class="fixed bottom-5 right-5 hidden bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium z-50"></div>
 
     <header class="bg-white sticky top-0 z-20 border-b border-gray-200">
         <div class="px-4 sm:px-6 lg:px-8 py-4">
@@ -143,16 +151,15 @@
 
         <section class="card p-6">
             <h2 class="text-lg font-semibold mb-4">Data Entry</h2>
-            <form class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                <input id="vin" placeholder="VIN Number (Optional)" class="form-input" />
-                <input id="stock" placeholder="Stock Number" class="form-input" />
-                <span id="stockError" class="text-red-600 text-sm mt-1 hidden col-span-full"></span>
+            <form id="dataEntryForm" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+                <input id="vinOrStock" placeholder="VIN or Stock No." class="form-input" />
                 <input id="make" placeholder="Make" class="form-input" />
                 <input id="model" placeholder="Model" class="form-input" />
+                <input id="trim" placeholder="Trim" class="form-input" />
                 <select id="year" class="form-input"><option value="">Year</option></select>
                 <input id="date" type="date" class="form-input" />
-                <input id="comment" placeholder="Comment (Optional)" class="form-input" />
-                <div class="sm:col-span-2 md:col-span-4 text-right mt-2">
+                <input id="comment" placeholder="Comment (Optional)" class="form-input col-span-full md:col-span-2" />
+                <div class="sm:col-span-2 md:col-span-5 text-right mt-2">
                     <button type="button" onclick="addPending()" class="btn btn-primary">Add to Pending</button>
                 </div>
             </form>
@@ -166,13 +173,13 @@
                 <table class="custom-table">
                     <thead>
                         <tr>
-                            <th data-col="vin" class="sortable">VIN</th>
-                            <th data-col="stock" class="sortable">Stock</th>
+                            <th data-col="vinOrStock" class="sortable">Stock No.</th>
                             <th data-col="make" class="sortable">Make</th>
                             <th data-col="model" class="sortable">Model</th>
                             <th data-col="year" class="sortable">Year</th>
                             <th data-col="date" class="sortable">Date</th>
                             <th data-col="days" class="sortable text-center">Days</th>
+                            <th>Description</th>
                             <th>Comment</th>
                             <th class="text-center">Actions</th>
                         </tr>
@@ -196,8 +203,7 @@
                 <table class="custom-table">
                      <thead>
                         <tr>
-                            <th data-col="vin" class="sortable">VIN</th>
-                            <th data-col="stock" class="sortable">Stock</th>
+                            <th data-col="vinOrStock" class="sortable">Stock No.</th>
                             <th data-col="make" class="sortable">Make</th>
                             <th data-col="model" class="sortable">Model</th>
                             <th data-col="year" class="sortable">Year</th>
@@ -249,7 +255,10 @@
             <div id="noDailyEntries" class="p-6 text-center text-gray-500 hidden">No vehicles completed today.</div>
         </section>
     </main>
+    
+    <!-- MODALS -->
 
+    <!-- Complete Modal -->
     <div id="completeModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center hidden z-40 p-4">
         <div class="modal-card w-full max-w-md p-6">
             <h3 class="text-lg font-semibold mb-4">Complete Vehicle</h3>
@@ -260,7 +269,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Photos?</label>
-                    <select id="completePhotoType" class="form-input mt-1"><option value="">Select…</option><option>Full Photos</option><option>Half Photos</option></select>
+                    <select id="completePhotoType" class="form-input mt-1"><option value="">Select…</option><option value="FP">FP</option><option value="HP">HP</option></select>
                 </div>
                 <div id="halfReasonContainer" class="hidden">
                     <label class="block text-sm font-medium text-gray-700">Reason for half photos</label>
@@ -271,7 +280,7 @@
                     <label class="block text-sm font-medium text-gray-700">Photos Need Recapture?</label>
                     <select id="recaptureNeeded" class="form-input mt-1"><option value="">Select…</option><option value="Yes">Yes</option><option value="No">No</option></select>
                 </div>
-                 <div>
+                 <div id="recaptureCommentContainer" class="hidden">
                     <label class="block text-sm font-medium text-gray-700">Recapture Comment</label>
                     <textarea id="recaptureComment" class="form-input mt-1" rows="2"></textarea>
                 </div>
@@ -282,26 +291,104 @@
             </div>
         </div>
     </div>
+    
+    <!-- Description Features Modal -->
+    <div id="descriptionModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center hidden z-40 p-4">
+        <div class="modal-card w-full max-w-md p-6">
+            <h3 class="text-lg font-semibold mb-4">Vehicle Description Features</h3>
+            <div class="space-y-3">
+                <div class="flex items-center"><input id="descLeatherSeats" type="checkbox" class="form-checkbox mr-3"><label for="descLeatherSeats">Leather Seats</label></div>
+                <div class="flex items-center"><input id="descSunroof" type="checkbox" class="form-checkbox mr-3"><label for="descSunroof">Sunroof</label></div>
+                <div class="flex items-center"><input id="descHeatedSteering" type="checkbox" class="form-checkbox mr-3"><label for="descHeatedSteering">Heated Steering</label></div>
+                <div class="flex items-center"><input id="descHeatedSeats" type="checkbox" class="form-checkbox mr-3"><label for="descHeatedSeats">Heated Seats</label></div>
+                <div class="flex items-center"><input id="descCarplay" type="checkbox" class="form-checkbox mr-3"><label for="descCarplay">Android Auto & Apple CarPlay</label></div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button type="button" onclick="closeDescriptionModal()" class="btn btn-secondary">Cancel</button>
+                <button type="button" onclick="saveDescription()" class="btn btn-primary">Save Features</button>
+            </div>
+        </div>
+    </div>
 
+    <!-- AI Description Generation Modal -->
+    <div id="generateDescriptionModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center hidden z-40 p-4">
+        <div class="modal-card w-full max-w-2xl p-6">
+            <h3 class="text-lg font-semibold mb-4">Generate AI Description</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Left side: Vehicle Info -->
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="font-medium text-gray-800">Vehicle Details</h4>
+                        <p id="aiVehicleInfo" class="text-sm text-gray-600 mt-1"></p>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800">Selected Features</h4>
+                        <p id="aiFeaturesList" class="text-sm text-gray-600 mt-1"></p>
+                    </div>
+                    <button type="button" onclick="generateDescription()" class="btn btn-primary w-full">
+                        <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM10 8.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM11.5 15.5a1.5 1.5 0 10-3 0 1.5 1.5 0 003 0z" /></svg>
+                        Generate Description
+                    </button>
+                </div>
+                <!-- Right side: Generated Text -->
+                <div class="relative">
+                     <div id="aiSpinner" class="absolute inset-0 bg-white/70 flex items-center justify-center hidden">
+                        <div class="spinner !w-10 !h-10"></div>
+                     </div>
+                    <textarea id="aiGeneratedText" class="form-input w-full h-64" placeholder="AI description will appear here..."></textarea>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button type="button" onclick="closeAIDescriptionModal()" class="btn btn-secondary">Cancel</button>
+                <button type="button" onclick="saveAIDescription()" class="btn btn-success">Save Description</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- View Description Modal -->
+    <div id="viewDescriptionModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center hidden z-40 p-4">
+        <div class="modal-card w-full max-w-md p-6">
+            <h3 class="text-lg font-semibold mb-4">Full Description</h3>
+            <p id="fullDescriptionText" class="text-gray-700 whitespace-pre-wrap"></p>
+            <div class="mt-6 flex justify-end">
+                <button type="button" onclick="closeViewDescriptionModal()" class="btn btn-secondary">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
     <div id="editModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center hidden z-40 p-4">
         <div class="modal-card w-full max-w-lg p-6">
              <h3 class="text-lg font-semibold mb-4">Edit Vehicle Entry</h3>
              <input type="hidden" id="editId" /><input type="hidden" id="editCollection" />
              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                <input id="editVin" placeholder="VIN" class="form-input" />
-                <input id="editStock" placeholder="Stock" class="form-input" />
+                <input id="editVinOrStock" placeholder="VIN or Stock No." class="form-input" />
                 <input id="editMake" placeholder="Make" class="form-input" />
                 <input id="editModel" placeholder="Model" class="form-input" />
+                <input id="editTrim" placeholder="Trim" class="form-input" />
                 <select id="editYear" class="form-input"><option value="">Year</option></select>
                 <input id="editDate" type="date" class="form-input" />
-                <select id="editDetailed" class="form-input"><option value="">Detailed?</option><option>Yes</option><option>No</option></select>
-                <select id="editPhotoType" class="form-input"><option value="">Photos?</option><option>Full Photos</option><option>Half Photos</option></select>
+                <select id="editDetailed" class="form-input hidden"><option value="">Detailed?</option><option>Yes</option><option>No</option></select>
+                <select id="editPhotoType" class="form-input hidden"><option value="">Photos?</option><option value="FP">FP</option><option value="HP">HP</option></select>
              </div>
              <textarea id="editComment" rows="3" placeholder="Comment" class="form-input w-full"></textarea>
              <div class="mt-6 flex justify-end space-x-3">
                 <button type="button" onclick="closeModal()" class="btn btn-secondary">Cancel</button>
                 <button type="button" id="saveEditBtn" class="btn btn-primary">Save Changes</button>
              </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center hidden z-40 p-4">
+        <div class="modal-card w-full max-w-sm p-6">
+            <h3 class="text-lg font-semibold mb-2">Are you sure?</h3>
+            <p id="confirmMessage" class="text-gray-600 mb-6"></p>
+            <div class="flex justify-end space-x-3">
+                <button type="button" id="confirmCancelBtn" class="btn btn-secondary">Cancel</button>
+                <button type="button" id="confirmOkBtn" class="btn btn-danger">Confirm</button>
+            </div>
         </div>
     </div>
 
@@ -330,7 +417,8 @@
         pending: { col: 'date', dir: 'desc' },
         completed: { col: 'date', dir: 'desc' }
     };
-    let currentEdit = { id: null, collection: '' };
+    let currentEdit = { id: null, collection: '', data: {} };
+    let onConfirmCallback = null;
 
     // ==========================
     // UI & UTILITY FUNCTIONS
@@ -339,6 +427,11 @@
     const hideSpinner = () => document.getElementById('spinnerOverlay').classList.add('hidden');
     const closeModal = () => document.getElementById('editModal').classList.add('hidden');
     const closeCompleteModal = () => document.getElementById('completeModal').classList.add('hidden');
+    const closeDescriptionModal = () => document.getElementById('descriptionModal').classList.add('hidden');
+    const closeViewDescriptionModal = () => document.getElementById('viewDescriptionModal').classList.add('hidden');
+    const closeAIDescriptionModal = () => document.getElementById('generateDescriptionModal').classList.add('hidden');
+    const closeConfirmModal = () => document.getElementById('confirmModal').classList.add('hidden');
+
     const showToast = msg => {
         const t = document.getElementById('toast');
         t.textContent = msg;
@@ -348,6 +441,19 @@
     const getTodayDate = () => new Date().toISOString().split('T')[0];
     const getDisplayDate = dateStr => new Date(dateStr + 'T00:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
     const calculateDays = dateStr => Math.floor((new Date() - new Date(dateStr + 'T00:00:00')) / 86400000);
+    const capitalizeFirst = str => str ? str.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : '';
+
+
+    function openConfirmModal(message, callback) {
+        onConfirmCallback = callback;
+        document.getElementById('confirmMessage').textContent = message;
+        document.getElementById('confirmModal').classList.remove('hidden');
+    }
+
+    function openViewDescriptionModal(text) {
+        document.getElementById('fullDescriptionText').textContent = text || "No description available.";
+        document.getElementById('viewDescriptionModal').classList.remove('hidden');
+    }
 
     // ==========================
     // RENDERING LOGIC
@@ -355,8 +461,20 @@
     function applySort(tableKey, dataArray) {
         const { col, dir } = sortState[tableKey];
         return [...dataArray].sort((a, b) => {
-            const valA = col === 'days' ? calculateDays(a.data.date) : (a.data[col] || '');
-            const valB = col === 'days' ? calculateDays(b.data.date) : (b.data[col] || '');
+            let valA = a.data[col];
+            let valB = b.data[col];
+
+            if (col === 'days') {
+                valA = calculateDays(a.data.date);
+                valB = calculateDays(b.data.date);
+            } else if (col === 'vinOrStock') {
+                valA = a.data.vinOrStock || a.data.stock || '';
+                valB = b.data.vinOrStock || b.data.stock || '';
+            } else {
+                valA = valA || '';
+                valB = valB || '';
+            }
+
             const comparison = String(valA).localeCompare(String(valB), undefined, { numeric: true });
             return dir === 'asc' ? comparison : -comparison;
         });
@@ -380,22 +498,44 @@
     const createPendingRow = doc => {
         const d = doc.data, days = calculateDays(d.date);
         const badgeStyle = days > 3 ? 'text-red-700 bg-red-100' : 'text-gray-700 bg-gray-100';
+        
+        let descriptionText = d.generatedDescription || '';
+        if (!descriptionText) {
+            const features = d.descriptionFeatures || {};
+            const descriptionItems = [];
+            if (features.leatherSeats) descriptionItems.push('Leather Seats');
+            if (features.sunroof) descriptionItems.push('Sunroof');
+            if (features.heatedSteering) descriptionItems.push('Heated Steering');
+            if (features.heatedSeats) descriptionItems.push('Heated Seats');
+            if (features.carplay) descriptionItems.push('Android Auto & Apple CarPlay');
+            descriptionText = descriptionItems.join(' | ');
+        }
+        
+        const escapedDescriptionText = (descriptionText || '').replace(/`/g, '\\`');
+
         return `<tr>
-            <td>${d.vin || ''}</td><td class="font-semibold text-gray-900">${d.stock}</td><td>${d.make}</td><td>${d.model}</td>
-            <td>${d.year}</td><td>${d.date}</td><td class="text-center"><span class="px-2 py-0.5 text-xs rounded-full font-medium ${badgeStyle}">${days}</span></td>
-            <td class="text-gray-500 truncate" style="max-width: 200px;">${d.comment || ''}</td>
-            <td><div class="flex items-center justify-center space-x-2">
-                <button onclick="openCompleteModal('${doc.id}')" class="btn btn-success">Complete</button>
-                <button onclick="openEditModal('${doc.id}', 'pending_vehicles')" class="btn btn-warning">Edit</button>
-                <button onclick="deleteEntry('${doc.id}', 'pending_vehicles')" class="btn btn-danger">Delete</button>
+            <td class="font-semibold text-gray-900">${d.vinOrStock || d.stock || ''}</td>
+            <td>${d.make}</td>
+            <td>${d.model}</td>
+            <td>${d.year}</td>
+            <td>${d.date}</td>
+            <td class="text-center"><span class="px-2 py-0.5 text-xs rounded-full font-medium ${badgeStyle}">${days}</span></td>
+            <td class="text-gray-500 truncate cursor-pointer" style="max-width: 250px;" ondblclick="openViewDescriptionModal(\`${escapedDescriptionText}\`)" title="Double-click to view full description">${descriptionText.split('\n')[0]}</td>
+            <td class="text-gray-500 truncate" style="max-width: 150px;">${d.comment || ''}</td>
+            <td><div class="flex items-center justify-center space-x-1">
+                <button onclick="openDescriptionModal('${doc.id}')" class="btn btn-secondary text-xs">Features</button>
+                <button onclick="openAIDescriptionModal('${doc.id}')" class="btn btn-primary text-xs">AI Desc</button>
+                <button onclick="openCompleteModal('${doc.id}')" class="btn btn-success text-xs">Complete</button>
+                <button onclick="openEditModal('${doc.id}', 'pending_vehicles')" class="btn btn-warning text-xs">Edit</button>
+                <button onclick="deleteEntry('${doc.id}', 'pending_vehicles')" class="btn btn-danger text-xs">Del</button>
             </div></td></tr>`;
     };
     
     const createCompletedRow = doc => {
         const d = doc.data;
-        const stockClass = (d.photoType === 'Half Photos' && calculateDays(d.date) > 7) ? (calculateDays(d.date) > 14 ? 'bg-red-100' : 'bg-amber-100') : '';
+        const stockClass = (d.photoType === 'HP' && calculateDays(d.date) > 7) ? (calculateDays(d.date) > 14 ? 'bg-red-100' : 'bg-amber-100') : '';
         return `<tr class="${d.isSold ? 'opacity-50' : ''}">
-            <td>${d.vin || ''}</td><td class="font-semibold text-gray-900 ${stockClass}">${d.stock}</td><td>${d.make}</td><td>${d.model}</td><td>${d.year}</td><td>${d.date}</td>
+            <td class="font-semibold text-gray-900 ${stockClass}">${d.vinOrStock || d.stock || ''}</td><td>${d.make}</td><td>${d.model}</td><td>${d.year}</td><td>${d.date}</td>
             <td>${d.detailed || ''}</td><td>${d.photoType || ''}</td>
             <td class="text-gray-500 truncate" style="max-width: 150px;">${d.halfReason || ''}</td>
             <td class="text-center">${calculateDays(d.originalEntryDate || d.date)}</td>
@@ -417,7 +557,7 @@
             const d = doc.data;
             const toggleButton = (field, value) => `<button onclick="toggleSummaryStatus('${doc.id}', '${field}', ${!!value})" class="btn ${value ? 'btn-success' : 'btn-secondary'}">${value ? 'Yes' : 'No'}</button>`;
             return `<tr>
-                <td class="font-semibold text-gray-900">${d.stock}</td>
+                <td class="font-semibold text-gray-900">${d.vinOrStock || d.stock || ''}</td>
                 <td>${d.make}</td>
                 <td>${d.model}</td>
                 <td>${d.year}</td>
@@ -437,22 +577,22 @@
     // ==========================
     async function addPending() {
         const formData = {
-            vin: document.getElementById('vin').value.trim().toUpperCase(),
-            stock: document.getElementById('stock').value.trim().toUpperCase(),
-            make: document.getElementById('make').value.trim(),
-            model: document.getElementById('model').value.trim(),
+            vinOrStock: document.getElementById('vinOrStock').value.trim().toUpperCase(),
+            make: capitalizeFirst(document.getElementById('make').value.trim()),
+            model: capitalizeFirst(document.getElementById('model').value.trim()),
+            trim: document.getElementById('trim').value.trim(),
             year: document.getElementById('year').value,
             date: document.getElementById('date').value,
             comment: document.getElementById('comment').value.trim()
         };
-        if (!formData.stock || !formData.make || !formData.model || !formData.year || !formData.date) return showToast('Please fill all required fields.');
-        if (pendingData.some(item => item.data.stock === formData.stock)) return showToast('Duplicate Stock number in Pending list.');
+        if (!formData.vinOrStock || !formData.make || !formData.model || !formData.year || !formData.date) return showToast('Please fill all required fields.');
+        if (pendingData.some(item => (item.data.vinOrStock || item.data.stock) === formData.vinOrStock)) return showToast('Duplicate Stock/VIN in Pending list.');
         
         showSpinner();
         try {
             await db.collection('pending_vehicles').add(formData);
             showToast('Vehicle added successfully!');
-            document.querySelector('form').reset();
+            document.getElementById('dataEntryForm').reset();
             document.getElementById('date').value = getTodayDate();
         } catch (e) { console.error(e); showToast('Error adding entry.'); } finally { hideSpinner(); }
     }
@@ -466,7 +606,7 @@
             recaptureComment: document.getElementById('recaptureComment').value.trim()
         };
         if (!completeData.detailed || !completeData.photoType || !completeData.recaptureNeeded) return showToast('Please fill out all fields.');
-        if (completeData.photoType === 'Half Photos' && !completeData.halfReason.trim()) return showToast('Reason for half photos is required.');
+        if (completeData.photoType === 'HP' && !completeData.halfReason.trim()) return showToast('Reason for half photos is required.');
 
         showSpinner();
         try {
@@ -487,39 +627,90 @@
 
     function openCompleteModal(id) {
         currentEdit.id = id;
-        // Reset fields
         document.getElementById('completeDetailed').value = '';
         document.getElementById('completePhotoType').value = '';
         document.getElementById('completeHalfReason').value = '';
         document.getElementById('recaptureNeeded').value = '';
         document.getElementById('recaptureComment').value = '';
         document.getElementById('halfReasonContainer').classList.add('hidden');
-        // Show modal
+        document.getElementById('recaptureCommentContainer').classList.add('hidden');
         document.getElementById('completeModal').classList.remove('hidden');
+    }
+
+    async function openDescriptionModal(id) {
+        currentEdit.id = id;
+        showSpinner();
+        try {
+            const doc = await db.collection('pending_vehicles').doc(id).get();
+            currentEdit.data = doc.data();
+            const features = currentEdit.data.descriptionFeatures || {};
+            document.getElementById('descLeatherSeats').checked = !!features.leatherSeats;
+            document.getElementById('descSunroof').checked = !!features.sunroof;
+            document.getElementById('descHeatedSteering').checked = !!features.heatedSteering;
+            document.getElementById('descHeatedSeats').checked = !!features.heatedSeats;
+            document.getElementById('descCarplay').checked = !!features.carplay;
+            document.getElementById('descriptionModal').classList.remove('hidden');
+        } catch(e) { console.error(e); showToast('Error fetching description.'); } finally { hideSpinner(); }
+    }
+
+    async function saveDescription() {
+        const descriptionFeatures = {
+            leatherSeats: document.getElementById('descLeatherSeats').checked,
+            sunroof: document.getElementById('descSunroof').checked,
+            heatedSteering: document.getElementById('descHeatedSteering').checked,
+            heatedSeats: document.getElementById('descHeatedSeats').checked,
+            carplay: document.getElementById('descCarplay').checked
+        };
+        showSpinner();
+        try {
+            await db.collection('pending_vehicles').doc(currentEdit.id).update({ descriptionFeatures });
+            showToast('Description features saved!');
+            closeDescriptionModal();
+        } catch (e) { console.error(e); showToast('Error saving description.'); } finally { hideSpinner(); }
     }
     
     function openEditModal(id, collection) {
-        currentEdit = { id, collection };
+        currentEdit.id = id;
+        currentEdit.collection = collection;
         showSpinner();
         db.collection(collection).doc(id).get().then(doc => {
             if(doc.exists) {
                 const d = doc.data();
-                Object.keys(d).forEach(key => {
-                    const el = document.getElementById(`edit${key.charAt(0).toUpperCase() + key.slice(1)}`);
-                    if(el) el.value = d[key];
-                });
+                currentEdit.data = d;
+                document.getElementById('editId').value = id;
+                document.getElementById('editCollection').value = collection;
+                document.getElementById('editVinOrStock').value = d.vinOrStock || d.stock || '';
+                document.getElementById('editMake').value = d.make || '';
+                document.getElementById('editModel').value = d.model || '';
+                document.getElementById('editTrim').value = d.trim || '';
+                document.getElementById('editYear').value = d.year || '';
+                document.getElementById('editDate').value = d.date || '';
+                document.getElementById('editComment').value = d.comment || '';
+
+                const detailedEl = document.getElementById('editDetailed');
+                const photoTypeEl = document.getElementById('editPhotoType');
+                if(collection === 'vehicles') {
+                    detailedEl.value = d.detailed || '';
+                    photoTypeEl.value = d.photoType || '';
+                    detailedEl.classList.remove('hidden');
+                    photoTypeEl.classList.remove('hidden');
+                } else {
+                    detailedEl.classList.add('hidden');
+                    photoTypeEl.classList.add('hidden');
+                }
                 document.getElementById('editModal').classList.remove('hidden');
             }
         }).catch(e => { console.error(e); showToast('Error fetching document.'); }).finally(hideSpinner);
     }
     
     async function deleteEntry(id, collection) {
-        if (!confirm('Are you sure you want to permanently delete this entry?')) return;
-        showSpinner();
-        try {
-            await db.collection(collection).doc(id).delete();
-            showToast('Entry deleted!');
-        } catch(e) { console.error(e); showToast('Error deleting entry.'); } finally { hideSpinner(); }
+        openConfirmModal('Are you sure you want to permanently delete this entry?', async () => {
+            showSpinner();
+            try {
+                await db.collection(collection).doc(id).delete();
+                showToast('Entry deleted!');
+            } catch(e) { console.error(e); showToast('Error deleting entry.'); } finally { hideSpinner(); }
+        });
     }
 
     async function toggleSummaryStatus(id, field, currentValue) {
@@ -529,6 +720,195 @@
             showToast('Status updated.');
         } catch (e) { console.error(e); showToast('Error updating status.'); } finally { hideSpinner(); }
     }
+
+    // =================================
+    // AI DESCRIPTION FUNCTIONS
+    // =================================
+    async function openAIDescriptionModal(id) {
+        showSpinner();
+        try {
+            const doc = await db.collection('pending_vehicles').doc(id).get();
+            if (!doc.exists) {
+                showToast("Vehicle not found.");
+                return;
+            }
+            currentEdit.id = id;
+            currentEdit.data = doc.data();
+
+            const d = currentEdit.data;
+            document.getElementById('aiVehicleInfo').innerText = `${d.year} ${d.make} ${d.model} ${d.trim || ''}`;
+            
+            const features = d.descriptionFeatures || {};
+            const descriptionItems = [];
+            if (features.leatherSeats) descriptionItems.push('Leather Seats');
+            if (features.sunroof) descriptionItems.push('Sunroof');
+            if (features.heatedSteering) descriptionItems.push('Heated Steering');
+            if (features.heatedSeats) descriptionItems.push('Heated Seats');
+            if (features.carplay) descriptionItems.push('Android Auto & Apple CarPlay');
+            document.getElementById('aiFeaturesList').innerText = descriptionItems.length ? descriptionItems.join(', ') : 'No special features selected.';
+            
+            document.getElementById('aiGeneratedText').value = d.generatedDescription || '';
+            
+            document.getElementById('generateDescriptionModal').classList.remove('hidden');
+        } catch (e) {
+            console.error("Error opening AI modal:", e);
+            showToast("Could not load vehicle data.");
+        } finally {
+            hideSpinner();
+        }
+    }
+
+    async function generateDescription() {
+        const aiSpinner = document.getElementById('aiSpinner');
+        aiSpinner.classList.remove('hidden');
+        document.getElementById('aiGeneratedText').value = '';
+
+        const vehicle = currentEdit.data;
+        if (!vehicle) {
+            showToast("Error: No vehicle data loaded.");
+            aiSpinner.classList.add('hidden');
+            return;
+        }
+
+        const features = vehicle.descriptionFeatures || {};
+        const featureList = Object.entries(features)
+            .filter(([key, value]) => value)
+            .map(([key]) => {
+                if (key === 'leatherSeats') return 'Leather Seats';
+                if (key === 'sunroof') return 'Sunroof';
+                if (key === 'heatedSteering') return 'Heated Steering';
+                if (key === 'heatedSeats') return 'Heated Seats';
+                if (key === 'carplay') return 'Android Auto & Apple CarPlay';
+                return '';
+            }).join(', ');
+
+        const customFormatInstructions = `
+You must generate the description using this exact multi-part format, including all headers and footers. Do not deviate.
+
+###
+**[Year] [Make] [Model] [Trim] – [Ownership Status, e.g., One Owner, Clean CarFax]**
+
+[Engaging opening paragraph - 2-3 sentences max. Example: "Elevate your family journeys with the [Year] [Make] [Model] — a sophisticated SUV that blends premium comfort, safety, and technology in one striking package."]
+
+**Key Features:**
+- [Feature 1]
+- [Feature 2]
+- [Feature 3]
+- [List 5-7 key technical and comfort features relevant to the vehicle. Use the provided "Additional Features" as a starting point.]
+
+**Safety Highlights:**
+- [Safety Feature 1]
+- [Safety Feature 2]
+- [List 3-4 key safety features for this model and year.]
+
+**Ownership & Condition:**
+- [List ownership details from the "Full Trim / Details" field, e.g., "One Owner", "Clean CarFax (No Accidents)". If none are provided, omit this section.]
+
+**Why Buy from Thornhill Hyundai?**
+At Thornhill Hyundai, we offer top-quality pre-owned vehicles with full transparency, ensuring you drive away with confidence.
+
+**Please Note:**
+HST and licensing fees are not included in the listing price. Prices and promotions are subject to change without notice. Contact us for the most up-to-date information.
+###
+    `;
+
+        const prompt = `
+            You are an expert car salesperson writing a compelling, professional, and enticing description for a dealership website.
+
+            **Primary Task:**
+            Generate a vehicle description that strictly follows the multi-part format provided in "Dealership's Required Format Instructions". You must identify the core trim and any ownership details (like "One Owner", "Clean CarFax") from the "Full Trim / Details" field to construct the title and the "Ownership & Condition" section.
+
+            **Vehicle Details:**
+            - Year: ${vehicle.year}
+            - Make: ${vehicle.make}
+            - Model: ${vehicle.model}
+            - Full Trim / Details: "${vehicle.trim || 'Standard'}" (This contains the trim name and may also contain ownership info).
+            - Additional Features: ${featureList || 'Standard features'}
+
+            **Context:**
+            - The current date is ${new Date().toDateString()}.
+            - The dealership is "Thornhill Hyundai" located in Vaughan, Ontario, Canada.
+
+            **Dealership's Required Format Instructions:**
+            ---
+            ${customFormatInstructions}
+            ---
+
+            Now, generate the complete description based on all the information and instructions provided.
+        `;
+
+        try {
+            // IMPORTANT: The API key is left blank as it's expected to be injected by the runtime environment.
+            // If this feature fails, it is likely due to the execution environment not providing a valid API key.
+            const apiKey = ""; 
+            const model = "gemini-2.0-flash";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+            
+            const payload = {
+                contents: [{ 
+                    role: "user", 
+                    parts: [{ text: prompt }] 
+                }]
+            };
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                console.error("API Error Response:", result);
+                const errorMsg = result.error?.message || `HTTP error! Status: ${response.status}`;
+                throw new Error(errorMsg);
+            }
+
+            if (result.candidates && result.candidates.length > 0) {
+                const candidate = result.candidates[0];
+                if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
+                    const generatedText = candidate.content.parts[0].text;
+                    document.getElementById('aiGeneratedText').value = generatedText;
+                } else {
+                    const finishReason = candidate.finishReason || 'UNKNOWN';
+                    const safetyRatings = JSON.stringify(candidate.safetyRatings) || 'Not available';
+                    console.error(`API response missing content. Finish Reason: ${finishReason}. Safety Ratings: ${safetyRatings}`);
+                    throw new Error(`Generation failed. The AI response was empty. Reason: ${finishReason}.`);
+                }
+            } else {
+                console.error("Invalid API response structure:", result);
+                throw new Error("No response candidates found from the AI service.");
+            }
+        } catch (error) {
+            console.error('Error in generateDescription:', error);
+            showToast(`Error: ${error.message}. Check console for details.`);
+        } finally {
+            aiSpinner.classList.add('hidden');
+        }
+    }
+
+    async function saveAIDescription() {
+        const newDescription = document.getElementById('aiGeneratedText').value;
+        if (!newDescription.trim()) {
+            showToast("Description cannot be empty.");
+            return;
+        }
+        showSpinner();
+        try {
+            await db.collection('pending_vehicles').doc(currentEdit.id).update({
+                generatedDescription: newDescription
+            });
+            showToast("AI description saved successfully!");
+            closeAIDescriptionModal();
+        } catch (e) {
+            console.error("Error saving AI description:", e);
+            showToast("Could not save the description.");
+        } finally {
+            hideSpinner();
+        }
+    }
+
 
     // ==========================
     // INITIALIZATION & LISTENERS
@@ -557,34 +937,61 @@
         // Event Listeners
         document.getElementById('searchCompleted').addEventListener('input', e => {
             const term = e.target.value.toLowerCase();
-            filteredCompletedData = completedData.filter(item => Object.values(item.data).some(val => String(val).toLowerCase().includes(term)));
+            filteredCompletedData = completedData.filter(item => {
+                const d = item.data;
+                const searchableString = Object.values(d).join(' ').toLowerCase();
+                const stockOrVin = (d.vinOrStock || d.stock || '').toLowerCase();
+                return searchableString.includes(term) || stockOrVin.includes(term);
+            });
             renderTable('completed', 'completedTable', filteredCompletedData, 0, PAGE_SIZE, createCompletedRow, 'No results found.');
         });
         
         document.getElementById('saveEditBtn').addEventListener('click', async () => {
+            const id = document.getElementById('editId').value;
+            const collection = document.getElementById('editCollection').value;
             const data = {
-                vin: document.getElementById('editVin').value, stock: document.getElementById('editStock').value,
-                make: document.getElementById('editMake').value, model: document.getElementById('editModel').value,
-                year: document.getElementById('editYear').value, date: document.getElementById('editDate').value,
-                detailed: document.getElementById('editDetailed').value, photoType: document.getElementById('editPhotoType').value,
-                comment: document.getElementById('editComment').value, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                vinOrStock: document.getElementById('editVinOrStock').value.trim().toUpperCase(),
+                make: capitalizeFirst(document.getElementById('editMake').value.trim()),
+                model: capitalizeFirst(document.getElementById('editModel').value.trim()),
+                trim: document.getElementById('editTrim').value.trim(),
+                year: document.getElementById('editYear').value,
+                date: document.getElementById('editDate').value,
+                comment: document.getElementById('editComment').value,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
+            if (collection === 'vehicles') {
+                data.detailed = document.getElementById('editDetailed').value;
+                data.photoType = document.getElementById('editPhotoType').value;
+            }
+
             showSpinner();
             try {
-                await db.collection(currentEdit.collection).doc(currentEdit.id).update(data);
+                await db.collection(collection).doc(id).update(data);
                 showToast('Changes saved!');
                 closeModal();
             } catch (e) { console.error(e); showToast('Error saving changes.'); } finally { hideSpinner(); }
         });
         
         document.getElementById('completePhotoType').addEventListener('change', e => {
-            document.getElementById('halfReasonContainer').classList.toggle('hidden', e.target.value !== 'Half Photos');
+            document.getElementById('halfReasonContainer').classList.toggle('hidden', e.target.value !== 'HP');
+        });
+        
+        document.getElementById('recaptureNeeded').addEventListener('change', e => {
+            document.getElementById('recaptureCommentContainer').classList.toggle('hidden', e.target.value !== 'Yes');
         });
 
         document.getElementById('pendingPrevBtn').onclick = () => renderTable('pending', 'pendingTable', pendingData, currentPendingPage - 1, PAGE_SIZE, createPendingRow, 'No pending vehicles.');
         document.getElementById('pendingNextBtn').onclick = () => renderTable('pending', 'pendingTable', pendingData, currentPendingPage + 1, PAGE_SIZE, createPendingRow, 'No pending vehicles.');
         document.getElementById('completedPrevBtn').onclick = () => renderTable('completed', 'completedTable', filteredCompletedData, currentCompletedPage - 1, PAGE_SIZE, createCompletedRow, 'No completed vehicles.');
         document.getElementById('completedNextBtn').onclick = () => renderTable('completed', 'completedTable', filteredCompletedData, currentCompletedPage + 1, PAGE_SIZE, createCompletedRow, 'No completed vehicles.');
+        
+        document.getElementById('confirmCancelBtn').addEventListener('click', closeConfirmModal);
+        document.getElementById('confirmOkBtn').addEventListener('click', () => {
+            if (typeof onConfirmCallback === 'function') {
+                onConfirmCallback();
+            }
+            closeConfirmModal();
+        });
     });
 
     function setupSorting() {
