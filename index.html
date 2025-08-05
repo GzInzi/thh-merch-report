@@ -569,7 +569,7 @@
         if (key === 'pending') currentPendingPage = page; else currentCompletedPage = page;
         
         const pageSlice = sorted.slice(page * size, (page * size) + size);
-        tbody.innerHTML = pageSlice.length ? pageSlice.map(rowFunc).join('') : `<tr><td colspan="14" class="text-center py-10 text-gray-500">${emptyMsg}</td></tr>`;
+        tbody.innerHTML = pageSlice.length ? pageSlice.map(rowFunc).join('') : `<tr><td colspan="15" class="text-center py-10 text-gray-500">${emptyMsg}</td></tr>`;
         
         document.getElementById(`${key}PageInfo`).textContent = `Page ${page + 1} of ${totalPages}`;
         document.getElementById(`${key}PrevBtn`).disabled = page === 0;
@@ -612,7 +612,7 @@
             <td>${d.year}</td>
             <td>${d.date}</td>
             <td class="text-center"><span class="px-2 py-0.5 text-xs rounded-full font-medium ${badgeStyle}">${days}</span></td>
-            <td class="text-gray-500 truncate cursor-pointer" ondblclick="openViewDescriptionModal('Description', \`${escapedDescriptionText}\`)" title="Double-click to view full text">${descriptionText.split('\n')[0]}</td>
+            <td class="text-gray-500 truncate cursor-pointer" style="max-width: 150px;" ondblclick="openViewDescriptionModal('Description', \`${escapedDescriptionText}\`)" title="Double-click to view full text">${descriptionText.split('\n')[0]}</td>
             <td class="comment-cell truncate cursor-pointer" ondblclick="openViewDescriptionModal('Comment', \`${escapedComment}\`)" title="Double-click to view full text">${d.comment || ''}</td>
             <td><div class="flex items-center justify-center space-x-1">
                 <button onclick="openDescriptionModal('${doc.id}')" class="btn btn-secondary text-xs">Features</button>
@@ -668,7 +668,7 @@
             <td>${d.recaptureNeeded || 'No'}</td>
             <td class="text-gray-500 truncate cursor-pointer" ondblclick="openViewDescriptionModal('Half Photo Reason', \`${escapedHalfReason}\`)" title="Double-click to view full text">${d.halfReason || ''}</td>
             <td class="text-center">${calculateDays(d.originalEntryDate || d.date)}</td>
-            <td class="text-gray-500 truncate cursor-pointer" ondblclick="openViewDescriptionModal('Description', \`${escapedDescriptionText}\`)" title="Double-click to view full text">${descriptionText.split('\n')[0]}</td>
+            <td class="text-gray-500 truncate cursor-pointer" style="max-width: 150px;" ondblclick="openViewDescriptionModal('Description', \`${escapedDescriptionText}\`)" title="Double-click to view full text">${descriptionText.split('\n')[0]}</td>
             <td class="comment-cell truncate cursor-pointer" ondblclick="openViewDescriptionModal('Comment', \`${escapedComment}\`)" title="Double-click to view full text">${d.comment || ''}</td>
             <td><div class="flex items-center justify-center space-x-1">
                 <button onclick="toggleSoldStatus('${doc.id}', ${!!d.isSold})" class="btn ${d.isSold ? 'btn-secondary' : 'btn-success'} text-xs">Sold</button>
@@ -745,7 +745,7 @@
                 <td>${d.year}</td>
                 <td>${d.mileage || ''}</td>
                 <td class="text-center">${detailedIcon}</td>
-                <td class="text-gray-500 truncate cursor-pointer" ondblclick="openViewDescriptionModal('Description', \`${escapedDescriptionText}\`)">${descriptionText.split('\n')[0]}</td>
+                <td class="text-gray-500 truncate cursor-pointer" style="max-width: 150px;" ondblclick="openViewDescriptionModal('Description', \`${escapedDescriptionText}\`)">${descriptionText.split('\n')[0]}</td>
                 <td class="text-center">${toggleButton('descriptionUploaded', d.descriptionUploaded)}</td>
                 <td class="text-center">${toggleButton('gloveboxDocuments', d.gloveboxDocuments)}</td>
                 <td class="text-center">${toggleButton('recaptured', d.recaptured)}</td>
