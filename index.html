@@ -220,6 +220,7 @@
                             <th data-col="model" class="sortable">Model</th>
                             <th data-col="trim" class="sortable">Trim</th>
                             <th data-col="year" class="sortable">Year</th>
+                            <th data-col="mileage" class="sortable">Mileage</th>
                             <th data-col="date" class="sortable">Date</th>
                             <th data-col="detailed" class="sortable text-center">Detailed</th>
                             <th data-col="photoType" class="sortable">Photos</th>
@@ -255,6 +256,7 @@
                                 <th>Model</th>
                                 <th>Trim</th>
                                 <th>Year</th>
+                                <th>Mileage</th>
                                 <th class="text-center">Detailed</th>
                                 <th>Description</th>
                                 <th class="text-center">Desc. Uploaded</th>
@@ -413,8 +415,7 @@
                 <input id="editTrim" placeholder="Trim" class="form-input" />
                 <select id="editYear" class="form-input"><option value="">Year</option></select>
                 <input id="editDate" type="date" class="form-input" />
-                <select id="editDetailed" class="form-input hidden"><option value="">Detailed?</option><option>Yes</option><option>No</option></select>
-                <select id="editPhotoType" class="form-input hidden"><option value="">Photos?</option><option value="FP">FP</option><option value="HP">HP</option></select>
+                <input id="editMileage" placeholder="Mileage" class="form-input hidden" />
              </div>
              <div class="space-y-4">
                 <div class="border rounded-md p-4">
@@ -660,6 +661,7 @@
             <td>${d.model}</td>
             <td>${d.trim || ''}</td>
             <td>${d.year}</td>
+            <td>${d.mileage || ''}</td>
             <td>${d.date}</td>
             <td class="text-center">${detailedIcon}</td>
             <td>${d.photoType || ''}</td>
@@ -741,6 +743,7 @@
                 <td>${d.model}</td>
                 <td>${d.trim || ''}</td>
                 <td>${d.year}</td>
+                <td>${d.mileage || ''}</td>
                 <td class="text-center">${detailedIcon}</td>
                 <td class="text-gray-500 truncate cursor-pointer" ondblclick="openViewDescriptionModal('Description', \`${escapedDescriptionText}\`)">${descriptionText.split('\n')[0]}</td>
                 <td class="text-center">${toggleButton('descriptionUploaded', d.descriptionUploaded)}</td>
@@ -904,6 +907,7 @@
                 document.getElementById('editDate').value = d.date || '';
                 document.getElementById('editComment').value = d.comment || '';
                 document.getElementById('editGeneratedDescription').value = d.generatedDescription || '';
+                document.getElementById('editMileage').value = d.mileage || '';
 
                 const features = d.descriptionFeatures || {};
                 document.getElementById('editLeatherSeats').checked = !!features.leatherSeats;
@@ -919,14 +923,17 @@
 
                 const detailedEl = document.getElementById('editDetailed');
                 const photoTypeEl = document.getElementById('editPhotoType');
+                const mileageEl = document.getElementById('editMileage');
                 if(collection === 'vehicles') {
                     detailedEl.value = d.detailed || '';
                     photoTypeEl.value = d.photoType || '';
                     detailedEl.classList.remove('hidden');
                     photoTypeEl.classList.remove('hidden');
+                    mileageEl.classList.remove('hidden');
                 } else {
                     detailedEl.classList.add('hidden');
                     photoTypeEl.classList.add('hidden');
+                     mileageEl.classList.add('hidden');
                 }
                 document.getElementById('editModal').classList.remove('hidden');
             }
@@ -1235,8 +1242,7 @@ HST and licensing fees are not included in the listing price. Prices and promoti
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
             if (collection === 'vehicles') {
-                data.detailed = document.getElementById('editDetailed').value;
-                data.photoType = document.getElementById('editPhotoType').value;
+                data.mileage = document.getElementById('editMileage').value.trim();
             }
 
             showSpinner();
