@@ -921,18 +921,10 @@
                 document.getElementById('editCarplay').checked = !!features.carplay;
                 document.getElementById('editOtherFeatures').value = features.other || '';
 
-                const detailedEl = document.getElementById('editDetailed');
-                const photoTypeEl = document.getElementById('editPhotoType');
                 const mileageEl = document.getElementById('editMileage');
                 if(collection === 'vehicles') {
-                    detailedEl.value = d.detailed || '';
-                    photoTypeEl.value = d.photoType || '';
-                    detailedEl.classList.remove('hidden');
-                    photoTypeEl.classList.remove('hidden');
                     mileageEl.classList.remove('hidden');
                 } else {
-                    detailedEl.classList.add('hidden');
-                    photoTypeEl.classList.add('hidden');
                      mileageEl.classList.add('hidden');
                 }
                 document.getElementById('editModal').classList.remove('hidden');
