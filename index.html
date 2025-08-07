@@ -657,16 +657,14 @@
             <td class="font-semibold text-gray-900 ${stockClass}">${d.vinOrStock || d.stock || ''}</td>
             <td>${d.make}</td>
             <td>${d.model}</td>
-            <td>${d.trim || ''}</td>
             <td>${d.year}</td>
+            <td>${d.trim || ''}</td>
+            <td class="text-gray-500 truncate cursor-pointer" style="max-width: 150px;" ondblclick="openViewDescriptionModal('Description', \`${escapedDescriptionText}\`)" title="Double-click to view full text">${descriptionText.split('\n')[0]}</td>
             <td>${d.mileage || ''}</td>
             <td>${d.date}</td>
             <td class="text-center">${detailedIcon}</td>
-            <td>${d.photoType || ''}</td>
-            <td>${d.recaptureNeeded || 'No'}</td>
             <td class="text-gray-500 truncate cursor-pointer" ondblclick="openViewDescriptionModal('Half Photo Reason', \`${escapedHalfReason}\`)" title="Double-click to view full text">${d.halfReason || ''}</td>
             <td class="text-center">${calculateDays(d.originalEntryDate || d.date)}</td>
-            <td class="text-gray-500 truncate cursor-pointer" style="max-width: 150px;" ondblclick="openViewDescriptionModal('Description', \`${escapedDescriptionText}\`)" title="Double-click to view full text">${descriptionText.split('\n')[0]}</td>
             <td class="comment-cell truncate cursor-pointer" ondblclick="openViewDescriptionModal('Comment', \`${escapedComment}\`)" title="Double-click to view full text">${d.comment || ''}</td>
             <td><div class="flex items-center justify-center space-x-1">
                 <button onclick="toggleSoldStatus('${doc.id}', ${!!d.isSold})" class="btn ${d.isSold ? 'btn-secondary' : 'btn-success'} text-xs">Sold</button>
@@ -1039,34 +1037,34 @@
         }
 
         const customFormatInstructions = `
-You must generate the description using this exact multi-part format, including all headers and footers. Do not deviate.
+    You must generate the description using this exact multi-part format, including all headers and footers. Do not deviate.
 
-###
-**[Year] [Make] [Model] [Trim] – [Ownership Status, e.g., One Owner, Clean CarFax]**
+    ###
+    **[Year] [Make] [Model] [Trim] – [Ownership Status, e.g., One Owner, Clean CarFax]**
 
-[Engaging opening paragraph - 2-3 sentences max. Example: "Elevate your family journeys with the [Year] [Make] [Model] — a sophisticated SUV that blends premium comfort, safety, and technology in one striking package."]
+    [Engaging opening paragraph - 2-3 sentences max. Example: "Elevate your family journeys with the [Year] [Make] [Model] — a sophisticated SUV that blends premium comfort, safety, and technology in one striking package."]
 
-**Key Features:**
-- [Feature 1]
-- [Feature 2]
-- [Feature 3]
-- [List 5-7 key technical and comfort features relevant to the vehicle. Use the provided "Additional Features" as a starting point.]
+    **Key Features:**
+    - [Feature 1]
+    - [Feature 2]
+    - [Feature 3]
+    - [List 5-7 key technical and comfort features relevant to the vehicle. Use the provided "Additional Features" as a starting point.]
 
-**Safety Highlights:**
-- [Safety Feature 1]
-- [Safety Feature 2]
-- [List 3-4 key safety features for this model and year.]
+    **Safety Highlights:**
+    - [Safety Feature 1]
+    - [Safety Feature 2]
+    - [List 3-4 key safety features for this model and year.]
 
-**Ownership & Condition:**
-- [List ownership details from the "Full Trim / Details" field, e.g., "One Owner", "Clean CarFax (No Accidents)". If none are provided, omit this section.]
+    **Ownership & Condition:**
+    - [List ownership details from the "Full Trim / Details" field, e.g., "One Owner", "Clean CarFax (No Accidents)". If none are provided, omit this section.]
 
-**Why Buy from Thornhill Hyundai?**
-At Thornhill Hyundai, we offer top-quality pre-owned vehicles with full transparency, ensuring you drive away with confidence.
+    **Why Buy from Thornhill Hyundai?**
+    At Thornhill Hyundai, we offer top-quality pre-owned vehicles with full transparency, ensuring you drive away with confidence.
 
-**Please Note:**
-HST and licensing fees are not included in the listing price. Prices and promotions are subject to change without notice. Contact us for the most up-to-date information.
-###
-    `;
+    **Please Note:**
+    HST and licensing fees are not included in the listing price. Prices and promotions are subject to change without notice. Contact us for the most up-to-date information.
+    ###
+        `;
 
         const prompt = `
             You are an expert car salesperson writing a compelling, professional, and enticing description for a dealership website.
