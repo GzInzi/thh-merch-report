@@ -224,6 +224,7 @@
                             <th data-col="mileage" class="sortable">Mileage</th>
                             <th data-col="date" class="sortable">Date</th>
                             <th data-col="detailed" class="sortable text-center">Detailed</th>
+                            <th data-col="recaptureNeeded" class="sortable">Recapture?</th>
                             <th data-col="halfReason" class="sortable">Half Reason</th>
                             <th data-col="days" class="sortable text-center">Days</th>
                             <th>Comment</th>
@@ -653,18 +654,25 @@
         const escapedComment = (d.comment || '').replace(/`/g, '\\`');
         const escapedHalfReason = (d.halfReason || '').replace(/`/g, '\\`');
 
+        let recaptureClass = '';
+        if (d.recaptureNeeded === 'Yes' && calculateDays(d.date) > 5) {
+            recaptureClass = 'bg-red-100 text-red-700 font-bold';
+        }
+
         return `<tr class="${d.isSold ? 'opacity-50' : ''}">
             <td class="font-semibold text-gray-900 ${stockClass}">${d.vinOrStock || d.stock || ''}</td>
             <td>${d.make}</td>
             <td>${d.model}</td>
-            <td>${d.year}</td>
             <td>${d.trim || ''}</td>
-            <td class="text-gray-500 truncate cursor-pointer" style="max-width: 150px;" ondblclick="openViewDescriptionModal('Description', \`${escapedDescriptionText}\`)" title="Double-click to view full text">${descriptionText.split('\n')[0]}</td>
+            <td>${d.year}</td>
             <td>${d.mileage || ''}</td>
             <td>${d.date}</td>
             <td class="text-center">${detailedIcon}</td>
+            <td>${d.photoType || ''}</td>
+            <td class="${recaptureClass}">${d.recaptureNeeded || 'No'}</td>
             <td class="text-gray-500 truncate cursor-pointer" ondblclick="openViewDescriptionModal('Half Photo Reason', \`${escapedHalfReason}\`)" title="Double-click to view full text">${d.halfReason || ''}</td>
             <td class="text-center">${calculateDays(d.originalEntryDate || d.date)}</td>
+            <td class="text-gray-500 truncate cursor-pointer" style="max-width: 150px;" ondblclick="openViewDescriptionModal('Description', \`${escapedDescriptionText}\`)" title="Double-click to view full text">${descriptionText.split('\n')[0]}</td>
             <td class="comment-cell truncate cursor-pointer" ondblclick="openViewDescriptionModal('Comment', \`${escapedComment}\`)" title="Double-click to view full text">${d.comment || ''}</td>
             <td><div class="flex items-center justify-center space-x-1">
                 <button onclick="toggleSoldStatus('${doc.id}', ${!!d.isSold})" class="btn ${d.isSold ? 'btn-secondary' : 'btn-success'} text-xs">Sold</button>
