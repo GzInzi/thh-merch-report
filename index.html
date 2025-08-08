@@ -224,7 +224,6 @@
                             <th data-col="mileage" class="sortable">Mileage</th>
                             <th data-col="date" class="sortable">Date</th>
                             <th data-col="detailed" class="sortable text-center">Detailed</th>
-                            <th data-col="recaptureNeeded" class="sortable">Recapture?</th>
                             <th data-col="halfReason" class="sortable">Half Reason</th>
                             <th data-col="days" class="sortable text-center">Days</th>
                             <th>Comment</th>
@@ -663,18 +662,17 @@
             <td class="font-semibold text-gray-900 ${stockClass}">${d.vinOrStock || d.stock || ''}</td>
             <td>${d.make}</td>
             <td>${d.model}</td>
-            <td>${d.trim || ''}</td>
             <td>${d.year}</td>
+            <td>${d.trim || ''}</td>
+            <td class="text-gray-500 truncate cursor-pointer" style="max-width: 150px;" ondblclick="openViewDescriptionModal('Description', \`${escapedDescriptionText}\`)">${descriptionText.split('\n')[0]}</td>
             <td>${d.mileage || ''}</td>
             <td>${d.date}</td>
             <td class="text-center">${detailedIcon}</td>
-            <td>${d.photoType || ''}</td>
-            <td class="${recaptureClass}">${d.recaptureNeeded || 'No'}</td>
             <td class="text-gray-500 truncate cursor-pointer" ondblclick="openViewDescriptionModal('Half Photo Reason', \`${escapedHalfReason}\`)" title="Double-click to view full text">${d.halfReason || ''}</td>
             <td class="text-center">${calculateDays(d.originalEntryDate || d.date)}</td>
-            <td class="text-gray-500 truncate cursor-pointer" style="max-width: 150px;" ondblclick="openViewDescriptionModal('Description', \`${escapedDescriptionText}\`)" title="Double-click to view full text">${descriptionText.split('\n')[0]}</td>
             <td class="comment-cell truncate cursor-pointer" ondblclick="openViewDescriptionModal('Comment', \`${escapedComment}\`)" title="Double-click to view full text">${d.comment || ''}</td>
             <td><div class="flex items-center justify-center space-x-1">
+                <button onclick="moveToPending('${doc.id}')" class="btn btn-secondary text-xs">Recapture</button>
                 <button onclick="toggleSoldStatus('${doc.id}', ${!!d.isSold})" class="btn ${d.isSold ? 'btn-secondary' : 'btn-success'} text-xs">Sold</button>
                 <button onclick="openEditModal('${doc.id}', 'vehicles')" class="btn btn-warning text-xs">Edit</button>
                 <button onclick="deleteEntry('${doc.id}', 'vehicles')" class="btn btn-danger text-xs">Del</button>
@@ -960,6 +958,38 @@
             await db.collection('vehicles').doc(id).update({ isSold: !currentValue });
             showToast(`Vehicle marked as ${!currentValue ? 'Sold' : 'Available'}.`);
         } catch (e) { console.error(e); showToast('Error updating sold status.'); } finally { hideSpinner(); }
+    }
+
+    async function moveToPending(id) {
+        openConfirmModal('Are you sure you want to move this vehicle back to the Pending list for recapture?', async () => {
+            showSpinner();
+            try {
+                const docRef = db.collection('vehicles').doc(id);
+                const doc = await docRef.get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    const pendingData = {
+                        vinOrStock: data.vinOrStock || data.stock || '',
+                        make: data.make,
+                        model: data.model,
+                        trim: data.trim,
+                        year: data.year,
+                        date: getTodayDate(), // Reset date to today
+                        comment: `Moved back for recapture. Original comment: ${data.comment || ''}`, // Pre-fill a comment
+                        descriptionFeatures: data.descriptionFeatures || {},
+                        generatedDescription: data.generatedDescription || ''
+                    };
+                    await db.collection('pending_vehicles').add(pendingData);
+                    await docRef.delete();
+                    showToast('Vehicle moved to Pending for recapture.');
+                }
+            } catch(e) {
+                console.error(e);
+                showToast('Error moving vehicle.');
+            } finally {
+                hideSpinner();
+            }
+        });
     }
 
 
