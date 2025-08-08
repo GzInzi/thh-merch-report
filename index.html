@@ -218,15 +218,16 @@
                             <th data-col="vinOrStock" class="sortable">Stock No.</th>
                             <th data-col="make" class="sortable">Make</th>
                             <th data-col="model" class="sortable">Model</th>
-                            <th data-col="year" class="sortable">Year</th>
                             <th data-col="trim" class="sortable">Trim</th>
-                            <th>Description</th>
+                            <th data-col="year" class="sortable">Year</th>
                             <th data-col="mileage" class="sortable">Mileage</th>
                             <th data-col="date" class="sortable">Date</th>
                             <th data-col="detailed" class="sortable text-center">Detailed</th>
+                            <th data-col="photoType" class="sortable">Photos</th>
                             <th data-col="recaptureNeeded" class="sortable">Recapture?</th>
                             <th data-col="halfReason" class="sortable">Half Reason</th>
                             <th data-col="days" class="sortable text-center">Days</th>
+                            <th>Description</th>
                             <th>Comment</th>
                             <th class="text-center">Actions</th>
                         </tr>
@@ -663,14 +664,16 @@
             <td class="font-semibold text-gray-900 ${stockClass}">${d.vinOrStock || d.stock || ''}</td>
             <td>${d.make}</td>
             <td>${d.model}</td>
-            <td>${d.year}</td>
             <td>${d.trim || ''}</td>
-            <td class="text-gray-500 truncate cursor-pointer" style="max-width: 150px;" ondblclick="openViewDescriptionModal('Description', \`${escapedDescriptionText}\`)">${descriptionText.split('\n')[0]}</td>
+            <td>${d.year}</td>
             <td>${d.mileage || ''}</td>
             <td>${d.date}</td>
             <td class="text-center">${detailedIcon}</td>
+            <td>${d.photoType || ''}</td>
+            <td class="${recaptureClass}">${d.recaptureNeeded || 'No'}</td>
             <td class="text-gray-500 truncate cursor-pointer" ondblclick="openViewDescriptionModal('Half Photo Reason', \`${escapedHalfReason}\`)" title="Double-click to view full text">${d.halfReason || ''}</td>
             <td class="text-center">${calculateDays(d.originalEntryDate || d.date)}</td>
+            <td class="text-gray-500 truncate cursor-pointer" style="max-width: 150px;" ondblclick="openViewDescriptionModal('Description', \`${escapedDescriptionText}\`)">${descriptionText.split('\n')[0]}</td>
             <td class="comment-cell truncate cursor-pointer" ondblclick="openViewDescriptionModal('Comment', \`${escapedComment}\`)" title="Double-click to view full text">${d.comment || ''}</td>
             <td><div class="flex items-center justify-center space-x-1">
                 <button onclick="moveToPending('${doc.id}')" class="btn btn-secondary text-xs">Recapture</button>
