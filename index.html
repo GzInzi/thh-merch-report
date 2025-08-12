@@ -8,6 +8,14 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     
+    <!-- PWA / Add to Home Screen Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="THH Merch">
+    <link rel="apple-touch-icon" href="https://placehold.co/180x180/3b82f6/FFFFFF?text=THH"> <!-- Replace with your 180x180 icon URL -->
+    <link rel="manifest" href="/manifest.json"> <!-- See conclusion for manifest.json content -->
+
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -673,7 +681,7 @@
             <td class="${recaptureClass}">${d.recaptureNeeded || 'No'}</td>
             <td class="text-gray-500 truncate cursor-pointer" ondblclick="openViewDescriptionModal('Half Photo Reason', \`${escapedHalfReason}\`)" title="Double-click to view full text">${d.halfReason || ''}</td>
             <td class="text-center">${calculateDays(d.originalEntryDate || d.date)}</td>
-            <td class="text-gray-500 truncate cursor-pointer" style="max-width: 150px;" ondblclick="openViewDescriptionModal('Description', \`${escapedDescriptionText}\`)">${descriptionText.split('\n')[0]}</td>
+            <td class="text-gray-500 truncate cursor-pointer" style="max-width: 150px;" ondblclick="openViewDescriptionModal('Description', \`${escapedDescriptionText}\`)" title="Double-click to view full text">${descriptionText.split('\n')[0]}</td>
             <td class="comment-cell truncate cursor-pointer" ondblclick="openViewDescriptionModal('Comment', \`${escapedComment}\`)" title="Double-click to view full text">${d.comment || ''}</td>
             <td><div class="flex items-center justify-center space-x-1">
                 <button onclick="moveToPending('${doc.id}')" class="btn btn-secondary text-xs">Recapture</button>
