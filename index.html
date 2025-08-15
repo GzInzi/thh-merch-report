@@ -182,6 +182,14 @@
                     <button type="button" onclick="addPending()" class="btn btn-primary">Add to Pending</button>
                 </div>
             </form>
+            <hr class="my-6">
+            <div>
+                <h3 class="text-md font-semibold mb-2">Bulk Data Entry</h3>
+                <textarea id="bulkData" class="form-input w-full" rows="5" placeholder="Paste vehicle data here, one vehicle per line. Use Tabs to separate columns in this order: Model, Make, Year, Type, Vin, Stock #."></textarea>
+                <div class="text-right mt-2">
+                    <button type="button" onclick="parseAndAddBulk()" class="btn btn-secondary">Parse & Add All</button>
+                </div>
+            </div>
         </section>
 
         <section class="card overflow-hidden">
@@ -787,7 +795,7 @@
     // ==========================
     // ACTIONS
     // ==========================
-    async function addPending() {
+    async function addPending(isBulk = false) {
         const formData = {
             vinOrStock: document.getElementById('vinOrStock').value.trim().toUpperCase(),
             make: capitalizeFirst(document.getElementById('make').value.trim()),
@@ -797,16 +805,140 @@
             date: document.getElementById('date').value,
             comment: document.getElementById('comment').value.trim()
         };
-        if (!formData.vinOrStock || !formData.make || !formData.model || !formData.year || !formData.date) return showToast('Please fill all required fields.');
-        if (pendingData.some(item => (item.data.vinOrStock || item.data.stock) === formData.vinOrStock)) return showToast('Duplicate Stock/VIN in Pending list.');
+        if (!formData.vinOrStock || !formData.make || !formData.model || !formData.year || !formData.date) {
+            if (!isBulk) showToast('Please fill all required fields.');
+            return false;
+        }
+        if (pendingData.some(item => (item.data.vinOrStock || item.data.stock) === formData.vinOrStock)) {
+            if (!isBulk) showToast('Duplicate Stock/VIN in Pending list.');
+            return false;
+        }
         
-        showSpinner();
+        if (!isBulk) showSpinner();
         try {
             await db.collection('pending_vehicles').add(formData);
-            showToast('Vehicle added successfully!');
-            document.getElementById('dataEntryForm').reset();
-            document.getElementById('date').value = getTodayDate();
-        } catch (e) { console.error(e); showToast('Error adding entry.'); } finally { hideSpinner(); }
+            if (!isBulk) {
+                showToast('Vehicle added successfully!');
+                document.getElementById('dataEntryForm').reset();
+                document.getElementById('date').value = getTodayDate();
+            }
+            return true;
+        } catch (e) { 
+            console.error(e); 
+            if (!isBulk) showToast('Error adding entry.');
+            return false;
+        } finally { 
+            if (!isBulk) hideSpinner();
+        }
+    }
+
+    async function parseAndAddBulk() {
+        const text = document.getElementById('bulkData').value.trim();
+        if (!text) return showToast('Paste data into the bulk entry field.');
+
+        showSpinner();
+        const lines = text.split('\n').filter(line => line.trim() !== '');
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (const line of lines) {
+            let parsedData;
+            if (line.includes('\t')) {
+                const parts = line.split('\t');
+                parsedData = {
+                    model: parts[0] || '',
+                    make: parts[1] || '',
+                    year: parts[2] || '',
+                    stockNo: parts[5] || '',
+                    trim: '' // Trim is not in this format
+                };
+            } else {
+                parsedData = parseSingleLine(line);
+            }
+
+            if (parsedData && parsedData.stockNo && parsedData.make && parsedData.model && parsedData.year) {
+                document.getElementById('vinOrStock').value = parsedData.stockNo;
+                document.getElementById('make').value = parsedData.make;
+                document.getElementById('model').value = parsedData.model;
+                document.getElementById('year').value = parsedData.year;
+                document.getElementById('trim').value = parsedData.trim;
+                document.getElementById('date').value = getTodayDate();
+                document.getElementById('comment').value = '';
+
+                const success = await addPending(true);
+                if (success) {
+                    successCount++;
+                } else {
+                    errorCount++;
+                }
+            } else {
+                errorCount++;
+            }
+            await new Promise(resolve => setTimeout(resolve, 200));
+        }
+        
+        document.getElementById('dataEntryForm').reset();
+        document.getElementById('date').value = getTodayDate();
+        document.getElementById('bulkData').value = '';
+        hideSpinner();
+        showToast(`Bulk operation finished. Added: ${successCount}. Failed/Skipped: ${errorCount}.`);
+    }
+
+    function parseSingleLine(line) {
+        let remainingLine = line.trim();
+        const makes = [
+            'Acura', 'Audi', 'BMW', 'Buick', 'Cadillac', 'Chevrolet', 'Chrysler', 'Dodge', 'Ford', 'GMC',
+            'Honda', 'Hyundai', 'Infiniti', 'Jaguar', 'Jeep', 'Kia', 'Land Rover', 'Lexus', 'Lincoln',
+            'Mazda', 'Mercedes-Benz', 'Mitsubishi', 'Nissan', 'Ram', 'Subaru', 'Tesla', 'Toyota', 'Volkswagen', 'VW', 'Volvo'
+        ].sort((a, b) => b.length - a.length);
+
+        remainingLine = remainingLine.replace(/[A-Z0-9]{17}/g, '').trim();
+        remainingLine = remainingLine.replace(/\b(Used|New|CPO)\b/ig, '').trim();
+
+        const parts = remainingLine.split(/\s+/);
+        const stockNo = parts.pop();
+        remainingLine = parts.join(' ').trim();
+
+        let year = '';
+        const yearMatch = remainingLine.match(/\b(19|20)\d{2}\b/);
+        if (yearMatch) {
+            year = yearMatch[0];
+            remainingLine = remainingLine.replace(year, '').trim();
+        }
+
+        let make = '';
+        let model = '';
+        
+        for (const carMake of makes) {
+            const makeIndex = remainingLine.toLowerCase().lastIndexOf(carMake.toLowerCase());
+            if (makeIndex !== -1) {
+                make = carMake === 'VW' ? 'Volkswagen' : carMake;
+                model = remainingLine.substring(0, makeIndex).trim();
+                break;
+            }
+        }
+        
+        if (!make) {
+            for (const carMake of makes) {
+                if (remainingLine.toLowerCase().endsWith(carMake.toLowerCase().replace(/\s/g, ''))) {
+                    make = carMake === 'VW' ? 'Volkswagen' : carMake;
+                    model = remainingLine.substring(0, remainingLine.toLowerCase().lastIndexOf(carMake.toLowerCase().replace(/\s/g, ''))).trim();
+                    break;
+                }
+            }
+        }
+
+        if (!make) {
+            model = remainingLine;
+        }
+
+        return {
+            stockNo: stockNo ? stockNo.toUpperCase() : '',
+            make: capitalizeFirst(make),
+            model: capitalizeFirst(model),
+            year: year,
+            trim: ''
+        };
     }
     
     async function confirmComplete() {
