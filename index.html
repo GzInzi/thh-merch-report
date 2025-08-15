@@ -496,7 +496,7 @@
     const COMPLETED_PAGE_SIZE = 10;
     const DAILY_SUMMARY_PAGE_SIZE = 10;
     const sortState = {
-        pending: { col: 'date', dir: 'desc' },
+        pending: { col: 'createdAt', dir: 'desc' },
         completed: { col: 'completedAt', dir: 'desc' }
     };
     let currentEdit = { id: null, collection: '', data: {} };
@@ -549,9 +549,10 @@
                 const data = doc.data;
                 switch (column) {
                     case 'completedAt':
+                    case 'createdAt':
                         // Convert Firestore Timestamp to milliseconds for accurate sorting.
                         // Default to 0 if the timestamp doesn't exist (for older data).
-                        return data.completedAt?.toMillis() || 0;
+                        return data[column]?.toMillis() || 0;
                     case 'days':
                         return calculateDays(data.date);
                     case 'vinOrStock':
@@ -803,7 +804,8 @@
             trim: document.getElementById('trim').value.trim(),
             year: document.getElementById('year').value,
             date: document.getElementById('date').value,
-            comment: document.getElementById('comment').value.trim()
+            comment: document.getElementById('comment').value.trim(),
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
         };
         if (!formData.vinOrStock || !formData.make || !formData.model || !formData.year || !formData.date) {
             if (!isBulk) showToast('Please fill all required fields.');
@@ -1122,7 +1124,8 @@
                         date: getTodayDate(), // Reset date to today
                         comment: `Moved back for recapture. Original comment: ${data.comment || ''}`, // Pre-fill a comment
                         descriptionFeatures: data.descriptionFeatures || {},
-                        generatedDescription: data.generatedDescription || ''
+                        generatedDescription: data.generatedDescription || '',
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     };
                     await db.collection('pending_vehicles').add(pendingData);
                     await docRef.delete();
