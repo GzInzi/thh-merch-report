@@ -251,8 +251,9 @@
         </section>
 
         <section class="card overflow-hidden">
-            <div class="p-6">
+            <div class="p-6 flex flex-col md:flex-row justify-between items-center gap-4">
                 <h2 class="text-lg font-semibold">Daily Summary for <span id="reportDate" class="text-blue-600"></span></h2>
+                <input id="summaryDatePicker" type="date" class="form-input w-full md:w-auto" />
             </div>
             <div id="dailySummaryContent">
                 <div class="overflow-x-auto">
@@ -691,11 +692,11 @@
             </div></td></tr>`;
     };
 
-    function renderDailySummary(page = 0) {
-        const today = getTodayDate();
-        document.getElementById('reportDate').textContent = getDisplayDate(today);
+    function renderDailySummary(selectedDate, page = 0) {
+        const reportDate = selectedDate || getTodayDate();
+        document.getElementById('reportDate').textContent = getDisplayDate(reportDate);
         
-        let dailyEntries = completedData.filter(doc => doc.data.date === today);
+        let dailyEntries = completedData.filter(doc => doc.data.date === reportDate);
         dailyEntries.sort((a,b) => (b.data.completedAt?.toMillis() || 0) - (a.data.completedAt?.toMillis() || 0));
 
         const paginationContainer = document.getElementById('dailySummaryPagination');
@@ -1235,7 +1236,7 @@
         db.collection('vehicles').onSnapshot(snapshot => {
             completedData = snapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
             document.getElementById('searchCompleted').dispatchEvent(new Event('input'));
-            renderDailySummary();
+            renderDailySummary(document.getElementById('summaryDatePicker').value);
         }, err => { console.error(err); showToast('Error loading completed vehicles.'); });
         
         // Event Listeners
@@ -1314,8 +1315,15 @@
         document.getElementById('pendingNextBtn').onclick = () => renderTable('pending', 'pendingTable', pendingData, currentPendingPage + 1, PENDING_PAGE_SIZE, createPendingRow, 'No pending vehicles.');
         document.getElementById('completedPrevBtn').onclick = () => renderTable('completed', 'completedTable', filteredCompletedData, currentCompletedPage - 1, COMPLETED_PAGE_SIZE, createCompletedRow, 'No completed vehicles.');
         document.getElementById('completedNextBtn').onclick = () => renderTable('completed', 'completedTable', filteredCompletedData, currentCompletedPage + 1, COMPLETED_PAGE_SIZE, createCompletedRow, 'No completed vehicles.');
-        document.getElementById('dailySummaryPrevBtn').onclick = () => renderDailySummary(currentDailySummaryPage - 1);
-        document.getElementById('dailySummaryNextBtn').onclick = () => renderDailySummary(currentDailySummaryPage + 1);
+        
+        const summaryDatePicker = document.getElementById('summaryDatePicker');
+        summaryDatePicker.value = getTodayDate();
+        summaryDatePicker.addEventListener('change', (e) => {
+            renderDailySummary(e.target.value);
+        });
+
+        document.getElementById('dailySummaryPrevBtn').onclick = () => renderDailySummary(summaryDatePicker.value, currentDailySummaryPage - 1);
+        document.getElementById('dailySummaryNextBtn').onclick = () => renderDailySummary(summaryDatePicker.value, currentDailySummaryPage + 1);
         
         document.getElementById('confirmCancelBtn').addEventListener('click', closeConfirmModal);
         document.getElementById('confirmOkBtn').addEventListener('click', () => {
